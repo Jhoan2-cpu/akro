@@ -106,6 +106,92 @@ class SaleController extends Controller
         ]);
     }
 
+    public function history(Request $request): Response
+    {
+        $user = $request->user();
+        $search = trim((string) $request->input('search', ''));
+        $from = trim((string) $request->input('from', ''));
+        $to = trim((string) $request->input('to', ''));
+
+        $salesQuery = Sale::query()
+            ->with([
+                'branch:id,name',
+                'user:id,name',
+                'details.medicine:id,name,barcode',
+            ])
+            ->orderByDesc('created_at');
+
+        if (($user?->role ?? null) !== 'admin') {
+            if ($user?->branch_id === null) {
+                $salesQuery->whereRaw('1 = 0');
+            } else {
+                $salesQuery->where('branch_id', $user->branch_id);
+            }
+        }
+
+        if ($search !== '') {
+            $salesQuery->where(function (Builder $builder) use ($search): void {
+                $builder
+                    ->whereHas('user', function (Builder $userBuilder) use ($search): void {
+                        $userBuilder->where('name', 'ilike', "%{$search}%");
+                    })
+                    ->orWhereHas('branch', function (Builder $branchBuilder) use ($search): void {
+                        $branchBuilder->where('name', 'ilike', "%{$search}%");
+                    })
+                    ->orWhereHas('details.medicine', function (Builder $medicineBuilder) use ($search): void {
+                        $medicineBuilder
+                            ->where('name', 'ilike', "%{$search}%")
+                            ->orWhere('barcode', 'ilike', "%{$search}%");
+                    });
+            });
+        }
+
+        if ($from !== '') {
+            $salesQuery->whereDate('created_at', '>=', $from);
+        }
+
+        if ($to !== '') {
+            $salesQuery->whereDate('created_at', '<=', $to);
+        }
+
+        $sales = $salesQuery
+            ->paginate(12)
+            ->withQueryString()
+            ->through(function (Sale $sale): array {
+                $lines = $sale->details->map(function (object $detail): array {
+                    $quantity = (int) $detail->quantity;
+                    $unitPrice = (float) $detail->unit_price;
+
+                    return [
+                        'medicine' => $detail->medicine?->name ?? 'Medicamento eliminado',
+                        'barcode' => $detail->medicine?->barcode,
+                        'quantity' => $quantity,
+                        'unit_price' => number_format($unitPrice, 2, '.', ''),
+                        'subtotal' => number_format($quantity * $unitPrice, 2, '.', ''),
+                    ];
+                })->values();
+
+                return [
+                    'id' => $sale->id,
+                    'created_at' => $sale->created_at?->format('Y-m-d H:i:s'),
+                    'employee_name' => $sale->user?->name,
+                    'branch_name' => $sale->branch?->name,
+                    'total' => number_format((float) $sale->total, 2, '.', ''),
+                    'items_count' => $sale->details->sum('quantity'),
+                    'lines' => $lines,
+                ];
+            });
+
+        return Inertia::render('sales/history', [
+            'sales' => $sales,
+            'filters' => [
+                'search' => $search,
+                'from' => $from,
+                'to' => $to,
+            ],
+        ]);
+    }
+
     public function store(StoreQuickSaleRequest $request): RedirectResponse
     {
         $user = $request->user();

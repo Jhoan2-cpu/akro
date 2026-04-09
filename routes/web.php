@@ -29,6 +29,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('shifts/clock-out', [ShiftController::class, 'clockOut'])->name('shifts.clock-out');
     Route::get('medicines/stock', [MedicineController::class, 'stock'])->name('medicines.stock');
     Route::get('sales/quick', [SaleController::class, 'index'])->name('sales.quick');
+    Route::get('sales/history', [SaleController::class, 'history'])->name('sales.history');
     Route::get('sales/search', [SaleController::class, 'search'])->name('sales.search');
     Route::post('sales', [SaleController::class, 'store'])->name('sales.store');
 });

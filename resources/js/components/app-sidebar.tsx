@@ -60,6 +60,11 @@ export function AppSidebar() {
             icon: ReceiptText,
         },
         {
+            title: 'Historial ventas',
+            href: '/sales/history',
+            icon: ReceiptText,
+        },
+        {
             title: 'Turnos',
             href: '/shifts',
             icon: Clock3,
