@@ -43,6 +43,11 @@ trait UserValidationRules
         return ['required', Rule::in(['active', 'inactive', 'suspended'])];
     }
 
+    protected function profilePhotoRules(): array
+    {
+        return ['nullable', 'image', 'max:5120'];
+    }
+
     protected function passwordRules(bool $required = false): array
     {
         return array_filter([

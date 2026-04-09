@@ -24,6 +24,7 @@ class UpdateUserRequest extends FormRequest
         return [
             'name' => $this->nameRules(),
             'email' => $this->emailRules($userId),
+            'profile_photo' => $this->profilePhotoRules(),
             'branch_id' => $this->branchRules(),
             'role' => $this->roleRules(),
             'status' => $this->statusRules(),
