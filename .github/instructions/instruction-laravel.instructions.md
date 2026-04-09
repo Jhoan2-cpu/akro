@@ -22,9 +22,11 @@ description: Describe when these instructions should be loaded by the agent base
 - Estructura de carpetas: Páginas en `resources/js/Pages` y componentes reutilizables en `resources/js/Components`.
 - Las rutas de los componentes deben resolverse con `resolvePageComponent`.
 
+# Cualquier cambio a la Base de Datos debe ser gestionado a través de migraciones de Laravel.
+
 # Preferencias de Respuesta
 - No expliques conceptos básicos de Laravel o React.
 - Si sugieres un cambio arquitectónico, justifica brevemente basándote en patrones de diseño.
 - Responde en español, pero mantén el código y comentarios en inglés.
 
-# Luego de cada respuesta, incluye el nombre del commit sugerido en formato de mensaje de commit de Git, por ejemplo: `feat: add user authentication`.
+# Luego de cada respuesta, incluye el nombre del commit sugerido en formato de mensaje de commit de Git, por ejemplo: `feat: add user authentication`.(en español)
