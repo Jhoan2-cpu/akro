@@ -1,6 +1,6 @@
 import { Head, useForm } from '@inertiajs/react';
 import { AlertTriangle, Plus, Search, ShoppingCart, Trash2 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import BarcodeScannerDialog from '@/components/barcode-scanner-dialog';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
@@ -74,16 +74,17 @@ export default function SalesIndex({ branch, employee, canSell }: Props) {
         items: [],
     });
 
-    useEffect(() => {
-        saleForm.setData(
-            'items',
-            cart.map((item) => ({
-                medicine_id: item.id,
-                quantity: item.quantity,
-                unit_price: item.unit_price,
-            })),
-        );
-    }, [cart, saleForm]);
+    const buildSaleItems = (items: CartItem[]): SaleFormItem[] => {
+        return items.map((item) => ({
+            medicine_id: item.id,
+            quantity: item.quantity,
+            unit_price: item.unit_price,
+        }));
+    };
+
+    const syncSaleItems = (items: CartItem[]): void => {
+        saleForm.setData('items', buildSaleItems(items));
+    };
 
     const total = useMemo(() => {
         return cart.reduce((sum, item) => sum + (item.quantity * Number(item.unit_price)), 0);
@@ -177,9 +178,8 @@ export default function SalesIndex({ branch, employee, canSell }: Props) {
         setSearchError(null);
         setCart((previous) => {
             const existing = previous.find((item) => item.id === selectedMedicine.id);
-
-            if (existing) {
-                return previous.map((item) => (
+            const nextCart = existing
+                ? previous.map((item) => (
                     item.id === selectedMedicine.id
                         ? {
                             ...item,
@@ -187,21 +187,23 @@ export default function SalesIndex({ branch, employee, canSell }: Props) {
                             unit_price: unitPrice.toFixed(2),
                         }
                         : item
-                ));
-            }
+                ))
+                : [
+                    ...previous,
+                    {
+                        ...selectedMedicine,
+                        quantity,
+                        unit_price: unitPrice.toFixed(2),
+                        current_stock: selectedInventory.current_stock,
+                        minimum_stock: selectedInventory.minimum_stock,
+                        expiration_date: selectedInventory.expiration_date,
+                        branch_name: selectedInventory.branch_name,
+                    },
+                ];
 
-            return [
-                ...previous,
-                {
-                    ...selectedMedicine,
-                    quantity,
-                    unit_price: unitPrice.toFixed(2),
-                    current_stock: selectedInventory.current_stock,
-                    minimum_stock: selectedInventory.minimum_stock,
-                    expiration_date: selectedInventory.expiration_date,
-                    branch_name: selectedInventory.branch_name,
-                },
-            ];
+            syncSaleItems(nextCart);
+
+            return nextCart;
         });
 
         setSelectedMedicine(null);
@@ -212,27 +214,39 @@ export default function SalesIndex({ branch, employee, canSell }: Props) {
     };
 
     const updateCartItem = (medicineId: number, field: 'quantity' | 'unit_price', value: string): void => {
-        setCart((previous) => previous.map((item) => {
-            if (item.id !== medicineId) {
-                return item;
-            }
+        setCart((previous) => {
+            const nextCart = previous.map((item) => {
+                if (item.id !== medicineId) {
+                    return item;
+                }
 
-            if (field === 'quantity') {
+                if (field === 'quantity') {
+                    return {
+                        ...item,
+                        quantity: Number.parseInt(value || '0', 10) || 0,
+                    };
+                }
+
                 return {
                     ...item,
-                    quantity: Number.parseInt(value || '0', 10) || 0,
+                    unit_price: value,
                 };
-            }
+            });
 
-            return {
-                ...item,
-                unit_price: value,
-            };
-        }));
+            syncSaleItems(nextCart);
+
+            return nextCart;
+        });
     };
 
     const removeCartItem = (medicineId: number): void => {
-        setCart((previous) => previous.filter((item) => item.id !== medicineId));
+        setCart((previous) => {
+            const nextCart = previous.filter((item) => item.id !== medicineId);
+
+            syncSaleItems(nextCart);
+
+            return nextCart;
+        });
     };
 
     const submitSale = (event: React.FormEvent<HTMLFormElement>): void => {
@@ -244,6 +258,8 @@ export default function SalesIndex({ branch, employee, canSell }: Props) {
             return;
         }
 
+        saleForm.setData('items', buildSaleItems(cart));
+
         saleForm.post('/sales', {
             preserveScroll: true,
             onSuccess: () => {
@@ -254,6 +270,7 @@ export default function SalesIndex({ branch, employee, canSell }: Props) {
                 setDraftQuantity('1');
                 setDraftUnitPrice('0.00');
                 setSearchError(null);
+                saleForm.setData('items', []);
             },
         });
     };

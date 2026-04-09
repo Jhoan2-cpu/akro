@@ -32,3 +32,18 @@ description: Describe when these instructions should be loaded by the agent base
 - Responde en español, pero mantén el código y comentarios en inglés.
 
 # Luego de cada respuesta, incluye el nombre del commit sugerido en formato de mensaje de commit de Git, por ejemplo: `feat: add user authentication`.(en español)
+
+# Estándares de UI/UX (Basado en Requerimientos de Cliente)
+- Adopta un enfoque **Mobile-First** estricto utilizando las utilidades de Tailwind CSS 4.
+- Los diseños deben ser 100% responsivos, asegurando una experiencia óptima en:
+    - **Tablets:** Breakpoint `md` (768px).
+    - **Desktop:** Breakpoint `xl` (1200px+).
+- Implementa una interfaz **Touch-friendly**:
+    - Elementos interactivos (botones/inputs) con un área mínima de contacto de 44x44px.
+    - Espaciado (gap/padding) suficiente para evitar toques accidentales en móviles.
+    - Evita depender exclusivamente de eventos `hover` para funcionalidades críticas.
+- **PWA (Opcional/Prioritario):** Si se solicita, configurar el Web Manifest y Service Workers básicos para permitir la "instalabilidad" y mejorar la carga.
+
+# Documentación y Gestión de Acuerdos
+- Cada cambio significativo basado en requerimientos del cliente debe quedar registrado en el archivo `README.md` bajo una sección de "Acuerdos Técnicos".
+- Los mensajes de commit deben ser descriptivos y reflejar el cumplimiento de los criterios de éxito (ej. `feat: ensure touch-friendly buttons in pharmacy POS`).

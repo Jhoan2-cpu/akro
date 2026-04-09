@@ -21,9 +21,16 @@ export default function BarcodeScannerDialog({ onDetected, triggerLabel = 'Escan
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const videoRef = useRef<HTMLVideoElement | null>(null);
     const scannerControlsRef = useRef<IScannerControls | null>(null);
+    const onDetectedRef = useRef(onDetected);
+    const hasDetectedRef = useRef(false);
+
+    useEffect(() => {
+        onDetectedRef.current = onDetected;
+    }, [onDetected]);
 
     useEffect(() => {
         if (!open) {
+            hasDetectedRef.current = false;
             return;
         }
 
@@ -64,7 +71,7 @@ export default function BarcodeScannerDialog({ onDetected, triggerLabel = 'Escan
                 const preferredDeviceId = await resolvePreferredDeviceId();
 
                 const controls = await reader.decodeFromVideoDevice(preferredDeviceId, videoElement, (result) => {
-                    if (!result || cancelled) {
+                    if (!result || cancelled || hasDetectedRef.current) {
                         return;
                     }
 
@@ -74,7 +81,10 @@ export default function BarcodeScannerDialog({ onDetected, triggerLabel = 'Escan
                         return;
                     }
 
-                    onDetected(barcode);
+                    hasDetectedRef.current = true;
+                    scannerControlsRef.current?.stop();
+                    scannerControlsRef.current = null;
+                    onDetectedRef.current(barcode);
                     setOpen(false);
                 });
 
@@ -98,13 +108,14 @@ export default function BarcodeScannerDialog({ onDetected, triggerLabel = 'Escan
             cancelled = true;
             scannerControlsRef.current?.stop();
             scannerControlsRef.current = null;
+            hasDetectedRef.current = false;
 
             if (videoRef.current?.srcObject instanceof MediaStream) {
                 videoRef.current.srcObject.getTracks().forEach((track) => track.stop());
                 videoRef.current.srcObject = null;
             }
         };
-    }, [onDetected, open]);
+    }, [open]);
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
