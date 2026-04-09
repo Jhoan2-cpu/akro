@@ -10,16 +10,15 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('sucursales', function (Blueprint $table): void {
+        Schema::create('active_ingredients', function (Blueprint $table): void {
             $table->id();
-            $table->string('nombre');
-            $table->string('direccion');
+            $table->string('name');
             $table->timestamps();
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('sucursales');
+        Schema::dropIfExists('active_ingredients');
     }
 };

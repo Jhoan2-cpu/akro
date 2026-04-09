@@ -10,17 +10,18 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('turnos', function (Blueprint $table): void {
+        Schema::create('sale_details', function (Blueprint $table): void {
             $table->id();
-            $table->foreignId('user_id')->constrained('users');
-            $table->timestamp('entrada');
-            $table->timestamp('salida')->nullable();
+            $table->foreignId('sale_id')->constrained('sales');
+            $table->foreignId('medicine_id')->constrained('medicines');
+            $table->integer('quantity');
+            $table->decimal('unit_price', 10, 2);
             $table->timestamps();
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('turnos');
+        Schema::dropIfExists('sale_details');
     }
 };

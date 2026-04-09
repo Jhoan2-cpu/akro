@@ -12,12 +12,12 @@ class AdminUserSeeder extends Seeder
 {
     public function run(): void
     {
-        $defaultBranchId = DB::table('sucursales')->value('id');
+        $defaultBranchId = DB::table('branches')->value('id');
 
         if ($defaultBranchId === null) {
-            $defaultBranchId = DB::table('sucursales')->insertGetId([
-                'nombre' => 'Sucursal Principal',
-                'direccion' => 'Sin direccion',
+            $defaultBranchId = DB::table('branches')->insertGetId([
+                'name' => 'Main Branch',
+                'address' => 'Address pending',
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
@@ -31,7 +31,8 @@ class AdminUserSeeder extends Seeder
             'name' => (string) env('ADMIN_NAME', 'Administrador'),
             'password' => (string) env('ADMIN_PASSWORD', 'Admin12345!'),
             'role' => 'admin',
-            'sucursal_id' => $defaultBranchId,
+            'status' => 'active',
+            'branch_id' => $defaultBranchId,
             'email_verified_at' => now(),
         ])->save();
     }

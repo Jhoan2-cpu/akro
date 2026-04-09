@@ -10,17 +10,17 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('ventas', function (Blueprint $table): void {
+        Schema::create('sales', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('user_id')->constrained('users');
-            $table->foreignId('sucursal_id')->constrained('sucursales');
+            $table->foreignId('branch_id')->constrained('branches');
             $table->decimal('total', 10, 2);
-            $table->timestamps();
+            $table->timestamp('created_at')->useCurrent();
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('ventas');
+        Schema::dropIfExists('sales');
     }
 };

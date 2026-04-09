@@ -10,15 +10,16 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('principios_activos', function (Blueprint $table): void {
+        Schema::create('categories', function (Blueprint $table): void {
             $table->id();
-            $table->string('nombre');
+            $table->string('name');
+            $table->string('description')->nullable();
             $table->timestamps();
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('principios_activos');
+        Schema::dropIfExists('categories');
     }
 };
