@@ -244,56 +244,92 @@ class MedicineController extends Controller
 
     public function stock(Request $request): Response
     {
-        $query = trim((string) $request->input('query', ''));
-        $medicine = null;
-        $inventories = [];
+        $search = trim((string) $request->input('search', ''));
+        $branchId = (string) $request->input('branch_id', 'all');
+        $categoryId = (string) $request->input('category_id', 'all');
+        $status = (string) $request->input('status', 'all');
 
-        if ($query !== '') {
-            $medicine = Medicine::query()
-                ->with(['category', 'activeIngredients'])
-                ->where(function (Builder $builder) use ($query): void {
-                    $builder
-                        ->where('barcode', $query)
-                        ->orWhere('name', 'ilike', "%{$query}%");
-                })
-                ->first();
+        $baseQuery = Inventory::query()
+            ->with(['branch:id,name', 'medicine:id,name,barcode,category_id', 'medicine.category:id,name'])
+            ->when($search !== '', function (Builder $builder) use ($search): void {
+                $builder->whereHas('medicine', function (Builder $medicineBuilder) use ($search): void {
+                    $medicineBuilder
+                        ->where('name', 'ilike', "%{$search}%")
+                        ->orWhere('barcode', 'ilike', "%{$search}%");
+                });
+            })
+            ->when($branchId !== 'all', fn (Builder $builder) => $builder->where('branch_id', (int) $branchId))
+            ->when($categoryId !== 'all', function (Builder $builder) use ($categoryId): void {
+                $builder->whereHas('medicine', fn (Builder $medicineBuilder) => $medicineBuilder->where('category_id', (int) $categoryId));
+            });
 
-            if ($medicine !== null) {
-                $inventories = $medicine->inventories()
-                    ->with('branch')
-                    ->orderBy('branch_id')
-                    ->get()
-                    ->map(function (Inventory $inventory): array {
-                        $daysToExpire = Carbon::today()->diffInDays($inventory->expiration_date, false);
+        $summaryQuery = clone $baseQuery;
+        $today = Carbon::today();
+        $nearExpiryLimit = Carbon::today()->addDays(30);
 
-                        return [
-                            'branch_name' => $inventory->branch?->name,
-                            'current_stock' => $inventory->current_stock,
-                            'minimum_stock' => $inventory->minimum_stock,
-                            'expiration_date' => (string) $inventory->expiration_date,
-                            'is_low_stock' => $inventory->current_stock <= $inventory->minimum_stock,
-                            'is_near_expiry' => $daysToExpire >= 0 && $daysToExpire < 30,
-                            'is_out_of_stock' => $inventory->current_stock === 0,
-                        ];
-                    })
-                    ->values()
-                    ->all();
-            }
-        }
+        $summary = [
+            'total_records' => (clone $summaryQuery)->count(),
+            'low_stock_records' => (clone $summaryQuery)->whereColumn('current_stock', '<=', 'minimum_stock')->count(),
+            'out_of_stock_records' => (clone $summaryQuery)->where('current_stock', 0)->count(),
+            'near_expiry_records' => (clone $summaryQuery)
+                ->whereDate('expiration_date', '>=', $today)
+                ->whereDate('expiration_date', '<', $nearExpiryLimit)
+                ->count(),
+        ];
+
+        $stockQuery = clone $baseQuery;
+
+        match ($status) {
+            'out' => $stockQuery->where('current_stock', 0),
+            'low' => $stockQuery->whereColumn('current_stock', '<=', 'minimum_stock'),
+            'near-expiry' => $stockQuery
+                ->whereDate('expiration_date', '>=', $today)
+                ->whereDate('expiration_date', '<', $nearExpiryLimit),
+            'healthy' => $stockQuery
+                ->where('current_stock', '>', 0)
+                ->whereColumn('current_stock', '>', 'minimum_stock')
+                ->whereDate('expiration_date', '>=', $nearExpiryLimit),
+            default => null,
+        };
+
+        $inventories = $stockQuery
+            ->orderBy('branch_id')
+            ->orderBy('medicine_id')
+            ->paginate(15)
+            ->withQueryString()
+            ->through(function (Inventory $inventory) use ($today): array {
+                $daysToExpire = $today->diffInDays($inventory->expiration_date, false);
+                $isLowStock = $inventory->current_stock <= $inventory->minimum_stock;
+                $isOutOfStock = $inventory->current_stock === 0;
+                $isNearExpiry = $daysToExpire >= 0 && $daysToExpire < 30;
+
+                return [
+                    'id' => $inventory->id,
+                    'branch_name' => $inventory->branch?->name,
+                    'medicine_name' => $inventory->medicine?->name,
+                    'barcode' => $inventory->medicine?->barcode,
+                    'category' => $inventory->medicine?->category?->name,
+                    'current_stock' => $inventory->current_stock,
+                    'minimum_stock' => $inventory->minimum_stock,
+                    'expiration_date' => substr((string) $inventory->expiration_date, 0, 10),
+                    'days_to_expire' => $daysToExpire,
+                    'is_low_stock' => $isLowStock,
+                    'is_near_expiry' => $isNearExpiry,
+                    'is_out_of_stock' => $isOutOfStock,
+                ];
+            });
 
         return Inertia::render('medicines/stock', [
-            'query' => $query,
-            'medicine' => $medicine ? [
-                'id' => $medicine->id,
-                'name' => $medicine->name,
-                'barcode' => $medicine->barcode,
-                'category' => $medicine->category?->name,
-                'description' => $medicine->description,
-                'image_path' => $medicine->image_path,
-                'active_ingredients' => $medicine->activeIngredients->pluck('name')->values(),
-            ] : null,
             'inventories' => $inventories,
-            'notFound' => $query !== '' && $medicine === null,
+            'branches' => Branch::query()->orderBy('name')->get(['id', 'name']),
+            'categories' => Category::query()->orderBy('name')->get(['id', 'name']),
+            'filters' => [
+                'search' => $search,
+                'branch_id' => $branchId,
+                'category_id' => $categoryId,
+                'status' => $status,
+            ],
+            'summary' => $summary,
         ]);
     }
 
