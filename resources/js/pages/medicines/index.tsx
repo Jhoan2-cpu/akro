@@ -1,5 +1,5 @@
 import { Head, Link, router, useForm } from '@inertiajs/react';
-import { AlertTriangle, Boxes, PencilLine, Plus, Search, Trash2, TriangleAlert } from 'lucide-react';
+import { AlertTriangle, Boxes, PencilLine, Pill, Plus, Search, Trash2, TriangleAlert } from 'lucide-react';
 import { useState } from 'react';
 import BarcodeScannerDialog from '@/components/barcode-scanner-dialog';
 import MedicineForm, { type MedicineFormValues } from '@/components/medicines/medicine-form';
@@ -313,9 +313,22 @@ export default function MedicinesIndex({ medicines, categories, activeIngredient
                             {medicines.data.length > 0 ? (
                                 medicines.data.map((medicine) => (
                                     <div key={medicine.id} className="grid grid-cols-[1.3fr_1fr_0.9fr_0.8fr_0.9fr_0.8fr] items-center gap-4 px-6 py-5">
-                                        <div className="min-w-0">
-                                            <p className="truncate font-semibold text-foreground">{medicine.name}</p>
-                                            <p className="truncate text-xs text-muted-foreground">{medicine.description || 'Sin descripción'}</p>
+                                        <div className="flex min-w-0 items-center gap-3">
+                                            <div className="flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-sidebar-border/70 bg-muted/40">
+                                                {medicine.image_path ? (
+                                                    <img
+                                                        src={medicine.image_path}
+                                                        alt={`Imagen de ${medicine.name}`}
+                                                        className="size-full object-cover"
+                                                    />
+                                                ) : (
+                                                    <Pill className="size-5 text-muted-foreground" />
+                                                )}
+                                            </div>
+                                            <div className="min-w-0">
+                                                <p className="truncate font-semibold text-foreground">{medicine.name}</p>
+                                                <p className="truncate text-xs text-muted-foreground">{medicine.description || 'Sin descripción'}</p>
+                                            </div>
                                         </div>
 
                                         <div>
@@ -370,8 +383,23 @@ export default function MedicinesIndex({ medicines, categories, activeIngredient
                         {medicines.data.length > 0 ? (
                             medicines.data.map((medicine) => (
                                 <article key={medicine.id} className="rounded-2xl border border-sidebar-border/70 p-4">
-                                    <p className="font-semibold text-foreground">{medicine.name}</p>
-                                    <p className="text-sm text-muted-foreground">{medicine.category ?? 'Sin categoría'} · {medicine.barcode}</p>
+                                    <div className="flex items-center gap-3">
+                                        <div className="flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-sidebar-border/70 bg-muted/40">
+                                            {medicine.image_path ? (
+                                                <img
+                                                    src={medicine.image_path}
+                                                    alt={`Imagen de ${medicine.name}`}
+                                                    className="size-full object-cover"
+                                                />
+                                            ) : (
+                                                <Pill className="size-5 text-muted-foreground" />
+                                            )}
+                                        </div>
+                                        <div className="min-w-0">
+                                            <p className="truncate font-semibold text-foreground">{medicine.name}</p>
+                                            <p className="truncate text-sm text-muted-foreground">{medicine.category ?? 'Sin categoría'} · {medicine.barcode}</p>
+                                        </div>
+                                    </div>
                                     <p className="mt-2 text-sm text-muted-foreground">Stock: <span className="font-medium text-foreground">{medicine.total_stock}</span></p>
 
                                     <div className="mt-3 flex flex-wrap gap-2">
