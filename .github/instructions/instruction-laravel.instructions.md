@@ -24,6 +24,8 @@ description: Describe when these instructions should be loaded by the agent base
 
 # Cualquier cambio a la Base de Datos debe ser gestionado a través de migraciones de Laravel.
 
+# Para cualquier cambio en la UI, asegúrate de que el diseño sea responsivo y siga las pautas de Tailwind CSS.
+
 # Preferencias de Respuesta
 - No expliques conceptos básicos de Laravel o React.
 - Si sugieres un cambio arquitectónico, justifica brevemente basándote en patrones de diseño.
