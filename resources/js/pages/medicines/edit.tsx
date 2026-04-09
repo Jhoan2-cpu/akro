@@ -33,6 +33,14 @@ export default function EditMedicine({ medicine, categories, activeIngredients, 
     const [categoryOptions, setCategoryOptions] = useState<Option[]>(categories);
     const [activeIngredientOptions, setActiveIngredientOptions] = useState<Option[]>(activeIngredients);
 
+    const normalizeDateForInput = (value: string | null | undefined): string => {
+        if (!value) {
+            return '';
+        }
+
+        return value.slice(0, 10);
+    };
+
     const stocks = branches.map((branch) => {
         const existingStock = medicine.stocks.find((stock) => stock.branch_id === branch.id);
 
@@ -41,7 +49,7 @@ export default function EditMedicine({ medicine, categories, activeIngredients, 
             branch_name: branch.name,
             current_stock: String(existingStock?.current_stock ?? 0),
             minimum_stock: String(existingStock?.minimum_stock ?? 0),
-            expiration_date: existingStock?.expiration_date ?? '',
+            expiration_date: normalizeDateForInput(existingStock?.expiration_date),
             sale_price: existingStock?.sale_price ?? '0.00',
         };
     });
@@ -59,9 +67,17 @@ export default function EditMedicine({ medicine, categories, activeIngredients, 
     const submit = (event: FormEvent<HTMLFormElement>): void => {
         event.preventDefault();
 
-        form.put(`/medicines/${medicine.id}`, {
+        form.transform((data) => ({
+            ...data,
+            _method: 'put',
+        }));
+
+        form.post(`/medicines/${medicine.id}`, {
             forceFormData: true,
             preserveScroll: true,
+            onFinish: () => {
+                form.transform((data) => data);
+            },
         });
     };
 
