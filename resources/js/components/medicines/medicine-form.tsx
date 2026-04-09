@@ -330,135 +330,137 @@ export default function MedicineForm({
                     </div>
                 </div>
 
-                <div className="rounded-3xl border border-sidebar-border/70 bg-background p-5 shadow-sm md:p-6">
-                    <div className="mb-4 flex items-center gap-2">
-                        <FlaskConical className="size-5 text-emerald-700" />
-                        <div>
-                            <h2 className="text-lg font-semibold text-foreground">Principios activos</h2>
-                            <p className="text-sm text-muted-foreground">Selecciona existentes o crea uno nuevo por nombre y Enter.</p>
-                        </div>
-                    </div>
-
-                    <div className="rounded-2xl border border-sidebar-border/70 bg-muted/20 p-4">
-                        <div className="mb-3 flex flex-wrap gap-2">
-                            {selectedActiveIngredients.length > 0 ? (
-                                selectedActiveIngredients.map((activeIngredient) => (
-                                    <Badge key={activeIngredient.id} className="rounded-full bg-emerald-100 px-3 py-1 text-emerald-800 hover:bg-emerald-100">
-                                        {activeIngredient.name}
-                                        <button
-                                            type="button"
-                                            className="ml-2 inline-flex"
-                                            onClick={() => toggleActiveIngredient(activeIngredient.id)}
-                                            aria-label={`Quitar ${activeIngredient.name}`}
-                                        >
-                                            <X className="size-3" />
-                                        </button>
-                                    </Badge>
-                                ))
-                            ) : (
-                                <p className="text-sm text-muted-foreground">No hay principios activos seleccionados.</p>
-                            )}
-                        </div>
-
-                        <div className="flex flex-col gap-2 sm:flex-row">
-                            <Input
-                                value={newActiveIngredientName}
-                                onChange={(event) => setNewActiveIngredientName(event.target.value)}
-                                onKeyDown={handleIngredientInputEnter}
-                                placeholder="Añadir ingrediente..."
-                                className="h-10 rounded-xl"
-                            />
-                            <Button
-                                type="button"
-                                variant="outline"
-                                className="rounded-xl"
-                                disabled={isCreatingIngredient}
-                                onClick={() => void createActiveIngredient()}
-                            >
-                                {isCreatingIngredient ? 'Agregando...' : 'Agregar'}
-                            </Button>
-                        </div>
-
-                        <p className="mt-2 text-xs text-muted-foreground">
-                            Escribe el nombre y presiona Enter para crear y seleccionar un nuevo principio activo.
-                        </p>
-
-                        {ingredientError && <p className="mt-2 text-sm text-rose-600">{ingredientError}</p>}
-
-                        <div className="mt-3 flex flex-wrap gap-2">
-                            {activeIngredients.map((activeIngredient) => {
-                                const isSelected = data.active_ingredient_ids.includes(activeIngredient.id);
-
-                                return (
-                                    <button
-                                        key={activeIngredient.id}
-                                        type="button"
-                                        className={`rounded-full border px-3 py-1 text-xs transition ${isSelected ? 'border-emerald-300 bg-emerald-100 text-emerald-800' : 'border-sidebar-border/70 bg-background text-muted-foreground hover:bg-muted'}`}
-                                        onClick={() => toggleActiveIngredient(activeIngredient.id)}
-                                    >
-                                        {activeIngredient.name}
-                                    </button>
-                                );
-                            })}
-                        </div>
-                    </div>
-
-                    <InputError message={errors.active_ingredient_ids} className="mt-3" />
-                </div>
-
-                <div className="rounded-3xl border border-sidebar-border/70 bg-background p-5 shadow-sm md:p-6">
-                    <h2 className="text-lg font-semibold text-foreground">Sucursales e inventario</h2>
-                    <p className="mb-4 text-sm text-muted-foreground">Configura stock actual, stock mínimo y fecha de caducidad por sucursal.</p>
-
-                    <div className="space-y-4">
-                        {data.stocks.map((stock, index) => (
-                            <div key={stock.branch_id} className="rounded-2xl border border-sidebar-border/70 p-4">
-                                <div className="mb-3 flex items-center justify-between">
-                                    <p className="font-medium text-foreground">{stock.branch_name}</p>
-                                    <Badge variant="outline">Sucursal</Badge>
-                                </div>
-
-                                <div className="grid gap-3 md:grid-cols-3">
-                                    <div className="space-y-2">
-                                        <Label htmlFor={`current_stock_${stock.branch_id}`}>Stock actual</Label>
-                                        <Input
-                                            id={`current_stock_${stock.branch_id}`}
-                                            type="number"
-                                            min={0}
-                                            value={stock.current_stock}
-                                            onChange={(event) => updateStock(stock.branch_id, 'current_stock', event.target.value)}
-                                        />
-                                        <InputError message={errors[`stocks.${index}.current_stock`]} />
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <Label htmlFor={`minimum_stock_${stock.branch_id}`}>Stock mínimo</Label>
-                                        <Input
-                                            id={`minimum_stock_${stock.branch_id}`}
-                                            type="number"
-                                            min={0}
-                                            value={stock.minimum_stock}
-                                            onChange={(event) => updateStock(stock.branch_id, 'minimum_stock', event.target.value)}
-                                        />
-                                        <InputError message={errors[`stocks.${index}.minimum_stock`]} />
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <Label htmlFor={`expiration_date_${stock.branch_id}`}>Caducidad</Label>
-                                        <Input
-                                            id={`expiration_date_${stock.branch_id}`}
-                                            type="date"
-                                            value={stock.expiration_date}
-                                            onChange={(event) => updateStock(stock.branch_id, 'expiration_date', event.target.value)}
-                                        />
-                                        <InputError message={errors[`stocks.${index}.expiration_date`]} />
-                                    </div>
-                                </div>
+                <div className="grid gap-6 xl:grid-cols-2 xl:items-start">
+                    <div className="rounded-3xl border border-sidebar-border/70 bg-background p-5 shadow-sm md:p-6 xl:max-h-[34vh] xl:overflow-y-auto">
+                        <div className="mb-4 flex items-center gap-2">
+                            <FlaskConical className="size-5 text-emerald-700" />
+                            <div>
+                                <h2 className="text-lg font-semibold text-foreground">Principios activos</h2>
+                                <p className="text-sm text-muted-foreground">Selecciona existentes o crea uno nuevo por nombre y Enter.</p>
                             </div>
-                        ))}
+                        </div>
+
+                        <div className="rounded-2xl border border-sidebar-border/70 bg-muted/20 p-4">
+                            <div className="mb-3 flex flex-wrap gap-2">
+                                {selectedActiveIngredients.length > 0 ? (
+                                    selectedActiveIngredients.map((activeIngredient) => (
+                                        <Badge key={activeIngredient.id} className="rounded-full bg-emerald-100 px-3 py-1 text-emerald-800 hover:bg-emerald-100">
+                                            {activeIngredient.name}
+                                            <button
+                                                type="button"
+                                                className="ml-2 inline-flex"
+                                                onClick={() => toggleActiveIngredient(activeIngredient.id)}
+                                                aria-label={`Quitar ${activeIngredient.name}`}
+                                            >
+                                                <X className="size-3" />
+                                            </button>
+                                        </Badge>
+                                    ))
+                                ) : (
+                                    <p className="text-sm text-muted-foreground">No hay principios activos seleccionados.</p>
+                                )}
+                            </div>
+
+                            <div className="flex flex-col gap-2 sm:flex-row">
+                                <Input
+                                    value={newActiveIngredientName}
+                                    onChange={(event) => setNewActiveIngredientName(event.target.value)}
+                                    onKeyDown={handleIngredientInputEnter}
+                                    placeholder="Añadir ingrediente..."
+                                    className="h-10 rounded-xl"
+                                />
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    className="rounded-xl"
+                                    disabled={isCreatingIngredient}
+                                    onClick={() => void createActiveIngredient()}
+                                >
+                                    {isCreatingIngredient ? 'Agregando...' : 'Agregar'}
+                                </Button>
+                            </div>
+
+                            <p className="mt-2 text-xs text-muted-foreground">
+                                Escribe el nombre y presiona Enter para crear y seleccionar un nuevo principio activo.
+                            </p>
+
+                            {ingredientError && <p className="mt-2 text-sm text-rose-600">{ingredientError}</p>}
+
+                            <div className="mt-3 flex flex-wrap gap-2">
+                                {activeIngredients.map((activeIngredient) => {
+                                    const isSelected = data.active_ingredient_ids.includes(activeIngredient.id);
+
+                                    return (
+                                        <button
+                                            key={activeIngredient.id}
+                                            type="button"
+                                            className={`rounded-full border px-3 py-1 text-xs transition ${isSelected ? 'border-emerald-300 bg-emerald-100 text-emerald-800' : 'border-sidebar-border/70 bg-background text-muted-foreground hover:bg-muted'}`}
+                                            onClick={() => toggleActiveIngredient(activeIngredient.id)}
+                                        >
+                                            {activeIngredient.name}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        <InputError message={errors.active_ingredient_ids} className="mt-3" />
                     </div>
 
-                    <InputError message={errors.stocks} className="mt-3" />
+                    <div className="rounded-3xl border border-sidebar-border/70 bg-background p-5 shadow-sm md:p-6 xl:max-h-[34vh] xl:overflow-y-auto">
+                        <h2 className="text-lg font-semibold text-foreground">Sucursales e inventario</h2>
+                        <p className="mb-4 text-sm text-muted-foreground">Configura stock actual, stock mínimo y fecha de caducidad por sucursal.</p>
+
+                        <div className="space-y-4">
+                            {data.stocks.map((stock, index) => (
+                                <div key={stock.branch_id} className="rounded-2xl border border-sidebar-border/70 p-4">
+                                    <div className="mb-3 flex items-center justify-between">
+                                        <p className="font-medium text-foreground">{stock.branch_name}</p>
+                                        <Badge variant="outline">Sucursal</Badge>
+                                    </div>
+
+                                    <div className="grid gap-3 md:grid-cols-3">
+                                        <div className="space-y-2">
+                                            <Label htmlFor={`current_stock_${stock.branch_id}`}>Stock actual</Label>
+                                            <Input
+                                                id={`current_stock_${stock.branch_id}`}
+                                                type="number"
+                                                min={0}
+                                                value={stock.current_stock}
+                                                onChange={(event) => updateStock(stock.branch_id, 'current_stock', event.target.value)}
+                                            />
+                                            <InputError message={errors[`stocks.${index}.current_stock`]} />
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <Label htmlFor={`minimum_stock_${stock.branch_id}`}>Stock mínimo</Label>
+                                            <Input
+                                                id={`minimum_stock_${stock.branch_id}`}
+                                                type="number"
+                                                min={0}
+                                                value={stock.minimum_stock}
+                                                onChange={(event) => updateStock(stock.branch_id, 'minimum_stock', event.target.value)}
+                                            />
+                                            <InputError message={errors[`stocks.${index}.minimum_stock`]} />
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <Label htmlFor={`expiration_date_${stock.branch_id}`}>Caducidad</Label>
+                                            <Input
+                                                id={`expiration_date_${stock.branch_id}`}
+                                                type="date"
+                                                value={stock.expiration_date}
+                                                onChange={(event) => updateStock(stock.branch_id, 'expiration_date', event.target.value)}
+                                            />
+                                            <InputError message={errors[`stocks.${index}.expiration_date`]} />
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        <InputError message={errors.stocks} className="mt-3" />
+                    </div>
                 </div>
 
                 {errors.shift && (

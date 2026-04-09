@@ -464,7 +464,7 @@ export default function MedicinesIndex({ medicines, categories, activeIngredient
             </div>
 
             <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-                <DialogContent className="w-[calc(100vw-1rem)] max-w-none max-h-[92vh] overflow-y-auto rounded-3xl border-sidebar-border/70 p-4 sm:w-[calc(100vw-2rem)] sm:max-w-none sm:p-6 lg:w-[min(96vw,1300px)]">
+                <DialogContent className="w-[calc(100vw-1rem)] max-w-none max-h-[92vh] overflow-y-auto rounded-3xl border-sidebar-border/70 p-4 sm:w-[calc(100vw-2rem)] sm:max-w-none sm:p-6 lg:w-[min(96vw,1300px)] [scrollbar-gutter:stable] [scrollbar-width:thin] [scrollbar-color:rgb(16_185_129)_transparent] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-emerald-500/70 [&::-webkit-scrollbar-thumb:hover]:bg-emerald-600/80">
                     <DialogHeader className="sr-only">
                         <DialogTitle>Registrar medicamento</DialogTitle>
                         <DialogDescription>
