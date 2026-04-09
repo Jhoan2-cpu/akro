@@ -30,9 +30,12 @@ export default function BarcodeScannerDialog({ onDetected, triggerLabel = 'Escan
 
     useEffect(() => {
         if (!open) {
+            console.log('[scanner] dialog closed');
             hasDetectedRef.current = false;
             return;
         }
+
+        console.log('[scanner] dialog opened, starting camera');
 
         const reader = new BrowserMultiFormatReader();
         let cancelled = false;
@@ -53,6 +56,7 @@ export default function BarcodeScannerDialog({ onDetected, triggerLabel = 'Escan
 
         const resolvePreferredDeviceId = async (): Promise<string | undefined> => {
             const devices = await BrowserMultiFormatReader.listVideoInputDevices();
+            console.log('[scanner] video devices found:', devices.length, devices.map((device) => ({ id: device.deviceId, label: device.label })));
 
             if (devices.length === 0) {
                 return undefined;
@@ -68,25 +72,45 @@ export default function BarcodeScannerDialog({ onDetected, triggerLabel = 'Escan
         const start = async (): Promise<void> => {
             try {
                 const videoElement = await waitForVideoElement();
-                const preferredDeviceId = await resolvePreferredDeviceId();
-
-                const controls = await reader.decodeFromVideoDevice(preferredDeviceId, videoElement, (result) => {
+                const handleResult = (result: unknown): void => {
                     if (!result || cancelled || hasDetectedRef.current) {
                         return;
                     }
 
-                    const barcode = result.getText().trim();
+                    if (typeof result !== 'object' || result === null || !('getText' in result)) {
+                        return;
+                    }
+
+                    const barcode = (result as { getText: () => string }).getText().trim();
 
                     if (barcode === '') {
                         return;
                     }
 
+                    console.log('[scanner] barcode captured:', barcode);
                     hasDetectedRef.current = true;
                     scannerControlsRef.current?.stop();
                     scannerControlsRef.current = null;
                     onDetectedRef.current(barcode);
                     setOpen(false);
-                });
+                };
+
+                let controls: IScannerControls;
+
+                try {
+                    console.log('[scanner] trying facingMode=environment');
+                    controls = await reader.decodeFromConstraints({
+                        video: {
+                            facingMode: { ideal: 'environment' },
+                            width: { ideal: 1280 },
+                            height: { ideal: 720 },
+                        },
+                    }, videoElement, handleResult);
+                } catch (constraintError) {
+                    console.log('[scanner] facingMode flow failed, fallback to preferred device', constraintError);
+                    const preferredDeviceId = await resolvePreferredDeviceId();
+                    controls = await reader.decodeFromVideoDevice(preferredDeviceId, videoElement, handleResult);
+                }
 
                 if (cancelled) {
                     controls.stop();
@@ -94,7 +118,9 @@ export default function BarcodeScannerDialog({ onDetected, triggerLabel = 'Escan
                 }
 
                 scannerControlsRef.current = controls;
-            } catch {
+                console.log('[scanner] camera stream ready');
+            } catch (error) {
+                console.error('[scanner] failed to start camera', error);
                 if (!cancelled) {
                     setErrorMessage('No se pudo iniciar la cámara. Verifica permisos del navegador.');
                 }
@@ -105,6 +131,7 @@ export default function BarcodeScannerDialog({ onDetected, triggerLabel = 'Escan
         void start();
 
         return () => {
+            console.log('[scanner] cleaning up scanner resources');
             cancelled = true;
             scannerControlsRef.current?.stop();
             scannerControlsRef.current = null;
