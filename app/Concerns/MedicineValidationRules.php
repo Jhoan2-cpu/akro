@@ -73,4 +73,9 @@ trait MedicineValidationRules
     {
         return ['required', 'date'];
     }
+
+    protected function stockSalePriceRules(): array
+    {
+        return ['required', 'numeric', 'min:0.01'];
+    }
 }

@@ -28,6 +28,7 @@ type MedicineResult = {
     description: string | null;
     image_path: string | null;
     active_ingredients: string[];
+    sale_price: string;
 };
 
 type InventoryResult = {
@@ -122,7 +123,7 @@ export default function SalesIndex({ branch, employee, canSell }: Props) {
                 setSelectedMedicine(payload.medicine);
                 setSelectedInventory(payload.inventory ?? null);
                 setDraftQuantity('1');
-                setDraftUnitPrice('0.00');
+                setDraftUnitPrice(payload.medicine.sale_price);
             } else {
                 setSelectedMedicine(null);
                 setSelectedInventory(null);

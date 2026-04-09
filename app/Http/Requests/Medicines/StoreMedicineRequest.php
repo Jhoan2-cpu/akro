@@ -30,6 +30,7 @@ class StoreMedicineRequest extends FormRequest
             'stocks.*.current_stock' => $this->stockCurrentRules(),
             'stocks.*.minimum_stock' => $this->stockMinimumRules(),
             'stocks.*.expiration_date' => $this->stockExpirationRules(),
+            'stocks.*.sale_price' => $this->stockSalePriceRules(),
         ];
     }
 }

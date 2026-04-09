@@ -8,6 +8,7 @@ use Cloudinary\Api\Upload\UploadApi;
 use App\Http\Requests\Medicines\StoreMedicineRequest;
 use App\Http\Requests\Medicines\UpdateMedicineRequest;
 use App\Models\ActiveIngredient;
+use App\Models\BranchMedicinePrice;
 use App\Models\Branch;
 use App\Models\Category;
 use App\Models\Inventory;
@@ -101,6 +102,7 @@ class MedicineController extends Controller
             ]);
 
             $medicine->activeIngredients()->sync($validated['active_ingredient_ids'] ?? []);
+            $priceRows = [];
 
             foreach ($validated['stocks'] as $stockItem) {
                 $medicine->inventories()->create([
@@ -109,6 +111,22 @@ class MedicineController extends Controller
                     'minimum_stock' => (int) $stockItem['minimum_stock'],
                     'expiration_date' => $stockItem['expiration_date'],
                 ]);
+
+                $priceRows[] = [
+                    'branch_id' => (int) $stockItem['branch_id'],
+                    'medicine_id' => $medicine->id,
+                    'sale_price' => $stockItem['sale_price'],
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
+            }
+
+            if ($priceRows !== []) {
+                BranchMedicinePrice::query()->upsert(
+                    $priceRows,
+                    ['branch_id', 'medicine_id'],
+                    ['sale_price', 'updated_at'],
+                );
             }
         });
 
@@ -122,7 +140,8 @@ class MedicineController extends Controller
 
     public function edit(Medicine $medicine): Response
     {
-        $medicine->load(['activeIngredients', 'inventories.branch']);
+        $medicine->load(['activeIngredients', 'inventories.branch', 'branchPrices']);
+        $pricesByBranch = $medicine->branchPrices->keyBy('branch_id');
 
         return Inertia::render('medicines/edit', [
             ...$this->baseFormPayload(),
@@ -134,13 +153,16 @@ class MedicineController extends Controller
                 'description' => $medicine->description,
                 'image_path' => $medicine->image_path,
                 'active_ingredient_ids' => $medicine->activeIngredients->pluck('id')->values(),
-                'stocks' => $medicine->inventories->map(function (Inventory $inventory): array {
+                'stocks' => $medicine->inventories->map(function (Inventory $inventory) use ($pricesByBranch): array {
+                    $salePrice = $pricesByBranch->get($inventory->branch_id)?->sale_price;
+
                     return [
                         'branch_id' => $inventory->branch_id,
                         'branch_name' => $inventory->branch?->name,
                         'current_stock' => $inventory->current_stock,
                         'minimum_stock' => $inventory->minimum_stock,
                         'expiration_date' => (string) $inventory->expiration_date,
+                        'sale_price' => $salePrice !== null ? (string) $salePrice : '0.00',
                     ];
                 })->values(),
             ],
@@ -164,6 +186,7 @@ class MedicineController extends Controller
             ]);
 
             $medicine->activeIngredients()->sync($validated['active_ingredient_ids'] ?? []);
+            $priceRows = [];
 
             foreach ($validated['stocks'] as $stockItem) {
                 $medicine->inventories()->updateOrCreate(
@@ -175,6 +198,22 @@ class MedicineController extends Controller
                         'minimum_stock' => (int) $stockItem['minimum_stock'],
                         'expiration_date' => $stockItem['expiration_date'],
                     ],
+                );
+
+                $priceRows[] = [
+                    'branch_id' => (int) $stockItem['branch_id'],
+                    'medicine_id' => $medicine->id,
+                    'sale_price' => $stockItem['sale_price'],
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
+            }
+
+            if ($priceRows !== []) {
+                BranchMedicinePrice::query()->upsert(
+                    $priceRows,
+                    ['branch_id', 'medicine_id'],
+                    ['sale_price', 'updated_at'],
                 );
             }
 

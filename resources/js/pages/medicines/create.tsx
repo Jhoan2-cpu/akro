@@ -27,6 +27,7 @@ export default function CreateMedicine({ categories, activeIngredients, branches
             current_stock: '0',
             minimum_stock: '0',
             expiration_date: '',
+            sale_price: '0.00',
         })),
     });
 
@@ -109,7 +110,7 @@ export default function CreateMedicine({ categories, activeIngredients, branches
         }
     };
 
-    const updateStock = (branchId: number, field: 'current_stock' | 'minimum_stock' | 'expiration_date', value: string): void => {
+    const updateStock = (branchId: number, field: 'current_stock' | 'minimum_stock' | 'expiration_date' | 'sale_price', value: string): void => {
         form.setData('stocks', form.data.stocks.map((stock) => (
             stock.branch_id === branchId ? { ...stock, [field]: value } : stock
         )));

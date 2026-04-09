@@ -35,6 +35,7 @@ export type MedicineFormValues = {
         current_stock: string;
         minimum_stock: string;
         expiration_date: string;
+        sale_price: string;
     }>;
 };
 
@@ -56,7 +57,7 @@ type Props = {
     onCancel: () => void;
     setData: (field: keyof MedicineFormValues, value: MedicineFormValues[keyof MedicineFormValues]) => void;
     setBarcode: (barcode: string) => void;
-    updateStock: (branchId: number, field: 'current_stock' | 'minimum_stock' | 'expiration_date', value: string) => void;
+    updateStock: (branchId: number, field: 'current_stock' | 'minimum_stock' | 'expiration_date' | 'sale_price', value: string) => void;
     toggleActiveIngredient: (activeIngredientId: number) => void;
     onQuickCreateCategory: (name: string) => Promise<void>;
     onQuickCreateActiveIngredient: (name: string) => Promise<void>;
@@ -419,7 +420,7 @@ export default function MedicineForm({
                                         <Badge variant="outline">Sucursal</Badge>
                                     </div>
 
-                                    <div className="grid gap-3 md:grid-cols-3">
+                                    <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
                                         <div className="space-y-2">
                                             <Label htmlFor={`current_stock_${stock.branch_id}`}>Stock actual</Label>
                                             <Input
@@ -453,6 +454,19 @@ export default function MedicineForm({
                                                 onChange={(event) => updateStock(stock.branch_id, 'expiration_date', event.target.value)}
                                             />
                                             <InputError message={errors[`stocks.${index}.expiration_date`]} />
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <Label htmlFor={`sale_price_${stock.branch_id}`}>Precio venta</Label>
+                                            <Input
+                                                id={`sale_price_${stock.branch_id}`}
+                                                type="number"
+                                                min={0.01}
+                                                step="0.01"
+                                                value={stock.sale_price}
+                                                onChange={(event) => updateStock(stock.branch_id, 'sale_price', event.target.value)}
+                                            />
+                                            <InputError message={errors[`stocks.${index}.sale_price`]} />
                                         </div>
                                     </div>
                                 </div>

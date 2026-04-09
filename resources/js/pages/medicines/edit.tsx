@@ -18,6 +18,7 @@ type Medicine = {
         current_stock: number;
         minimum_stock: number;
         expiration_date: string;
+        sale_price: string;
     }>;
 };
 
@@ -41,6 +42,7 @@ export default function EditMedicine({ medicine, categories, activeIngredients, 
             current_stock: String(existingStock?.current_stock ?? 0),
             minimum_stock: String(existingStock?.minimum_stock ?? 0),
             expiration_date: existingStock?.expiration_date ?? '',
+            sale_price: existingStock?.sale_price ?? '0.00',
         };
     });
 
@@ -63,7 +65,7 @@ export default function EditMedicine({ medicine, categories, activeIngredients, 
         });
     };
 
-    const updateStock = (branchId: number, field: 'current_stock' | 'minimum_stock' | 'expiration_date', value: string): void => {
+    const updateStock = (branchId: number, field: 'current_stock' | 'minimum_stock' | 'expiration_date' | 'sale_price', value: string): void => {
         form.setData('stocks', form.data.stocks.map((stock) => (
             stock.branch_id === branchId ? { ...stock, [field]: value } : stock
         )));

@@ -88,6 +88,7 @@ export default function MedicinesIndex({ medicines, categories, activeIngredient
             current_stock: '0',
             minimum_stock: '0',
             expiration_date: '',
+            sale_price: '0.00',
         })),
     });
 
@@ -175,7 +176,7 @@ export default function MedicinesIndex({ medicines, categories, activeIngredient
         }
     };
 
-    const updateCreateStock = (branchId: number, field: 'current_stock' | 'minimum_stock' | 'expiration_date', value: string): void => {
+    const updateCreateStock = (branchId: number, field: 'current_stock' | 'minimum_stock' | 'expiration_date' | 'sale_price', value: string): void => {
         createForm.setData('stocks', createForm.data.stocks.map((stock) => (
             stock.branch_id === branchId ? { ...stock, [field]: value } : stock
         )));
@@ -204,6 +205,7 @@ export default function MedicinesIndex({ medicines, categories, activeIngredient
                     current_stock: '0',
                     minimum_stock: '0',
                     expiration_date: '',
+                    sale_price: '0.00',
                 })));
                 setIsCreateModalOpen(false);
 

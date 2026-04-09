@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Http\Requests\Sales\StoreQuickSaleRequest;
+use App\Models\BranchMedicinePrice;
 use App\Models\Inventory;
 use App\Models\Medicine;
 use App\Models\Sale;
@@ -79,16 +80,21 @@ class SaleController extends Controller
             ->where('medicine_id', $medicine->id)
             ->first();
 
+        $salePrice = BranchMedicinePrice::query()
+            ->where('branch_id', $branchId)
+            ->where('medicine_id', $medicine->id)
+            ->value('sale_price');
+
         if ($inventory === null) {
             return response()->json([
                 'message' => 'El medicamento no tiene stock en la sucursal actual.',
-                'medicine' => $this->medicinePayload($medicine),
+                'medicine' => $this->medicinePayload($medicine, $salePrice),
                 'inventory' => null,
             ], 404);
         }
 
         return response()->json([
-            'medicine' => $this->medicinePayload($medicine),
+            'medicine' => $this->medicinePayload($medicine, $salePrice),
             'inventory' => [
                 'branch_name' => $inventory->branch?->name,
                 'current_stock' => $inventory->current_stock,
@@ -181,7 +187,7 @@ class SaleController extends Controller
         ]);
     }
 
-    private function medicinePayload(object $medicine): array
+    private function medicinePayload(object $medicine, float|string|null $salePrice = null): array
     {
         return [
             'id' => $medicine->id,
@@ -189,6 +195,7 @@ class SaleController extends Controller
             'barcode' => $medicine->barcode,
             'category' => $medicine->category?->name,
             'description' => $medicine->description,
+            'sale_price' => number_format((float) ($salePrice ?? 0), 2, '.', ''),
             'image_path' => $medicine->image_path,
             'active_ingredients' => $medicine->activeIngredients->pluck('name')->values(),
         ];

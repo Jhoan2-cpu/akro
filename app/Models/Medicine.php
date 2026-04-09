@@ -34,6 +34,11 @@ class Medicine extends Model
         return $this->hasMany(Inventory::class);
     }
 
+    public function branchPrices(): HasMany
+    {
+        return $this->hasMany(BranchMedicinePrice::class);
+    }
+
     public function saleDetails(): HasMany
     {
         return $this->hasMany(SaleDetail::class);
