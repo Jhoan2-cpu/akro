@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CloudinaryTestController;
+use App\Http\Controllers\MedicineController;
 use App\Http\Controllers\ShiftController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -22,11 +23,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('shifts', [ShiftController::class, 'index'])->name('shifts.index');
     Route::post('shifts/clock-in', [ShiftController::class, 'clockIn'])->name('shifts.clock-in');
     Route::post('shifts/clock-out', [ShiftController::class, 'clockOut'])->name('shifts.clock-out');
+    Route::get('medicines/stock', [MedicineController::class, 'stock'])->name('medicines.stock');
 });
 
 Route::middleware(['auth', 'verified', 'admin'])->group(function () {
     Route::resource('users', UserController::class)->except(['show', 'destroy']);
     Route::patch('users/{user}/suspend', [UserController::class, 'suspend'])->name('users.suspend');
+    Route::resource('medicines', MedicineController::class)->except(['show']);
 });
 
 require __DIR__.'/settings.php';

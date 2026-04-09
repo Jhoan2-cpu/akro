@@ -1,5 +1,5 @@
-import { Link } from '@inertiajs/react';
-import { BookOpen, Clock3, FolderGit2, LayoutGrid, Users } from 'lucide-react';
+import { Link, usePage } from '@inertiajs/react';
+import { BookOpen, Boxes, Clock3, FolderGit2, LayoutGrid, Pill, Users } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
@@ -16,24 +16,6 @@ import {
 import { dashboard } from '@/routes';
 import type { NavItem } from '@/types';
 
-const mainNavItems: NavItem[] = [
-    {
-        title: 'Dashboard',
-        href: dashboard(),
-        icon: LayoutGrid,
-    },
-    {
-        title: 'Usuarios',
-        href: '/users',
-        icon: Users,
-    },
-    {
-        title: 'Turnos',
-        href: '/shifts',
-        icon: Clock3,
-    },
-];
-
 const footerNavItems: NavItem[] = [
     {
         title: 'Repository',
@@ -48,6 +30,41 @@ const footerNavItems: NavItem[] = [
 ];
 
 export function AppSidebar() {
+    const { auth } = usePage<{ auth: { user: { role?: string } } }>().props;
+    const isAdmin = auth.user.role === 'admin';
+
+    const mainNavItems: NavItem[] = [
+        {
+            title: 'Dashboard',
+            href: dashboard(),
+            icon: LayoutGrid,
+        },
+        {
+            title: 'Turnos',
+            href: '/shifts',
+            icon: Clock3,
+        },
+        {
+            title: 'Stock',
+            href: '/medicines/stock',
+            icon: Boxes,
+        },
+        ...(isAdmin
+            ? [
+                  {
+                      title: 'Medicamentos',
+                      href: '/medicines',
+                      icon: Pill,
+                  },
+                  {
+                      title: 'Usuarios',
+                      href: '/users',
+                      icon: Users,
+                  },
+              ]
+            : []),
+    ];
+
     return (
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>
