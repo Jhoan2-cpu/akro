@@ -10,13 +10,15 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('sales', function (Blueprint $table): void {
-            $table->id();
-            $table->foreignId('user_id')->constrained('users');
-            $table->foreignId('branch_id')->constrained('branches');
-            $table->decimal('total', 10, 2);
-            $table->timestamp('created_at')->useCurrent();
-        });
+        if (! Schema::hasTable('sales')) {
+            Schema::create('sales', function (Blueprint $table): void {
+                $table->id();
+                $table->foreignId('user_id')->constrained('users');
+                $table->foreignId('branch_id')->constrained('branches');
+                $table->decimal('total', 10, 2);
+                $table->timestamp('created_at')->useCurrent();
+            });
+        }
     }
 
     public function down(): void

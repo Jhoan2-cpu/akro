@@ -10,13 +10,15 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('shifts', function (Blueprint $table): void {
-            $table->id();
-            $table->foreignId('user_id')->constrained('users');
-            $table->timestamp('clock_in_at');
-            $table->timestamp('clock_out_at')->nullable();
-            $table->timestamps();
-        });
+        if (! Schema::hasTable('shifts')) {
+            Schema::create('shifts', function (Blueprint $table): void {
+                $table->id();
+                $table->foreignId('user_id')->constrained('users');
+                $table->timestamp('clock_in_at');
+                $table->timestamp('clock_out_at')->nullable();
+                $table->timestamps();
+            });
+        }
     }
 
     public function down(): void

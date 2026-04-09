@@ -10,14 +10,16 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('sale_details', function (Blueprint $table): void {
-            $table->id();
-            $table->foreignId('sale_id')->constrained('sales');
-            $table->foreignId('medicine_id')->constrained('medicines');
-            $table->integer('quantity');
-            $table->decimal('unit_price', 10, 2);
-            $table->timestamps();
-        });
+        if (! Schema::hasTable('sale_details')) {
+            Schema::create('sale_details', function (Blueprint $table): void {
+                $table->id();
+                $table->foreignId('sale_id')->constrained('sales');
+                $table->foreignId('medicine_id')->constrained('medicines');
+                $table->integer('quantity');
+                $table->decimal('unit_price', 10, 2);
+                $table->timestamps();
+            });
+        }
     }
 
     public function down(): void

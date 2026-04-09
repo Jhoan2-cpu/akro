@@ -10,11 +10,13 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('active_ingredients', function (Blueprint $table): void {
-            $table->id();
-            $table->string('name');
-            $table->timestamps();
-        });
+        if (! Schema::hasTable('active_ingredients')) {
+            Schema::create('active_ingredients', function (Blueprint $table): void {
+                $table->id();
+                $table->string('name');
+                $table->timestamps();
+            });
+        }
     }
 
     public function down(): void
