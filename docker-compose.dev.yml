@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: akro_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: akro_db
+      POSTGRES_USER: akro_user
+      POSTGRES_PASSWORD: akro_password
+    ports:
+      - "5433:5432"
+    volumes:
+      - akro_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U akro_user -d akro_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  akro_postgres_data:
