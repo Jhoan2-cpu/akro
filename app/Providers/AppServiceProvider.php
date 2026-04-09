@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Cloudinary\Configuration\Configuration;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -25,9 +26,31 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        $this->configureCloudinary();
+
         if (app()->environment('production')) {
             URL::forceScheme('https');
         }
+    }
+
+    protected function configureCloudinary(): void
+    {
+        $cloudName = config('cloudinary.cloud_name');
+
+        if (! is_string($cloudName) || $cloudName === '') {
+            return;
+        }
+
+        Configuration::instance([
+            'cloud' => [
+                'cloud_name' => $cloudName,
+                'api_key' => config('cloudinary.key'),
+                'api_secret' => config('cloudinary.secret'),
+            ],
+            'url' => [
+                'secure' => (bool) config('cloudinary.secure', true),
+            ],
+        ]);
     }
 
     /**

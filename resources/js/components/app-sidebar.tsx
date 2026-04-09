@@ -1,28 +1,33 @@
-import { Link } from '@inertiajs/react';
-import { BookOpen, FolderGit2, LayoutGrid } from 'lucide-react';
+import { Link, usePage } from '@inertiajs/react';
+import { 
+    BookOpen, 
+    Boxes, 
+    Clock3, 
+    FolderGit2, 
+    LayoutGrid, 
+    Pill, 
+    ReceiptText,
+    Tags, 
+    Users,
+    Building2 
+} from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
-import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import {
     Sidebar,
     SidebarContent,
     SidebarFooter,
+    SidebarGroup,
+    SidebarGroupLabel,
     SidebarHeader,
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
+import { useCurrentUrl } from '@/hooks/use-current-url';
 import type { NavItem } from '@/types';
-
-const mainNavItems: NavItem[] = [
-    {
-        title: 'Dashboard',
-        href: dashboard(),
-        icon: LayoutGrid,
-    },
-];
 
 const footerNavItems: NavItem[] = [
     {
@@ -38,6 +43,91 @@ const footerNavItems: NavItem[] = [
 ];
 
 export function AppSidebar() {
+    const { auth } = usePage<{ auth: { user: { role?: string } } }>().props;
+    const isAdmin = auth.user.role === 'admin';
+    const { isCurrentUrl } = useCurrentUrl();
+
+    // Operación - Available to all users
+    const operacionItems: NavItem[] = [
+        {
+            title: 'Dashboard',
+            href: dashboard(),
+            icon: LayoutGrid,
+        },
+        {
+            title: 'Venta rápida',
+            href: '/sales/quick',
+            icon: ReceiptText,
+        },
+        {
+            title: 'Historial ventas',
+            href: '/sales/history',
+            icon: ReceiptText,
+        },
+        {
+            title: 'Turnos',
+            href: '/shifts',
+            icon: Clock3,
+        },
+        {
+            title: 'Stock',
+            href: '/medicines/stock',
+            icon: Boxes,
+        },
+    ];
+
+    // Catálogo/Maestros - Admin only
+    const catalogoItems: NavItem[] = [
+        {
+            title: 'Medicamentos',
+            href: '/medicines',
+            icon: Pill,
+        },
+        {
+            title: 'Categorías',
+            href: '/categories',
+            icon: Tags,
+        },
+        {
+            title: 'Sucursales',
+            href: '/branches',
+            icon: Building2,
+        },
+    ];
+
+    // Administración - Admin only
+    const adminItems: NavItem[] = [
+        {
+            title: 'Usuarios',
+            href: '/users',
+            icon: Users,
+        },
+    ];
+
+    const renderNavGroup = (label: string, items: NavItem[]) => {
+        return (
+            <SidebarGroup key={label} className="px-2 py-0">
+                <SidebarGroupLabel>{label}</SidebarGroupLabel>
+                <SidebarMenu>
+                    {items.map((item) => (
+                        <SidebarMenuItem key={item.title}>
+                            <SidebarMenuButton
+                                asChild
+                                isActive={isCurrentUrl(item.href)}
+                                tooltip={{ children: item.title }}
+                            >
+                                <Link href={item.href} prefetch>
+                                    {item.icon && <item.icon />}
+                                    <span>{item.title}</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                    ))}
+                </SidebarMenu>
+            </SidebarGroup>
+        );
+    };
+
     return (
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>
@@ -53,7 +143,14 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
-                <NavMain items={mainNavItems} />
+                {/* Operación - Always visible */}
+                {renderNavGroup('Operación', operacionItems)}
+
+                {/* Catálogo/Maestros - Admin only */}
+                {isAdmin && renderNavGroup('Catálogo / Maestros', catalogoItems)}
+
+                {/* Administración - Admin only */}
+                {isAdmin && renderNavGroup('Administración', adminItems)}
             </SidebarContent>
 
             <SidebarFooter>

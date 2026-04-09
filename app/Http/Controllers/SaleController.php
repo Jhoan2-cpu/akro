@@ -1,0 +1,289 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Controllers;
+
+use App\Http\Requests\Sales\StoreQuickSaleRequest;
+use App\Models\BranchMedicinePrice;
+use App\Models\Inventory;
+use App\Models\Medicine;
+use App\Models\Sale;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
+use Inertia\Response;
+use RuntimeException;
+use Throwable;
+
+class SaleController extends Controller
+{
+    public function index(Request $request): Response
+    {
+        $user = $request->user();
+        $branch = $user?->branch;
+
+        return Inertia::render('sales/index', [
+            'branch' => $branch ? [
+                'id' => $branch->id,
+                'name' => $branch->name,
+                'address' => $branch->address,
+            ] : null,
+            'employee' => $user ? [
+                'id' => $user->id,
+                'name' => $user->name,
+                'role' => $user->role,
+            ] : null,
+            'canSell' => $branch !== null,
+        ]);
+    }
+
+    public function search(Request $request): JsonResponse
+    {
+        $branchId = $request->user()?->branch_id;
+        $query = trim((string) $request->input('query', ''));
+
+        if ($branchId === null) {
+            return response()->json([
+                'message' => 'El empleado no tiene una sucursal asignada.',
+            ], 409);
+        }
+
+        if ($query === '') {
+            return response()->json([
+                'message' => 'Debes ingresar un código de barras o nombre.',
+            ], 422);
+        }
+
+        $medicine = Medicine::query()
+            ->with(['category', 'activeIngredients'])
+            ->where(function (Builder $builder) use ($query): void {
+                $builder
+                    ->where('barcode', $query)
+                    ->orWhere('name', 'ilike', "%{$query}%");
+            })
+            ->orderBy('name')
+            ->first();
+
+        if ($medicine === null) {
+            return response()->json([
+                'message' => 'No se encontró el medicamento.',
+            ], 404);
+        }
+
+        $inventory = Inventory::query()
+            ->with('branch')
+            ->where('branch_id', $branchId)
+            ->where('medicine_id', $medicine->id)
+            ->first();
+
+        $salePrice = BranchMedicinePrice::query()
+            ->where('branch_id', $branchId)
+            ->where('medicine_id', $medicine->id)
+            ->value('sale_price');
+
+        if ($inventory === null) {
+            return response()->json([
+                'message' => 'El medicamento no tiene stock en la sucursal actual.',
+                'medicine' => $this->medicinePayload($medicine, $salePrice),
+                'inventory' => null,
+            ], 404);
+        }
+
+        return response()->json([
+            'medicine' => $this->medicinePayload($medicine, $salePrice),
+            'inventory' => [
+                'branch_name' => $inventory->branch?->name,
+                'current_stock' => $inventory->current_stock,
+                'minimum_stock' => $inventory->minimum_stock,
+                'expiration_date' => (string) $inventory->expiration_date,
+                'is_low_stock' => $inventory->current_stock <= $inventory->minimum_stock,
+                'is_out_of_stock' => $inventory->current_stock === 0,
+            ],
+        ]);
+    }
+
+    public function history(Request $request): Response
+    {
+        $user = $request->user();
+        $search = trim((string) $request->input('search', ''));
+        $from = trim((string) $request->input('from', ''));
+        $to = trim((string) $request->input('to', ''));
+
+        $salesQuery = Sale::query()
+            ->with([
+                'branch:id,name',
+                'user:id,name',
+                'details.medicine:id,name,barcode',
+            ])
+            ->orderByDesc('created_at');
+
+        if (($user?->role ?? null) !== 'admin') {
+            if ($user?->branch_id === null) {
+                $salesQuery->whereRaw('1 = 0');
+            } else {
+                $salesQuery->where('branch_id', $user->branch_id);
+            }
+        }
+
+        if ($search !== '') {
+            $salesQuery->where(function (Builder $builder) use ($search): void {
+                $builder
+                    ->whereHas('user', function (Builder $userBuilder) use ($search): void {
+                        $userBuilder->where('name', 'ilike', "%{$search}%");
+                    })
+                    ->orWhereHas('branch', function (Builder $branchBuilder) use ($search): void {
+                        $branchBuilder->where('name', 'ilike', "%{$search}%");
+                    })
+                    ->orWhereHas('details.medicine', function (Builder $medicineBuilder) use ($search): void {
+                        $medicineBuilder
+                            ->where('name', 'ilike', "%{$search}%")
+                            ->orWhere('barcode', 'ilike', "%{$search}%");
+                    });
+            });
+        }
+
+        if ($from !== '') {
+            $salesQuery->whereDate('created_at', '>=', $from);
+        }
+
+        if ($to !== '') {
+            $salesQuery->whereDate('created_at', '<=', $to);
+        }
+
+        $sales = $salesQuery
+            ->paginate(12)
+            ->withQueryString()
+            ->through(function (Sale $sale): array {
+                $lines = $sale->details->map(function (object $detail): array {
+                    $quantity = (int) $detail->quantity;
+                    $unitPrice = (float) $detail->unit_price;
+
+                    return [
+                        'medicine' => $detail->medicine?->name ?? 'Medicamento eliminado',
+                        'barcode' => $detail->medicine?->barcode,
+                        'quantity' => $quantity,
+                        'unit_price' => number_format($unitPrice, 2, '.', ''),
+                        'subtotal' => number_format($quantity * $unitPrice, 2, '.', ''),
+                    ];
+                })->values();
+
+                return [
+                    'id' => $sale->id,
+                    'created_at' => $sale->created_at?->format('Y-m-d H:i:s'),
+                    'employee_name' => $sale->user?->name,
+                    'branch_name' => $sale->branch?->name,
+                    'total' => number_format((float) $sale->total, 2, '.', ''),
+                    'items_count' => $sale->details->sum('quantity'),
+                    'lines' => $lines,
+                ];
+            });
+
+        return Inertia::render('sales/history', [
+            'sales' => $sales,
+            'filters' => [
+                'search' => $search,
+                'from' => $from,
+                'to' => $to,
+            ],
+        ]);
+    }
+
+    public function store(StoreQuickSaleRequest $request): RedirectResponse
+    {
+        $user = $request->user();
+        $branchId = $user?->branch_id;
+
+        if ($user === null || $branchId === null) {
+            return back()->with('toast', [
+                'type' => 'error',
+                'message' => 'No se pudo identificar la sucursal del empleado.',
+            ]);
+        }
+
+        $validated = $request->validated();
+        $items = $validated['items'];
+        $total = 0.0;
+        $saleLines = [];
+
+        try {
+            DB::transaction(function () use (&$total, &$saleLines, $items, $user, $branchId): void {
+                foreach ($items as $item) {
+                    $medicine = Medicine::query()->findOrFail((int) $item['medicine_id']);
+                    $inventory = Inventory::query()
+                        ->where('branch_id', $branchId)
+                        ->where('medicine_id', $medicine->id)
+                        ->lockForUpdate()
+                        ->first();
+
+                    if ($inventory === null) {
+                        throw new RuntimeException("El medicamento {$medicine->name} no tiene stock en la sucursal actual.");
+                    }
+
+                    $quantity = (int) $item['quantity'];
+                    $unitPrice = (float) $item['unit_price'];
+
+                    if ($inventory->current_stock < $quantity) {
+                        throw new RuntimeException("Stock insuficiente para {$medicine->name}.");
+                    }
+
+                    $saleLines[] = [
+                        'medicine_id' => $medicine->id,
+                        'quantity' => $quantity,
+                        'unit_price' => $unitPrice,
+                    ];
+
+                    $total += round($quantity * $unitPrice, 2);
+
+                    $inventory->update([
+                        'current_stock' => $inventory->current_stock - $quantity,
+                    ]);
+                }
+
+                $sale = Sale::query()->create([
+                    'user_id' => $user->id,
+                    'branch_id' => $branchId,
+                    'total' => round($total, 2),
+                ]);
+
+                foreach ($saleLines as $saleLine) {
+                    $sale->details()->create($saleLine);
+                }
+            });
+        } catch (RuntimeException $exception) {
+            return back()->with('toast', [
+                'type' => 'error',
+                'message' => $exception->getMessage(),
+            ]);
+        } catch (Throwable $exception) {
+            report($exception);
+
+            return back()->with('toast', [
+                'type' => 'error',
+                'message' => 'No se pudo registrar la venta.',
+            ]);
+        }
+
+        return to_route('sales.quick')->with('toast', [
+            'type' => 'success',
+            'message' => 'Venta registrada correctamente.',
+        ]);
+    }
+
+    private function medicinePayload(object $medicine, float|string|null $salePrice = null): array
+    {
+        return [
+            'id' => $medicine->id,
+            'name' => $medicine->name,
+            'barcode' => $medicine->barcode,
+            'category' => $medicine->category?->name,
+            'description' => $medicine->description,
+            'sale_price' => number_format((float) ($salePrice ?? 0), 2, '.', ''),
+            'image_path' => $medicine->image_path,
+            'active_ingredients' => $medicine->activeIngredients->pluck('name')->values(),
+        ];
+    }
+}

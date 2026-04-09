@@ -1,0 +1,508 @@
+import { Head, Link, router, useForm } from '@inertiajs/react';
+import { AlertTriangle, Boxes, PencilLine, Pill, Plus, Search, Trash2, TriangleAlert } from 'lucide-react';
+import { useState } from 'react';
+import BarcodeScannerDialog from '@/components/barcode-scanner-dialog';
+import MedicineForm, { type MedicineFormValues } from '@/components/medicines/medicine-form';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+
+type Option = { id: number; name: string };
+
+type PaginationLink = {
+    url: string | null;
+    label: string;
+    active: boolean;
+};
+
+type MedicineRow = {
+    id: number;
+    name: string;
+    barcode: string;
+    category: string | null;
+    description: string | null;
+    image_path: string | null;
+    active_ingredients: string[];
+    total_stock: number;
+    low_stock: boolean;
+    near_expiry: boolean;
+};
+
+type MedicinesPaginator = {
+    data: MedicineRow[];
+    links: PaginationLink[];
+    from: number | null;
+    to: number | null;
+    total: number;
+};
+
+type Props = {
+    medicines: MedicinesPaginator;
+    categories: Option[];
+    activeIngredients: Option[];
+    branches: Option[];
+    filters: {
+        search: string;
+        category_id: string;
+    };
+    ui: {
+        openCreateModal: boolean;
+    };
+};
+
+function decodePaginationLabel(label: string): string {
+    return label
+        .replace(/&laquo;\s?/g, '‹ ')
+        .replace(/\s?&raquo;/g, ' ›')
+        .replace(/<[^>]*>/g, '');
+}
+
+export default function MedicinesIndex({ medicines, categories, activeIngredients, branches, filters, ui }: Props) {
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(ui.openCreateModal ?? false);
+    const [categoryOptions, setCategoryOptions] = useState<Option[]>(categories);
+    const [activeIngredientOptions, setActiveIngredientOptions] = useState<Option[]>(activeIngredients);
+
+    const filterForm = useForm({
+        search: filters.search ?? '',
+        category_id: filters.category_id ?? 'all',
+    });
+
+    const createForm = useForm<MedicineFormValues>({
+        category_id: '',
+        name: '',
+        barcode: '',
+        description: '',
+        image: null,
+        active_ingredient_ids: [],
+        stocks: branches.map((branch) => ({
+            branch_id: branch.id,
+            branch_name: branch.name,
+            current_stock: '0',
+            minimum_stock: '0',
+            expiration_date: '',
+            sale_price: '0.00',
+        })),
+    });
+
+    const submitFilters = (event: React.FormEvent<HTMLFormElement>): void => {
+        event.preventDefault();
+        filterForm.get('/medicines', {
+            preserveScroll: true,
+            preserveState: true,
+            replace: true,
+        });
+    };
+
+    const clearFilters = (): void => {
+        filterForm.setData({ search: '', category_id: 'all' });
+        router.get('/medicines', {}, { preserveScroll: true, replace: true });
+    };
+
+    const getCsrfToken = (): string => {
+        return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? '';
+    };
+
+    const parseErrorMessage = async (response: Response, fallback: string): Promise<string> => {
+        try {
+            const payload = await response.json() as { message?: string; errors?: Record<string, string[] | undefined> };
+            const firstError = Object.values(payload.errors ?? {}).flat().find(Boolean);
+
+            return firstError ?? payload.message ?? fallback;
+        } catch {
+            return fallback;
+        }
+    };
+
+    const quickCreateCategory = async (name: string): Promise<void> => {
+        const response = await fetch('/categories/quick-store', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': getCsrfToken(),
+                Accept: 'application/json',
+            },
+            body: JSON.stringify({ name }),
+            credentials: 'same-origin',
+        });
+
+        if (!response.ok) {
+            throw new Error(await parseErrorMessage(response, 'No se pudo crear la categoría.'));
+        }
+
+        const payload = await response.json() as { item: Option };
+
+        setCategoryOptions((previous) => (
+            previous.some((option) => option.id === payload.item.id)
+                ? previous
+                : [...previous, payload.item].sort((a, b) => a.name.localeCompare(b.name))
+        ));
+        createForm.setData('category_id', String(payload.item.id));
+    };
+
+    const quickCreateActiveIngredient = async (name: string): Promise<void> => {
+        const response = await fetch('/active-ingredients/quick-store', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': getCsrfToken(),
+                Accept: 'application/json',
+            },
+            body: JSON.stringify({ name }),
+            credentials: 'same-origin',
+        });
+
+        if (!response.ok) {
+            throw new Error(await parseErrorMessage(response, 'No se pudo crear el principio activo.'));
+        }
+
+        const payload = await response.json() as { item: Option };
+
+        setActiveIngredientOptions((previous) => (
+            previous.some((option) => option.id === payload.item.id)
+                ? previous
+                : [...previous, payload.item].sort((a, b) => a.name.localeCompare(b.name))
+        ));
+
+        if (!createForm.data.active_ingredient_ids.includes(payload.item.id)) {
+            createForm.setData('active_ingredient_ids', [...createForm.data.active_ingredient_ids, payload.item.id]);
+        }
+    };
+
+    const updateCreateStock = (branchId: number, field: 'current_stock' | 'minimum_stock' | 'expiration_date' | 'sale_price', value: string): void => {
+        createForm.setData('stocks', createForm.data.stocks.map((stock) => (
+            stock.branch_id === branchId ? { ...stock, [field]: value } : stock
+        )));
+    };
+
+    const toggleCreateActiveIngredient = (activeIngredientId: number): void => {
+        const exists = createForm.data.active_ingredient_ids.includes(activeIngredientId);
+
+        createForm.setData('active_ingredient_ids', exists
+            ? createForm.data.active_ingredient_ids.filter((id) => id !== activeIngredientId)
+            : [...createForm.data.active_ingredient_ids, activeIngredientId],
+        );
+    };
+
+    const submitCreateMedicine = (event: React.FormEvent<HTMLFormElement>): void => {
+        event.preventDefault();
+
+        createForm.post('/medicines', {
+            forceFormData: true,
+            preserveScroll: true,
+            onSuccess: () => {
+                createForm.reset();
+                createForm.setData('stocks', branches.map((branch) => ({
+                    branch_id: branch.id,
+                    branch_name: branch.name,
+                    current_stock: '0',
+                    minimum_stock: '0',
+                    expiration_date: '',
+                    sale_price: '0.00',
+                })));
+                setIsCreateModalOpen(false);
+
+                if (ui.openCreateModal) {
+                    router.get('/medicines', {
+                        search: filterForm.data.search,
+                        category_id: filterForm.data.category_id,
+                    }, { preserveScroll: true, replace: true, preserveState: true });
+                }
+            },
+        });
+    };
+
+    const deleteMedicine = (medicine: MedicineRow): void => {
+        const warning = medicine.total_stock > 0
+            ? `Este medicamento tiene stock activo (${medicine.total_stock}).\n¿Deseas darlo de baja igualmente?`
+            : '¿Deseas dar de baja este medicamento?';
+
+        if (!window.confirm(warning)) {
+            return;
+        }
+
+        router.delete(`/medicines/${medicine.id}`, {
+            preserveScroll: true,
+        });
+    };
+
+    return (
+        <>
+            <Head title="Medicamentos" />
+
+            <div className="space-y-6 p-4 md:p-6">
+                <section className="flex flex-col gap-4 rounded-3xl border border-sidebar-border/70 bg-background p-5 shadow-sm md:flex-row md:items-end md:justify-between md:p-6">
+                    <div>
+                        <h1 className="text-3xl font-semibold tracking-tight">Catálogo de medicamentos</h1>
+                        <p className="mt-1 text-sm text-muted-foreground md:text-base">
+                            Registra, edita y da de baja medicamentos del catálogo.
+                        </p>
+                    </div>
+
+                    <div className="flex flex-col gap-2 sm:flex-row">
+                        <Button asChild variant="outline" className="rounded-full">
+                            <Link href="/medicines/stock">
+                                <Boxes className="size-4" />
+                                Ver stock
+                            </Link>
+                        </Button>
+                        <Button className="rounded-full" onClick={() => setIsCreateModalOpen(true)}>
+                            <Plus className="size-4" />
+                            Registrar medicamento
+                        </Button>
+                    </div>
+                </section>
+
+                <form onSubmit={submitFilters} className="flex flex-col gap-3 rounded-3xl border border-sidebar-border/70 bg-background p-4 shadow-sm xl:flex-row xl:items-center">
+                    <div className="relative flex-1">
+                        <Search className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                            value={filterForm.data.search}
+                            onChange={(event) => filterForm.setData('search', event.target.value)}
+                            placeholder="Buscar por nombre o código de barras..."
+                            className="h-11 rounded-full pl-11"
+                        />
+                    </div>
+
+                    <div className="grid gap-3 md:grid-cols-3 xl:w-140">
+                        <Select
+                            value={filterForm.data.category_id}
+                            onValueChange={(value) => filterForm.setData('category_id', value)}
+                        >
+                            <SelectTrigger className="h-11 rounded-full border-input bg-background px-4 text-sm shadow-xs">
+                                <SelectValue placeholder="Todas las categorías" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">Todas las categorías</SelectItem>
+                                {categories.map((category) => (
+                                    <SelectItem key={category.id} value={String(category.id)}>
+                                        {category.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+
+                        <BarcodeScannerDialog onDetected={(barcode) => filterForm.setData('search', barcode)} triggerLabel="Escanear" />
+
+                        <div className="flex items-center justify-end gap-2">
+                            <Button type="submit" className="h-11 rounded-full px-5">Buscar</Button>
+                            <Button type="button" variant="ghost" className="h-11 rounded-full px-5" onClick={clearFilters}>
+                                Limpiar
+                            </Button>
+                        </div>
+                    </div>
+                </form>
+
+                <div className="rounded-3xl border border-sidebar-border/70 bg-background shadow-sm">
+                    <div className="hidden overflow-hidden rounded-3xl xl:block">
+                        <div className="grid grid-cols-[1.3fr_1fr_0.9fr_0.8fr_0.9fr_0.8fr] border-b border-sidebar-border/70 px-6 py-4 text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                            <span>Medicamento</span>
+                            <span>Categoría / Código</span>
+                            <span>Principios activos</span>
+                            <span>Stock total</span>
+                            <span>Alertas</span>
+                            <span className="text-right">Acciones</span>
+                        </div>
+
+                        <div className="divide-y divide-sidebar-border/70">
+                            {medicines.data.length > 0 ? (
+                                medicines.data.map((medicine) => (
+                                    <div key={medicine.id} className="grid grid-cols-[1.3fr_1fr_0.9fr_0.8fr_0.9fr_0.8fr] items-center gap-4 px-6 py-5">
+                                        <div className="flex min-w-0 items-center gap-3">
+                                            <div className="flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-sidebar-border/70 bg-muted/40">
+                                                {medicine.image_path ? (
+                                                    <img
+                                                        src={medicine.image_path}
+                                                        alt={`Imagen de ${medicine.name}`}
+                                                        className="size-full object-cover"
+                                                    />
+                                                ) : (
+                                                    <Pill className="size-5 text-muted-foreground" />
+                                                )}
+                                            </div>
+                                            <div className="min-w-0">
+                                                <p className="truncate font-semibold text-foreground">{medicine.name}</p>
+                                                <p className="truncate text-xs text-muted-foreground">{medicine.description || 'Sin descripción'}</p>
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <p className="text-sm text-foreground">{medicine.category ?? 'Sin categoría'}</p>
+                                            <p className="text-xs text-muted-foreground">{medicine.barcode}</p>
+                                        </div>
+
+                                        <p className="text-sm text-muted-foreground">
+                                            {medicine.active_ingredients.length > 0 ? medicine.active_ingredients.join(', ') : 'Sin principios activos'}
+                                        </p>
+
+                                        <p className="text-sm font-semibold text-foreground">{medicine.total_stock}</p>
+
+                                        <div className="flex flex-wrap gap-2">
+                                            {medicine.low_stock && (
+                                                <Badge variant="outline" className="border-rose-200 bg-rose-50 text-rose-700">
+                                                    <AlertTriangle className="size-3" />
+                                                    Stock bajo
+                                                </Badge>
+                                            )}
+                                            {medicine.near_expiry && (
+                                                <Badge variant="outline" className="border-amber-200 bg-amber-50 text-amber-700">
+                                                    <TriangleAlert className="size-3" />
+                                                    Próximo a caducar
+                                                </Badge>
+                                            )}
+                                        </div>
+
+                                        <div className="flex justify-end gap-2">
+                                            <Button asChild variant="outline" size="sm" className="rounded-full">
+                                                <Link href={`/medicines/${medicine.id}/edit`}>
+                                                    <PencilLine className="size-4" />
+                                                    Editar
+                                                </Link>
+                                            </Button>
+                                            <Button size="sm" variant="destructive" className="rounded-full" onClick={() => deleteMedicine(medicine)}>
+                                                <Trash2 className="size-4" />
+                                                Baja
+                                            </Button>
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="px-6 py-12 text-center text-sm text-muted-foreground">
+                                    No hay medicamentos con estos filtros.
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="space-y-3 p-4 xl:hidden">
+                        {medicines.data.length > 0 ? (
+                            medicines.data.map((medicine) => (
+                                <article key={medicine.id} className="rounded-2xl border border-sidebar-border/70 p-4">
+                                    <div className="flex items-center gap-3">
+                                        <div className="flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-sidebar-border/70 bg-muted/40">
+                                            {medicine.image_path ? (
+                                                <img
+                                                    src={medicine.image_path}
+                                                    alt={`Imagen de ${medicine.name}`}
+                                                    className="size-full object-cover"
+                                                />
+                                            ) : (
+                                                <Pill className="size-5 text-muted-foreground" />
+                                            )}
+                                        </div>
+                                        <div className="min-w-0">
+                                            <p className="truncate font-semibold text-foreground">{medicine.name}</p>
+                                            <p className="truncate text-sm text-muted-foreground">{medicine.category ?? 'Sin categoría'} · {medicine.barcode}</p>
+                                        </div>
+                                    </div>
+                                    <p className="mt-2 text-sm text-muted-foreground">Stock: <span className="font-medium text-foreground">{medicine.total_stock}</span></p>
+
+                                    <div className="mt-3 flex flex-wrap gap-2">
+                                        {medicine.low_stock && (
+                                            <Badge variant="outline" className="border-rose-200 bg-rose-50 text-rose-700">Stock bajo</Badge>
+                                        )}
+                                        {medicine.near_expiry && (
+                                            <Badge variant="outline" className="border-amber-200 bg-amber-50 text-amber-700">Próximo a caducar</Badge>
+                                        )}
+                                    </div>
+
+                                    <div className="mt-4 flex flex-wrap gap-2">
+                                        <Button asChild variant="outline" size="sm" className="rounded-full">
+                                            <Link href={`/medicines/${medicine.id}/edit`}>Editar</Link>
+                                        </Button>
+                                        <Button size="sm" variant="destructive" className="rounded-full" onClick={() => deleteMedicine(medicine)}>
+                                            Dar de baja
+                                        </Button>
+                                    </div>
+                                </article>
+                            ))
+                        ) : (
+                            <div className="rounded-2xl border border-dashed p-8 text-center text-sm text-muted-foreground">
+                                No hay medicamentos con estos filtros.
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="flex flex-col gap-4 border-t border-sidebar-border/70 px-4 py-4 md:flex-row md:items-center md:justify-between md:px-6">
+                        <p className="text-sm text-muted-foreground">
+                            Mostrando {medicines.from ?? 0} a {medicines.to ?? 0} de {medicines.total} registros.
+                        </p>
+
+                        <nav className="flex flex-wrap items-center gap-2">
+                            {medicines.links.map((link, index) => {
+                                const isDisabled = link.url === null;
+                                const isActive = link.active;
+
+                                return link.url ? (
+                                    <Link
+                                        key={index}
+                                        href={link.url}
+                                        preserveScroll
+                                        className={`inline-flex min-w-10 items-center justify-center rounded-full border px-3 py-2 text-sm transition ${
+                                            isActive
+                                                ? 'border-emerald-600 bg-emerald-600 text-white'
+                                                : 'border-sidebar-border/70 bg-background text-foreground hover:bg-muted'
+                                        }`}
+                                        dangerouslySetInnerHTML={{ __html: decodePaginationLabel(link.label) }}
+                                    />
+                                ) : (
+                                    <span
+                                        key={index}
+                                        className={`inline-flex min-w-10 items-center justify-center rounded-full border px-3 py-2 text-sm text-muted-foreground ${isDisabled ? 'opacity-50' : ''}`}
+                                        dangerouslySetInnerHTML={{ __html: decodePaginationLabel(link.label) }}
+                                    />
+                                );
+                            })}
+                        </nav>
+                    </div>
+                </div>
+            </div>
+
+            <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
+                <DialogContent className="w-[calc(100vw-1rem)] max-w-none max-h-[92vh] overflow-y-auto rounded-3xl border-sidebar-border/70 p-4 sm:w-[calc(100vw-2rem)] sm:max-w-none sm:p-6 lg:w-[min(96vw,1300px)] [scrollbar-gutter:stable] [scrollbar-width:thin] [scrollbar-color:rgb(16_185_129)_transparent] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-emerald-500/70 [&::-webkit-scrollbar-thumb:hover]:bg-emerald-600/80">
+                    <DialogHeader className="sr-only">
+                        <DialogTitle>Registrar medicamento</DialogTitle>
+                        <DialogDescription>
+                            Registrar un nuevo medicamento.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <MedicineForm
+                        title="Registrar medicamento"
+                        description="Alta de medicamentos con categoría, imagen, descripción, principios activos y stock por sucursal."
+                        submitLabel="Registrar medicamento"
+                        data={createForm.data}
+                        errors={createForm.errors}
+                        processing={createForm.processing}
+                        categories={categoryOptions}
+                        activeIngredients={activeIngredientOptions}
+                        onSubmit={submitCreateMedicine}
+                        onCancel={() => setIsCreateModalOpen(false)}
+                        setData={createForm.setData}
+                        setBarcode={(barcode) => createForm.setData('barcode', barcode)}
+                        updateStock={updateCreateStock}
+                        toggleActiveIngredient={toggleCreateActiveIngredient}
+                        onQuickCreateCategory={quickCreateCategory}
+                        onQuickCreateActiveIngredient={quickCreateActiveIngredient}
+                    />
+                </DialogContent>
+            </Dialog>
+        </>
+    );
+}
+
+MedicinesIndex.layout = {
+    breadcrumbs: [
+        {
+            title: 'Medicamentos',
+            href: '/medicines',
+        },
+    ],
+};
