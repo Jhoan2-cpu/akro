@@ -1,8 +1,11 @@
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { AlertTriangle, Boxes, PencilLine, Plus, Search, Trash2, TriangleAlert } from 'lucide-react';
+import { useState } from 'react';
 import BarcodeScannerDialog from '@/components/barcode-scanner-dialog';
+import MedicineForm, { type MedicineFormValues } from '@/components/medicines/medicine-form';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import {
     Select,
@@ -44,9 +47,14 @@ type MedicinesPaginator = {
 type Props = {
     medicines: MedicinesPaginator;
     categories: Option[];
+    activeIngredients: Option[];
+    branches: Option[];
     filters: {
         search: string;
         category_id: string;
+    };
+    ui: {
+        openCreateModal: boolean;
     };
 };
 
@@ -57,10 +65,30 @@ function decodePaginationLabel(label: string): string {
         .replace(/<[^>]*>/g, '');
 }
 
-export default function MedicinesIndex({ medicines, categories, filters }: Props) {
+export default function MedicinesIndex({ medicines, categories, activeIngredients, branches, filters, ui }: Props) {
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(ui.openCreateModal ?? false);
+    const [categoryOptions, setCategoryOptions] = useState<Option[]>(categories);
+    const [activeIngredientOptions, setActiveIngredientOptions] = useState<Option[]>(activeIngredients);
+
     const filterForm = useForm({
         search: filters.search ?? '',
         category_id: filters.category_id ?? 'all',
+    });
+
+    const createForm = useForm<MedicineFormValues>({
+        category_id: '',
+        name: '',
+        barcode: '',
+        description: '',
+        image: null,
+        active_ingredient_ids: [],
+        stocks: branches.map((branch) => ({
+            branch_id: branch.id,
+            branch_name: branch.name,
+            current_stock: '0',
+            minimum_stock: '0',
+            expiration_date: '',
+        })),
     });
 
     const submitFilters = (event: React.FormEvent<HTMLFormElement>): void => {
@@ -75,6 +103,118 @@ export default function MedicinesIndex({ medicines, categories, filters }: Props
     const clearFilters = (): void => {
         filterForm.setData({ search: '', category_id: 'all' });
         router.get('/medicines', {}, { preserveScroll: true, replace: true });
+    };
+
+    const getCsrfToken = (): string => {
+        return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? '';
+    };
+
+    const parseErrorMessage = async (response: Response, fallback: string): Promise<string> => {
+        try {
+            const payload = await response.json() as { message?: string; errors?: Record<string, string[] | undefined> };
+            const firstError = Object.values(payload.errors ?? {}).flat().find(Boolean);
+
+            return firstError ?? payload.message ?? fallback;
+        } catch {
+            return fallback;
+        }
+    };
+
+    const quickCreateCategory = async (name: string): Promise<void> => {
+        const response = await fetch('/categories/quick-store', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': getCsrfToken(),
+                Accept: 'application/json',
+            },
+            body: JSON.stringify({ name }),
+            credentials: 'same-origin',
+        });
+
+        if (!response.ok) {
+            throw new Error(await parseErrorMessage(response, 'No se pudo crear la categoría.'));
+        }
+
+        const payload = await response.json() as { item: Option };
+
+        setCategoryOptions((previous) => (
+            previous.some((option) => option.id === payload.item.id)
+                ? previous
+                : [...previous, payload.item].sort((a, b) => a.name.localeCompare(b.name))
+        ));
+        createForm.setData('category_id', String(payload.item.id));
+    };
+
+    const quickCreateActiveIngredient = async (name: string): Promise<void> => {
+        const response = await fetch('/active-ingredients/quick-store', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': getCsrfToken(),
+                Accept: 'application/json',
+            },
+            body: JSON.stringify({ name }),
+            credentials: 'same-origin',
+        });
+
+        if (!response.ok) {
+            throw new Error(await parseErrorMessage(response, 'No se pudo crear el principio activo.'));
+        }
+
+        const payload = await response.json() as { item: Option };
+
+        setActiveIngredientOptions((previous) => (
+            previous.some((option) => option.id === payload.item.id)
+                ? previous
+                : [...previous, payload.item].sort((a, b) => a.name.localeCompare(b.name))
+        ));
+
+        if (!createForm.data.active_ingredient_ids.includes(payload.item.id)) {
+            createForm.setData('active_ingredient_ids', [...createForm.data.active_ingredient_ids, payload.item.id]);
+        }
+    };
+
+    const updateCreateStock = (branchId: number, field: 'current_stock' | 'minimum_stock' | 'expiration_date', value: string): void => {
+        createForm.setData('stocks', createForm.data.stocks.map((stock) => (
+            stock.branch_id === branchId ? { ...stock, [field]: value } : stock
+        )));
+    };
+
+    const toggleCreateActiveIngredient = (activeIngredientId: number): void => {
+        const exists = createForm.data.active_ingredient_ids.includes(activeIngredientId);
+
+        createForm.setData('active_ingredient_ids', exists
+            ? createForm.data.active_ingredient_ids.filter((id) => id !== activeIngredientId)
+            : [...createForm.data.active_ingredient_ids, activeIngredientId],
+        );
+    };
+
+    const submitCreateMedicine = (event: React.FormEvent<HTMLFormElement>): void => {
+        event.preventDefault();
+
+        createForm.post('/medicines', {
+            forceFormData: true,
+            preserveScroll: true,
+            onSuccess: () => {
+                createForm.reset();
+                createForm.setData('stocks', branches.map((branch) => ({
+                    branch_id: branch.id,
+                    branch_name: branch.name,
+                    current_stock: '0',
+                    minimum_stock: '0',
+                    expiration_date: '',
+                })));
+                setIsCreateModalOpen(false);
+
+                if (ui.openCreateModal) {
+                    router.get('/medicines', {
+                        search: filterForm.data.search,
+                        category_id: filterForm.data.category_id,
+                    }, { preserveScroll: true, replace: true, preserveState: true });
+                }
+            },
+        });
     };
 
     const deleteMedicine = (medicine: MedicineRow): void => {
@@ -111,11 +251,9 @@ export default function MedicinesIndex({ medicines, categories, filters }: Props
                                 Ver stock
                             </Link>
                         </Button>
-                        <Button asChild className="rounded-full">
-                            <Link href="/medicines/create">
-                                <Plus className="size-4" />
-                                Registrar medicamento
-                            </Link>
+                        <Button className="rounded-full" onClick={() => setIsCreateModalOpen(true)}>
+                            <Plus className="size-4" />
+                            Registrar medicamento
                         </Button>
                     </div>
                 </section>
@@ -296,6 +434,36 @@ export default function MedicinesIndex({ medicines, categories, filters }: Props
                     </div>
                 </div>
             </div>
+
+            <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
+                <DialogContent className="w-[calc(100vw-1rem)] max-w-none max-h-[92vh] overflow-y-auto rounded-3xl border-sidebar-border/70 p-4 sm:w-[calc(100vw-2rem)] sm:max-w-none sm:p-6 lg:w-[min(96vw,1300px)]">
+                    <DialogHeader className="sr-only">
+                        <DialogTitle>Registrar medicamento</DialogTitle>
+                        <DialogDescription>
+                            Registrar un nuevo medicamento.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <MedicineForm
+                        title="Registrar medicamento"
+                        description="Alta de medicamentos con categoría, imagen, descripción, principios activos y stock por sucursal."
+                        submitLabel="Registrar medicamento"
+                        data={createForm.data}
+                        errors={createForm.errors}
+                        processing={createForm.processing}
+                        categories={categoryOptions}
+                        activeIngredients={activeIngredientOptions}
+                        onSubmit={submitCreateMedicine}
+                        onCancel={() => setIsCreateModalOpen(false)}
+                        setData={createForm.setData}
+                        setBarcode={(barcode) => createForm.setData('barcode', barcode)}
+                        updateStock={updateCreateStock}
+                        toggleActiveIngredient={toggleCreateActiveIngredient}
+                        onQuickCreateCategory={quickCreateCategory}
+                        onQuickCreateActiveIngredient={quickCreateActiveIngredient}
+                    />
+                </DialogContent>
+            </Dialog>
         </>
     );
 }

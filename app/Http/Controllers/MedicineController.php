@@ -28,6 +28,7 @@ class MedicineController extends Controller
     {
         $search = trim((string) $request->input('search', ''));
         $categoryId = (string) $request->input('category_id', 'all');
+        $openCreate = filter_var($request->input('create', false), FILTER_VALIDATE_BOOLEAN);
 
         $query = Medicine::query()
             ->with(['category', 'activeIngredients', 'inventories'])
@@ -66,17 +67,22 @@ class MedicineController extends Controller
         return Inertia::render('medicines/index', [
             'medicines' => $medicines,
             'categories' => Category::query()->orderBy('name')->get(['id', 'name']),
+            'activeIngredients' => ActiveIngredient::query()->orderBy('name')->get(['id', 'name']),
+            'branches' => Branch::query()->orderBy('name')->get(['id', 'name']),
             'filters' => [
                 'search' => $search,
                 'category_id' => $categoryId,
             ],
+            'ui' => [
+                'openCreateModal' => $openCreate,
+            ],
         ]);
     }
 
-    public function create(): Response
+    public function create(): RedirectResponse
     {
-        return Inertia::render('medicines/create', [
-            ...$this->baseFormPayload(),
+        return to_route('medicines.index', [
+            'create' => '1',
         ]);
     }
 
