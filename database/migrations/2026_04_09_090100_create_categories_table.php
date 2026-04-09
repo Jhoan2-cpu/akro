@@ -10,12 +10,14 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('categories', function (Blueprint $table): void {
-            $table->id();
-            $table->string('name');
-            $table->string('description')->nullable();
-            $table->timestamps();
-        });
+        if (! Schema::hasTable('categories')) {
+            Schema::create('categories', function (Blueprint $table): void {
+                $table->id();
+                $table->string('name');
+                $table->string('description')->nullable();
+                $table->timestamps();
+            });
+        }
     }
 
     public function down(): void

@@ -10,15 +10,17 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('branch_medicine_prices', function (Blueprint $table): void {
-            $table->id();
-            $table->foreignId('branch_id')->constrained('branches')->cascadeOnDelete();
-            $table->foreignId('medicine_id')->constrained('medicines')->cascadeOnDelete();
-            $table->decimal('sale_price', 10, 2);
-            $table->timestamps();
+        if (! Schema::hasTable('branch_medicine_prices')) {
+            Schema::create('branch_medicine_prices', function (Blueprint $table): void {
+                $table->id();
+                $table->foreignId('branch_id')->constrained('branches')->cascadeOnDelete();
+                $table->foreignId('medicine_id')->constrained('medicines')->cascadeOnDelete();
+                $table->decimal('sale_price', 10, 2);
+                $table->timestamps();
 
-            $table->unique(['branch_id', 'medicine_id']);
-        });
+                $table->unique(['branch_id', 'medicine_id']);
+            });
+        }
     }
 
     public function down(): void

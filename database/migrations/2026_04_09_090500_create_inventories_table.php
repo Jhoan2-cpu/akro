@@ -10,17 +10,19 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('inventories', function (Blueprint $table): void {
-            $table->id();
-            $table->foreignId('branch_id')->constrained('branches');
-            $table->foreignId('medicine_id')->constrained('medicines');
-            $table->integer('current_stock');
-            $table->integer('minimum_stock');
-            $table->date('expiration_date');
-            $table->timestamps();
+        if (! Schema::hasTable('inventories')) {
+            Schema::create('inventories', function (Blueprint $table): void {
+                $table->id();
+                $table->foreignId('branch_id')->constrained('branches');
+                $table->foreignId('medicine_id')->constrained('medicines');
+                $table->integer('current_stock');
+                $table->integer('minimum_stock');
+                $table->date('expiration_date');
+                $table->timestamps();
 
-            $table->unique(['branch_id', 'medicine_id'], 'inventories_branch_medicine_unique');
-        });
+                $table->unique(['branch_id', 'medicine_id'], 'inventories_branch_medicine_unique');
+            });
+        }
     }
 
     public function down(): void

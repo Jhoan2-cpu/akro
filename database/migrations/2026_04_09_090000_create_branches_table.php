@@ -10,12 +10,14 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('branches', function (Blueprint $table): void {
-            $table->id();
-            $table->string('name');
-            $table->string('address');
-            $table->timestamps();
-        });
+        if (! Schema::hasTable('branches')) {
+            Schema::create('branches', function (Blueprint $table): void {
+                $table->id();
+                $table->string('name');
+                $table->string('address');
+                $table->timestamps();
+            });
+        }
     }
 
     public function down(): void
