@@ -25,7 +25,7 @@ class Medicine extends Model
 
     public function activeIngredients(): BelongsToMany
     {
-        return $this->belongsToMany(ActiveIngredient::class)
+        return $this->belongsToMany(ActiveIngredient::class, 'medicine_active_ingredient')
             ->withTimestamps();
     }
 

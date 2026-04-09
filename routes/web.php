@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\CloudinaryTestController;
+use App\Http\Controllers\ActiveIngredientController;
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\MedicineController;
 use App\Http\Controllers\ShiftController;
 use App\Http\Controllers\UserController;
@@ -29,6 +31,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 Route::middleware(['auth', 'verified', 'admin'])->group(function () {
     Route::resource('users', UserController::class)->except(['show', 'destroy']);
     Route::patch('users/{user}/suspend', [UserController::class, 'suspend'])->name('users.suspend');
+    Route::post('categories/quick-store', [CategoryController::class, 'storeInline'])->name('categories.quick-store');
+    Route::post('active-ingredients/quick-store', [ActiveIngredientController::class, 'storeInline'])->name('active-ingredients.quick-store');
+    Route::resource('categories', CategoryController::class)->only(['index', 'store', 'update', 'destroy']);
     Route::resource('medicines', MedicineController::class)->except(['show']);
 });
 

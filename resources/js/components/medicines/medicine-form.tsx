@@ -1,10 +1,17 @@
 import { CircleAlert, Pill, Save } from 'lucide-react';
-import type { FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
 import BarcodeScannerDialog from '@/components/barcode-scanner-dialog';
 import InputError from '@/components/input-error';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -49,6 +56,8 @@ type Props = {
     setBarcode: (barcode: string) => void;
     updateStock: (branchId: number, field: 'current_stock' | 'minimum_stock' | 'expiration_date', value: string) => void;
     toggleActiveIngredient: (activeIngredientId: number) => void;
+    onQuickCreateCategory: (name: string) => Promise<void>;
+    onQuickCreateActiveIngredient: (name: string) => Promise<void>;
 };
 
 export default function MedicineForm({
@@ -67,9 +76,67 @@ export default function MedicineForm({
     setBarcode,
     updateStock,
     toggleActiveIngredient,
+    onQuickCreateCategory,
+    onQuickCreateActiveIngredient,
 }: Props) {
+    const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
+    const [isIngredientDialogOpen, setIsIngredientDialogOpen] = useState(false);
+    const [newCategoryName, setNewCategoryName] = useState('');
+    const [newIngredientName, setNewIngredientName] = useState('');
+    const [categoryError, setCategoryError] = useState<string | null>(null);
+    const [ingredientError, setIngredientError] = useState<string | null>(null);
+    const [isCreatingCategory, setIsCreatingCategory] = useState(false);
+    const [isCreatingIngredient, setIsCreatingIngredient] = useState(false);
+
+    const createCategory = async (): Promise<void> => {
+        const name = newCategoryName.trim();
+
+        if (name === '') {
+            setCategoryError('El nombre es obligatorio.');
+
+            return;
+        }
+
+        setIsCreatingCategory(true);
+        setCategoryError(null);
+
+        try {
+            await onQuickCreateCategory(name);
+            setNewCategoryName('');
+            setIsCategoryDialogOpen(false);
+        } catch (error) {
+            setCategoryError(error instanceof Error ? error.message : 'No se pudo crear la categoría.');
+        } finally {
+            setIsCreatingCategory(false);
+        }
+    };
+
+    const createActiveIngredient = async (): Promise<void> => {
+        const name = newIngredientName.trim();
+
+        if (name === '') {
+            setIngredientError('El nombre es obligatorio.');
+
+            return;
+        }
+
+        setIsCreatingIngredient(true);
+        setIngredientError(null);
+
+        try {
+            await onQuickCreateActiveIngredient(name);
+            setNewIngredientName('');
+            setIsIngredientDialogOpen(false);
+        } catch (error) {
+            setIngredientError(error instanceof Error ? error.message : 'No se pudo crear el principio activo.');
+        } finally {
+            setIsCreatingIngredient(false);
+        }
+    };
+
     return (
-        <form onSubmit={onSubmit} className="space-y-6">
+        <>
+            <form onSubmit={onSubmit} className="space-y-6">
             <div className="rounded-3xl border border-sidebar-border/70 bg-background p-5 shadow-sm md:p-6">
                 <div className="mb-6 flex items-start gap-3">
                     <div className="rounded-2xl bg-emerald-100 p-3 text-emerald-700">
@@ -95,7 +162,21 @@ export default function MedicineForm({
                     </div>
 
                     <div className="space-y-2">
-                        <Label>Categoría</Label>
+                        <div className="flex items-center justify-between gap-2">
+                            <Label>Categoría</Label>
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                className="h-8 rounded-full px-3 text-xs"
+                                onClick={() => {
+                                    setCategoryError(null);
+                                    setIsCategoryDialogOpen(true);
+                                }}
+                            >
+                                Nueva categoría
+                            </Button>
+                        </div>
+
                         <Select
                             value={data.category_id}
                             onValueChange={(value) => setData('category_id', value)}
@@ -161,24 +242,40 @@ export default function MedicineForm({
             </div>
 
             <div className="rounded-3xl border border-sidebar-border/70 bg-background p-5 shadow-sm md:p-6">
-                <h2 className="text-lg font-semibold text-foreground">Principios activos</h2>
-                <p className="mb-4 text-sm text-muted-foreground">Selecciona uno o más principios activos (relación M:N).</p>
+                <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                        <h2 className="text-lg font-semibold text-foreground">Principios activos</h2>
+                        <p className="text-sm text-muted-foreground">Selecciona uno o más principios activos (relación M:N).</p>
+                    </div>
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        className="h-8 rounded-full px-3 text-xs"
+                        onClick={() => {
+                            setIngredientError(null);
+                            setIsIngredientDialogOpen(true);
+                        }}
+                    >
+                        Nuevo principio activo
+                    </Button>
+                </div>
 
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     {activeIngredients.map((activeIngredient) => {
                         const isSelected = data.active_ingredient_ids.includes(activeIngredient.id);
 
                         return (
-                            <label
+                            <button
+                                type="button"
                                 key={activeIngredient.id}
-                                className={`flex items-center gap-3 rounded-xl border px-4 py-3 text-sm ${isSelected ? 'border-emerald-300 bg-emerald-50' : 'border-sidebar-border/70 bg-background'}`}
+                                onClick={() => toggleActiveIngredient(activeIngredient.id)}
+                                className={`flex items-center justify-between gap-3 rounded-xl border px-4 py-3 text-left text-sm transition ${isSelected ? 'border-emerald-300 bg-emerald-50' : 'border-sidebar-border/70 bg-background hover:bg-muted/50'}`}
                             >
-                                <Checkbox
-                                    checked={isSelected}
-                                    onCheckedChange={() => toggleActiveIngredient(activeIngredient.id)}
-                                />
                                 <span>{activeIngredient.name}</span>
-                            </label>
+                                <Badge variant={isSelected ? 'default' : 'outline'} className="rounded-full px-2 py-0.5 text-[10px]">
+                                    {isSelected ? 'Seleccionado' : 'Seleccionar'}
+                                </Badge>
+                            </button>
                         );
                     })}
                 </div>
@@ -259,6 +356,91 @@ export default function MedicineForm({
                     {processing ? 'Guardando...' : submitLabel}
                 </Button>
             </div>
-        </form>
+            </form>
+
+            <Dialog open={isCategoryDialogOpen} onOpenChange={setIsCategoryDialogOpen}>
+                <DialogContent className="rounded-3xl border-sidebar-border/70 sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>Nueva categoría</DialogTitle>
+                        <DialogDescription>
+                            Crea una categoría con nombre único para usarla de inmediato.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="space-y-2">
+                        <Label htmlFor="quick_category_name">Nombre</Label>
+                        <Input
+                            id="quick_category_name"
+                            value={newCategoryName}
+                            onChange={(event) => setNewCategoryName(event.target.value)}
+                            placeholder="Ej. Analgésicos"
+                            className="h-11"
+                        />
+                        {categoryError && <p className="text-sm text-rose-600">{categoryError}</p>}
+                    </div>
+
+                    <DialogFooter>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            className="rounded-full"
+                            onClick={() => setIsCategoryDialogOpen(false)}
+                        >
+                            Cancelar
+                        </Button>
+                        <Button
+                            type="button"
+                            className="rounded-full"
+                            onClick={createCategory}
+                            disabled={isCreatingCategory}
+                        >
+                            {isCreatingCategory ? 'Creando...' : 'Crear categoría'}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={isIngredientDialogOpen} onOpenChange={setIsIngredientDialogOpen}>
+                <DialogContent className="rounded-3xl border-sidebar-border/70 sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>Nuevo principio activo</DialogTitle>
+                        <DialogDescription>
+                            Registra un principio activo por nombre y se agregará al medicamento actual.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="space-y-2">
+                        <Label htmlFor="quick_ingredient_name">Nombre</Label>
+                        <Input
+                            id="quick_ingredient_name"
+                            value={newIngredientName}
+                            onChange={(event) => setNewIngredientName(event.target.value)}
+                            placeholder="Ej. Ibuprofeno"
+                            className="h-11"
+                        />
+                        {ingredientError && <p className="text-sm text-rose-600">{ingredientError}</p>}
+                    </div>
+
+                    <DialogFooter>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            className="rounded-full"
+                            onClick={() => setIsIngredientDialogOpen(false)}
+                        >
+                            Cancelar
+                        </Button>
+                        <Button
+                            type="button"
+                            className="rounded-full"
+                            onClick={createActiveIngredient}
+                            disabled={isCreatingIngredient}
+                        >
+                            {isCreatingIngredient ? 'Creando...' : 'Crear principio activo'}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        </>
     );
 }

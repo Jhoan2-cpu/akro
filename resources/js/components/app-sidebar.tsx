@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, Boxes, Clock3, FolderGit2, LayoutGrid, Pill, Users } from 'lucide-react';
+import { BookOpen, Boxes, Clock3, FolderGit2, LayoutGrid, Pill, Tags, Users } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
@@ -51,6 +51,11 @@ export function AppSidebar() {
         },
         ...(isAdmin
             ? [
+                  {
+                      title: 'Categorías',
+                      href: '/categories',
+                      icon: Tags,
+                  },
                   {
                       title: 'Medicamentos',
                       href: '/medicines',
