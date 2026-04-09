@@ -6,6 +6,7 @@ import {
     FolderGit2, 
     LayoutGrid, 
     Pill, 
+    ReceiptText,
     Tags, 
     Users,
     Building2 
@@ -52,6 +53,11 @@ export function AppSidebar() {
             title: 'Dashboard',
             href: dashboard(),
             icon: LayoutGrid,
+        },
+        {
+            title: 'Venta rápida',
+            href: '/sales/quick',
+            icon: ReceiptText,
         },
         {
             title: 'Turnos',

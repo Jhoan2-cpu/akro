@@ -44,4 +44,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Shift::class);
     }
+
+    public function sales(): HasMany
+    {
+        return $this->hasMany(Sale::class);
+    }
 }
