@@ -1,4 +1,8 @@
-import { Head, useForm } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { useRouter } from '@inertiajs/react';
+import { useForm } from '@inertiajs/react';
 import UserUpsertModal, {
     type UserUpsertFormValues,
 } from '@/components/users/user-upsert-modal';
@@ -33,22 +37,37 @@ export default function CreateUser({ branches }: Props) {
         });
     };
 
+    const close = (): void => {
+        window.history.back();
+    };
+
     return (
         <>
             <Head title="Agregar Usuario" />
-            <UserUpsertModal
-                title="Agregar Nuevo Usuario"
-                description="Complete los detalles para registrar al personal en el sistema."
-                submitLabel="Crear Usuario"
-                cancelHref="/users"
-                data={form.data}
-                setData={form.setData}
-                errors={form.errors}
-                branches={branches}
-                processing={form.processing}
-                onSubmit={submit}
-                passwordRequired
-            />
+            <Dialog open onOpenChange={(nextOpen) => { if (!nextOpen) close(); }}>
+                <DialogContent className="max-h-[92vh] max-w-6xl overflow-y-auto rounded-3xl border-sidebar-border/70 bg-background p-0 sm:max-w-6xl">
+                    <DialogHeader className="sr-only">
+                        <DialogTitle>Agregar Nuevo Usuario</DialogTitle>
+                        <DialogDescription>
+                            Registra un nuevo usuario para el acceso interno.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <UserUpsertModal
+                        title="Agregar Nuevo Usuario"
+                        description="Complete los detalles para registrar al personal en el sistema."
+                        submitLabel={form.processing ? 'Guardando...' : 'Crear Usuario'}
+                        onCancel={close}
+                        data={form.data}
+                        setData={form.setData}
+                        errors={form.errors}
+                        branches={branches}
+                        processing={form.processing}
+                        onSubmit={submit}
+                        passwordRequired
+                    />
+                </DialogContent>
+            </Dialog>
         </>
     );
 }

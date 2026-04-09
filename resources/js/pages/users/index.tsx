@@ -1,12 +1,27 @@
 import { Head, Link, router, useForm } from '@inertiajs/react';
-import { PencilLine, Plus, Search, ShieldBan, Users, UserCheck, UserX } from 'lucide-react';
-import { useState } from 'react';
 import { motion } from 'framer-motion';
+import {
+    PencilLine,
+    Plus,
+    Search,
+    ShieldBan,
+    Users,
+    UserCheck,
+    UserX,
+} from 'lucide-react';
+import { useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { dashboard } from '@/routes';
+import CreateUserDialog from '@/components/users/create-user-dialog';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { useInitials } from '@/hooks/use-initials';
 
 type Branch = {
@@ -136,7 +151,7 @@ export default function UsersIndex({ users, branches, filters, stats }: Props) {
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.2, delay: 0 }}
-                    className="flex flex-col gap-4 rounded-3xl bg-background/80 p-0 md:flex-row md:items-end md:justify-between"
+                    className="flex flex-col gap-4 rounded-3xl border border-sidebar-border/70 bg-background p-5 shadow-sm md:flex-row md:items-end md:justify-between md:p-6"
                 >
                     <div className="space-y-1">
                         <p className="text-3xl font-semibold tracking-tight text-foreground">
@@ -148,12 +163,7 @@ export default function UsersIndex({ users, branches, filters, stats }: Props) {
                         </p>
                     </div>
 
-                    <Button asChild className="h-11 rounded-full px-5">
-                        <Link href="/users/create">
-                            <Plus className="size-4" />
-                            Agregar Usuario
-                        </Link>
-                    </Button>
+                    <CreateUserDialog branches={branches} />
                 </motion.section>
 
                 <section className="grid gap-4 md:grid-cols-3">
@@ -220,33 +230,50 @@ export default function UsersIndex({ users, branches, filters, stats }: Props) {
                     </div>
 
                     <div className="grid gap-3 md:grid-cols-3 xl:w-140">
-                        <select
+                        <Select
                             value={filterForm.data.branch_id}
-                            onChange={(event) =>
-                                filterForm.setData('branch_id', event.target.value)
+                            onValueChange={(value) =>
+                                filterForm.setData('branch_id', value)
                             }
-                            className="h-11 rounded-full border border-input bg-background px-4 text-sm shadow-xs outline-none"
                         >
-                            <option value="all">Todas las Sucursales</option>
-                            {branches.map((branch) => (
-                                <option key={branch.id} value={branch.id}>
-                                    {branch.name}
-                                </option>
-                            ))}
-                        </select>
+                            <SelectTrigger className="h-11 rounded-full border-input bg-background px-4 text-sm shadow-xs">
+                                <SelectValue placeholder="Todas las Sucursales" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">
+                                    Todas las Sucursales
+                                </SelectItem>
+                                {branches.map((branch) => (
+                                    <SelectItem
+                                        key={branch.id}
+                                        value={String(branch.id)}
+                                    >
+                                        {branch.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
 
-                        <select
+                        <Select
                             value={filterForm.data.status}
-                            onChange={(event) =>
-                                filterForm.setData('status', event.target.value)
+                            onValueChange={(value) =>
+                                filterForm.setData('status', value)
                             }
-                            className="h-11 rounded-full border border-input bg-background px-4 text-sm shadow-xs outline-none"
                         >
-                            <option value="all">Todos los Estados</option>
-                            <option value="active">Activos</option>
-                            <option value="inactive">Inactivos</option>
-                            <option value="suspended">Suspendidos</option>
-                        </select>
+                            <SelectTrigger className="h-11 rounded-full border-input bg-background px-4 text-sm shadow-xs">
+                                <SelectValue placeholder="Todos los Estados" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">
+                                    Todos los Estados
+                                </SelectItem>
+                                <SelectItem value="active">Activos</SelectItem>
+                                <SelectItem value="inactive">Inactivos</SelectItem>
+                                <SelectItem value="suspended">
+                                    Suspendidos
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
 
                         <div className="flex items-center justify-end gap-2">
                             <Button type="submit" className="h-11 rounded-full px-5">
@@ -306,7 +333,10 @@ export default function UsersIndex({ users, branches, filters, stats }: Props) {
                                             {user.email}
                                         </p>
 
-                                        <Badge variant="outline" className="w-fit rounded-full px-3 py-1">
+                                        <Badge
+                                            variant="outline"
+                                            className="w-fit rounded-full px-3 py-1"
+                                        >
                                             {roleMeta[user.role].label}
                                         </Badge>
 
@@ -322,7 +352,12 @@ export default function UsersIndex({ users, branches, filters, stats }: Props) {
                                         </Badge>
 
                                         <div className="flex justify-end gap-2">
-                                            <Button asChild variant="outline" size="sm" className="rounded-full">
+                                            <Button
+                                                asChild
+                                                variant="outline"
+                                                size="sm"
+                                                className="rounded-full"
+                                            >
                                                 <Link href={`/users/${user.id}/edit`}>
                                                     <PencilLine className="size-4" />
                                                     Editar
@@ -395,21 +430,33 @@ export default function UsersIndex({ users, branches, filters, stats }: Props) {
                                             </div>
 
                                             <div className="mt-3 flex flex-wrap gap-2 text-xs text-muted-foreground">
-                                                <Badge variant="outline" className="rounded-full px-3 py-1">
+                                                <Badge
+                                                    variant="outline"
+                                                    className="rounded-full px-3 py-1"
+                                                >
                                                     {roleMeta[user.role].label}
                                                 </Badge>
-                                                <Badge variant="outline" className="rounded-full px-3 py-1">
+                                                <Badge
+                                                    variant="outline"
+                                                    className="rounded-full px-3 py-1"
+                                                >
                                                     {user.branch?.name ?? 'Sin sucursal'}
                                                 </Badge>
                                             </div>
 
                                             <div className="mt-4 flex flex-wrap gap-2">
-                                                <Button asChild variant="outline" size="sm" className="rounded-full">
+                                                <Button
+                                                    asChild
+                                                    variant="outline"
+                                                    size="sm"
+                                                    className="rounded-full"
+                                                >
                                                     <Link href={`/users/${user.id}/edit`}>
                                                         <PencilLine className="size-4" />
                                                         Editar
                                                     </Link>
                                                 </Button>
+
                                                 <Button
                                                     size="sm"
                                                     variant="destructive"
@@ -441,7 +488,8 @@ export default function UsersIndex({ users, branches, filters, stats }: Props) {
 
                     <div className="flex flex-col gap-4 border-t border-sidebar-border/70 px-4 py-4 md:flex-row md:items-center md:justify-between md:px-6">
                         <p className="text-sm text-muted-foreground">
-                            Mostrando {users.from ?? 0} a {users.to ?? 0} de {users.total} registros.
+                            Mostrando {users.from ?? 0} a {users.to ?? 0} de{' '}
+                            {users.total} registros.
                         </p>
 
                         <nav className="flex flex-wrap items-center gap-2">
@@ -483,6 +531,14 @@ export default function UsersIndex({ users, branches, filters, stats }: Props) {
     );
 }
 
+UsersIndex.layout = {
+    breadcrumbs: [
+        {
+            title: 'Usuarios',
+            href: '/users',
+        },
+    ],
+};
 UsersIndex.layout = {
     breadcrumbs: [
         {

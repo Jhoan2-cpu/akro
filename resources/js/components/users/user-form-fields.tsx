@@ -1,6 +1,13 @@
 import InputError from '@/components/input-error';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 
 export type UserFormValues = {
     name: string;
@@ -64,50 +71,56 @@ export default function UserFormFields({
 
             <div className="space-y-2">
                 <Label htmlFor="branch_id">Sucursal</Label>
-                <select
-                    id="branch_id"
+                <Select
                     value={data.branch_id}
-                    onChange={(event) =>
-                        setData('branch_id', event.target.value)
-                    }
-                    className={inputClassName}
+                    onValueChange={(value) => setData('branch_id', value)}
                 >
-                    <option value="">Selecciona una sucursal</option>
-                    {branches.map((branch) => (
-                        <option key={branch.id} value={branch.id}>
-                            {branch.name}
-                        </option>
-                    ))}
-                </select>
+                    <SelectTrigger className={inputClassName}>
+                        <SelectValue placeholder="Selecciona una sucursal" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {branches.map((branch) => (
+                            <SelectItem key={branch.id} value={String(branch.id)}>
+                                {branch.name}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
                 <InputError message={errors.branch_id} />
             </div>
 
             <div className="space-y-2">
                 <Label htmlFor="role">Rol</Label>
-                <select
-                    id="role"
+                <Select
                     value={data.role}
-                    onChange={(event) => setData('role', event.target.value)}
-                    className={inputClassName}
+                    onValueChange={(value) => setData('role', value)}
                 >
-                    <option value="employee">Empleado</option>
-                    <option value="admin">Administrador</option>
-                </select>
+                    <SelectTrigger className={inputClassName}>
+                        <SelectValue placeholder="Selecciona un rol" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="employee">Empleado</SelectItem>
+                        <SelectItem value="admin">Administrador</SelectItem>
+                    </SelectContent>
+                </Select>
                 <InputError message={errors.role} />
             </div>
 
             <div className="space-y-2">
                 <Label htmlFor="status">Estado</Label>
-                <select
-                    id="status"
+                <Select
                     value={data.status}
-                    onChange={(event) => setData('status', event.target.value)}
-                    className={inputClassName}
+                    onValueChange={(value) => setData('status', value)}
                 >
-                    <option value="active">Activo</option>
-                    <option value="inactive">Inactivo</option>
-                    <option value="suspended">Suspendido</option>
-                </select>
+                    <SelectTrigger className={inputClassName}>
+                        <SelectValue placeholder="Selecciona un estado" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="active">Activo</SelectItem>
+                        <SelectItem value="inactive">Inactivo</SelectItem>
+                        <SelectItem value="suspended">Suspendido</SelectItem>
+                    </SelectContent>
+                </Select>
                 <InputError message={errors.status} />
             </div>
 
