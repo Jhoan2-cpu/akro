@@ -29,7 +29,7 @@ class ProfileVerificationEmailNotification extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->mailer('failover')
+            ->mailer('smtp')
             ->subject('Verifica tu correo de perfil')
             ->greeting('Hola')
             ->line("Solicitaste verificar este correo para tu perfil: {$this->verificationEmail}")
