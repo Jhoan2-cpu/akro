@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Factories;
 
+use App\Models\Branch;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
@@ -24,7 +27,17 @@ class UserFactory extends Factory
      */
     public function definition(): array
     {
+        $defaultBranch = Branch::query()->first();
+
+        if ($defaultBranch === null) {
+            $defaultBranch = Branch::query()->create([
+                'name' => 'Main Branch',
+                'address' => 'Address pending',
+            ]);
+        }
+
         return [
+            'branch_id' => $defaultBranch->id,
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
