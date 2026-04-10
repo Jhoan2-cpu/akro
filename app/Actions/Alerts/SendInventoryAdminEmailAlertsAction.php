@@ -10,7 +10,10 @@ use App\Notifications\InventoryRiskAlertNotification;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
+use Throwable;
 
 class SendInventoryAdminEmailAlertsAction
 {
@@ -190,6 +193,19 @@ class SendInventoryAdminEmailAlertsAction
 
             $verificationEmail = (string) $recipient->verification_email;
 
+            if ($this->sendViaBrevoApi(
+                email: $verificationEmail,
+                recipientName: (string) $recipient->name,
+                branchSummaries: $branchSummaries,
+                totals: $totals,
+            )) {
+                $sentRecipients++;
+
+                Cache::put($cacheKey, true, $today->copy()->endOfDay());
+
+                continue;
+            }
+
             Notification::route('mail', $verificationEmail)->notify(new InventoryRiskAlertNotification(
                 recipientName: $recipient->name,
                 branchSummaries: $branchSummaries,
@@ -210,5 +226,97 @@ class SendInventoryAdminEmailAlertsAction
             'recipients' => $sentRecipients,
             'skipped_duplicates' => $skippedDuplicates,
         ];
+    }
+
+    /**
+     * @param array<int, array{
+     *   branch_name: string,
+     *   out_of_stock_items: array<int, array{medicine_name: string, current_stock: int, minimum_stock: int}>,
+     *   low_stock_items: array<int, array{medicine_name: string, current_stock: int, minimum_stock: int}>,
+     *   expired_items: array<int, array{medicine_name: string, expiration_date: string, days_to_expire: int}>,
+     *   near_expiry_items: array<int, array{medicine_name: string, expiration_date: string, days_to_expire: int}>
+     * }> $branchSummaries
+     * @param array{out_of_stock: int, low_stock: int, expired: int, near_expiry: int} $totals
+     */
+    protected function sendViaBrevoApi(
+        string $email,
+        string $recipientName,
+        array $branchSummaries,
+        array $totals,
+    ): bool {
+        $brevoApiKey = (string) config('services.brevo.key', '');
+
+        if ($brevoApiKey === '') {
+            return false;
+        }
+
+        $fromAddress = (string) config('mail.from.address');
+        $fromName = (string) config('mail.from.name');
+        $subject = sprintf(
+            'Alerta de inventario consolidada - %d agotados, %d bajo stock, %d vencidos, %d por vencer',
+            $totals['out_of_stock'],
+            $totals['low_stock'],
+            $totals['expired'],
+            $totals['near_expiry'],
+        );
+
+        $htmlContent = view('emails.inventory-risk-alert', [
+            'recipientName' => $recipientName,
+            'branchSummaries' => $branchSummaries,
+            'totals' => $totals,
+            'stockUrl' => url('/medicines/stock'),
+            'logoUrl' => asset('images/logo.png'),
+        ])->render();
+
+        try {
+            $response = Http::timeout(20)
+                ->withHeaders([
+                    'accept' => 'application/json',
+                    'api-key' => $brevoApiKey,
+                    'content-type' => 'application/json',
+                ])
+                ->post('https://api.brevo.com/v3/smtp/email', [
+                    'sender' => [
+                        'name' => $fromName,
+                        'email' => $fromAddress,
+                    ],
+                    'to' => [[
+                        'email' => $email,
+                        'name' => $recipientName,
+                    ]],
+                    'subject' => $subject,
+                    'htmlContent' => $htmlContent,
+                ]);
+
+            if ($response->failed()) {
+                Log::error('inventory_alert_email_brevo_failed', [
+                    'recipient_email' => $email,
+                    'status' => $response->status(),
+                    'response' => mb_substr($response->body(), 0, 1200),
+                ]);
+
+                return false;
+            }
+
+            Log::info('inventory_alert_email_sent', [
+                'recipient_email' => $email,
+                'mailer' => 'brevo_api',
+                'branch_count' => count($branchSummaries),
+                'out_of_stock' => $totals['out_of_stock'],
+                'low_stock' => $totals['low_stock'],
+                'expired' => $totals['expired'],
+                'near_expiry' => $totals['near_expiry'],
+            ]);
+
+            return true;
+        } catch (Throwable $exception) {
+            Log::error('inventory_alert_email_brevo_exception', [
+                'recipient_email' => $email,
+                'exception_class' => $exception::class,
+                'exception_message' => $exception->getMessage(),
+            ]);
+
+            return false;
+        }
     }
 }
