@@ -23,10 +23,9 @@ class SalesReportController extends Controller
     {
         $user = $request->user();
         $isSuperuser = ($user?->role ?? null) === 'superuser';
-        $isAdmin = $isSuperuser || ($user?->role ?? null) === 'admin';
 
         $branches = Branch::query()
-            ->when(! $isAdmin, fn (Builder $builder) => $builder->where('id', $user?->branch_id))
+            ->when(! $isSuperuser, fn (Builder $builder) => $builder->where('id', $user?->branch_id))
             ->orderBy('name')
             ->get(['id', 'name']);
 
@@ -55,12 +54,11 @@ class SalesReportController extends Controller
             'branches' => $branches,
             'configurations' => $configurations,
             'filters' => [
-                'branch_id' => (string) $request->input('branch_id', $isAdmin ? 'all' : (string) ($user?->branch_id ?? 'all')),
+                'branch_id' => (string) $request->input('branch_id', $isSuperuser ? 'all' : (string) ($user?->branch_id ?? 'all')),
                 'from' => (string) $request->input('from', Carbon::now()->startOfMonth()->toDateString()),
                 'to' => (string) $request->input('to', Carbon::now()->toDateString()),
             ],
             'isSuperuser' => $isSuperuser,
-            'isAdmin' => $isAdmin,
         ]);
     }
 
@@ -68,7 +66,6 @@ class SalesReportController extends Controller
     {
         $user = $request->user();
         $isSuperuser = ($user?->role ?? null) === 'superuser';
-        $isAdmin = $isSuperuser || ($user?->role ?? null) === 'admin';
 
         $validated = $request->validate([
             'branch_id' => 'nullable|integer|exists:branches,id',
@@ -78,7 +75,7 @@ class SalesReportController extends Controller
         ]);
 
         $branchId = $validated['branch_id'] ?? null;
-        if (! $isAdmin) {
+        if (! $isSuperuser) {
             $branchId = $user?->branch_id;
         }
 
@@ -162,7 +159,6 @@ class SalesReportController extends Controller
     {
         $user = $request->user();
         $isSuperuser = ($user?->role ?? null) === 'superuser';
-        $isAdmin = $isSuperuser || ($user?->role ?? null) === 'admin';
         $validated = $request->validated();
 
         $from = Carbon::parse((string) $validated['from'])->startOfDay();
@@ -172,7 +168,7 @@ class SalesReportController extends Controller
             ? (int) $validated['branch_id']
             : null;
 
-        if (! $isAdmin) {
+        if (! $isSuperuser) {
             $branchId = $user?->branch_id;
         }
 

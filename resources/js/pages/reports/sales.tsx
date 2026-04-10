@@ -36,10 +36,9 @@ type Props = {
         to: string;
     };
     isSuperuser: boolean;
-    isAdmin: boolean;
 };
 
-export default function SalesReportPage({ branches, configurations, filters, isSuperuser, isAdmin }: Props) {
+export default function SalesReportPage({ branches, configurations, filters, isSuperuser }: Props) {
     const { auth } = usePage().props;
     const [saving, setSaving] = useState(false);
 

@@ -33,8 +33,8 @@ class DashboardController extends Controller
         $last7Start = Carbon::today()->subDays(6)->startOfDay();
         $nearExpiryLimit = Carbon::today()->addDays(30);
 
-        $scopeSales = function (Builder $builder) use ($isAdmin, $branchId): void {
-            if ($isAdmin) {
+        $scopeSales = function (Builder $builder) use ($isSuperuser, $branchId): void {
+            if ($isSuperuser) {
                 return;
             }
 
@@ -47,8 +47,8 @@ class DashboardController extends Controller
             $builder->where('branch_id', $branchId);
         };
 
-        $scopeInventory = function (Builder $builder) use ($isAdmin, $branchId): void {
-            if ($isAdmin) {
+        $scopeInventory = function (Builder $builder) use ($isSuperuser, $branchId): void {
+            if ($isSuperuser) {
                 return;
             }
 
@@ -263,7 +263,7 @@ class DashboardController extends Controller
             ])
             ->values();
 
-        $branchPerformance = $isAdmin
+        $branchPerformance = $isSuperuser
             ? Sale::query()
                 ->join('branches', 'branches.id', '=', 'sales.branch_id')
                 ->whereBetween('sales.created_at', [$last7Start, $todayEnd])
@@ -290,7 +290,7 @@ class DashboardController extends Controller
             ->where(function (Builder $builder): void {
                 $builder->whereNull('users.status')->orWhere('users.status', 'active');
             })
-            ->when(! $isAdmin, function (Builder $builder) use ($branchId): void {
+            ->when(! $isSuperuser, function (Builder $builder) use ($branchId): void {
                 if ($branchId === null) {
                     $builder->whereRaw('1 = 0');
 
@@ -312,7 +312,7 @@ class DashboardController extends Controller
             ])
             ->values();
 
-        $branchScopeLabel = $isAdmin
+        $branchScopeLabel = $isSuperuser
             ? 'Vista global de sucursales'
             : ((string) optional(Branch::query()->find($branchId))->name ?: 'Tu sucursal');
 
@@ -364,7 +364,7 @@ class DashboardController extends Controller
 
         return Inertia::render('dashboard', [
             'scope' => [
-                'is_admin' => $isAdmin,
+                'is_superuser' => $isSuperuser,
                 'branch_label' => $branchScopeLabel,
                 'branch_id' => $branchId,
             ],

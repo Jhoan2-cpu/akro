@@ -6,7 +6,7 @@ import { dashboard } from '@/routes';
 
 type DashboardProps = {
     scope: {
-        is_admin: boolean;
+        is_superuser: boolean;
         branch_label: string;
         branch_id: number | null;
     };
@@ -445,7 +445,7 @@ export default function Dashboard({ scope, kpis, operations, analytics, inventor
                             <div className="rounded-lg border border-sidebar-border/70 bg-slate-50 px-3 py-2">
                                 Ventas con precio manual hoy: <span className="font-bold text-foreground">{operations.price_overrides_today}</span>
                             </div>
-                            {scope.is_admin && (
+                            {scope.is_superuser && (
                                 <>
                                     {analytics.branch_performance.map((item) => (
                                         <div key={item.branch_id} className="rounded-lg border border-sidebar-border/70 bg-slate-50 px-3 py-2">
@@ -463,7 +463,7 @@ export default function Dashboard({ scope, kpis, operations, analytics, inventor
                                 </>
                             )}
 
-                            {!scope.is_admin && (
+                            {!scope.is_superuser && (
                                 <div className="rounded-lg border border-sidebar-border/70 bg-slate-50 px-3 py-2 text-xs text-muted-foreground">
                                     El comparativo por sucursal está disponible para administradores.
                                 </div>
