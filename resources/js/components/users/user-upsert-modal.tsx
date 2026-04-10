@@ -44,6 +44,7 @@ type Props = {
     onSubmit: (event: FormEvent<HTMLFormElement>) => void;
     currentPhotoUrl?: string | null;
     passwordRequired?: boolean;
+    mode?: 'dialog' | 'page';
 };
 
 const roleOptions = [
@@ -70,9 +71,14 @@ export default function UserUpsertModal({
     onSubmit,
     currentPhotoUrl,
     passwordRequired = false,
+    mode = 'dialog',
 }: Props) {
     const getInitials = useInitials();
     const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+    const fieldSurfaceClass = mode === 'page' ? 'bg-neutral-100/60' : 'bg-neutral-50';
+    const formShellClassName = mode === 'page'
+        ? 'rounded-3xl border border-sidebar-border/70 bg-white p-5 shadow-sm sm:p-8'
+        : 'p-5 sm:p-8';
 
     const selectedPhotoUrl = useMemo(() => {
         return photoPreview ?? currentPhotoUrl ?? null;
@@ -91,7 +97,7 @@ export default function UserUpsertModal({
     }, [data.profile_photo]);
 
     return (
-        <form onSubmit={onSubmit} className="p-5 sm:p-8">
+        <form onSubmit={onSubmit} className={formShellClassName}>
             <header className="mb-6 space-y-1 rounded-3xl bg-primary px-5 py-5 pr-10 text-primary-foreground sm:px-6">
                 <h1 className="text-2xl font-semibold text-primary-foreground sm:text-3xl">
                     {title}
@@ -103,7 +109,7 @@ export default function UserUpsertModal({
 
             <div className="grid gap-6 lg:grid-cols-[1fr_1.2fr]">
                 <section className="space-y-5">
-                    <div className="flex items-start gap-4 rounded-3xl bg-neutral-50 p-4">
+                    <div className={`flex items-start gap-4 rounded-3xl p-4 ${fieldSurfaceClass}`}>
                         <div className="shrink-0">
                             <input
                                 id="profile_photo"
@@ -120,7 +126,7 @@ export default function UserUpsertModal({
 
                             <label
                                 htmlFor="profile_photo"
-                                className="flex size-24 cursor-pointer items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-neutral-300 bg-white text-neutral-400 transition hover:border-emerald-400 hover:text-emerald-600"
+                                className="flex size-24 cursor-pointer items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-neutral-300 bg-white/80 text-neutral-400 transition hover:border-emerald-400 hover:text-emerald-600"
                             >
                                 {selectedPhotoUrl ? (
                                     <Avatar className="size-full rounded-none">
@@ -169,7 +175,7 @@ export default function UserUpsertModal({
                             id="name"
                             value={data.name}
                             onChange={(event) => setData('name', event.target.value)}
-                            className="h-12 rounded-2xl border-neutral-200 bg-neutral-50 pl-10"
+                            className={`h-12 rounded-2xl border-neutral-200 pl-10 ${fieldSurfaceClass}`}
                             placeholder="Ej. Juan Pérez García"
                         />
                         <InputError message={errors.name} />
@@ -184,7 +190,7 @@ export default function UserUpsertModal({
                             type="email"
                             value={data.email}
                             onChange={(event) => setData('email', event.target.value)}
-                            className="h-12 rounded-2xl border-neutral-200 bg-neutral-50 pl-10"
+                            className={`h-12 rounded-2xl border-neutral-200 pl-10 ${fieldSurfaceClass}`}
                             placeholder="usuario@sanlucas.com"
                         />
                         <InputError message={errors.email} />
@@ -198,7 +204,7 @@ export default function UserUpsertModal({
                                 Rol del Sistema
                             </Label>
                             <Select value={data.role} onValueChange={(value) => setData('role', value)}>
-                                <SelectTrigger className="h-12 w-full rounded-2xl border-neutral-200 bg-neutral-50 px-4 text-sm shadow-none">
+                                <SelectTrigger className={`h-12 w-full rounded-2xl border-neutral-200 px-4 text-sm shadow-none ${fieldSurfaceClass}`}>
                                     <SelectValue placeholder="Seleccionar rol" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -217,7 +223,7 @@ export default function UserUpsertModal({
                                 Sucursal Asignada
                             </Label>
                             <Select value={data.branch_id} onValueChange={(value) => setData('branch_id', value)}>
-                                <SelectTrigger className="h-12 w-full rounded-2xl border-neutral-200 bg-neutral-50 px-4 text-sm shadow-none">
+                                <SelectTrigger className={`h-12 w-full rounded-2xl border-neutral-200 px-4 text-sm shadow-none ${fieldSurfaceClass}`}>
                                     <SelectValue placeholder="Seleccionar sucursal" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -248,7 +254,7 @@ export default function UserUpsertModal({
                                         className={`flex h-14 items-center justify-center gap-2 rounded-2xl border px-3 text-sm font-medium transition ${
                                             isActive
                                                 ? `${option.tone} ring-2 ring-lime-300`
-                                                : 'border-neutral-200 bg-neutral-50 text-neutral-600 hover:border-emerald-300'
+                                                : `border-neutral-200 ${fieldSurfaceClass} text-neutral-600 hover:border-emerald-300`
                                         }`}
                                     >
                                         <Circle className={`size-2.5 ${isActive ? 'fill-current' : 'fill-neutral-400 text-neutral-400'}`} />
@@ -270,7 +276,7 @@ export default function UserUpsertModal({
                                 type="password"
                                 value={data.password}
                                 onChange={(event) => setData('password', event.target.value)}
-                                className="h-12 rounded-2xl border-neutral-200 bg-neutral-50 pl-10"
+                                className={`h-12 rounded-2xl border-neutral-200 pl-10 ${fieldSurfaceClass}`}
                                 placeholder={passwordRequired ? 'Mínimo 8 caracteres' : 'Dejar vacío si no cambia'}
                             />
                             <InputError message={errors.password} />
@@ -285,7 +291,7 @@ export default function UserUpsertModal({
                                 type="password"
                                 value={data.password_confirmation}
                                 onChange={(event) => setData('password_confirmation', event.target.value)}
-                                className="h-12 rounded-2xl border-neutral-200 bg-neutral-50 pl-10"
+                                className={`h-12 rounded-2xl border-neutral-200 pl-10 ${fieldSurfaceClass}`}
                                 placeholder="Repite la contraseña"
                             />
                         </div>

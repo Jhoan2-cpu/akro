@@ -68,6 +68,7 @@ export default function EditUser({ user, branches }: Props) {
                 processing={form.processing}
                 onSubmit={submit}
                 currentPhotoUrl={user.profile_photo_path}
+                mode="page"
             />
         </>
     );
