@@ -10,6 +10,7 @@ import {
     LayoutGrid, 
     Pill, 
     ReceiptText,
+    FileSpreadsheet,
     Tags, 
     Users,
     Building2 
@@ -98,6 +99,14 @@ export function AppSidebar() {
         },
     ];
 
+    const reportesItems: NavItem[] = [
+        {
+            title: 'Reporte ventas PDF',
+            href: '/reports/sales',
+            icon: FileSpreadsheet,
+        },
+    ];
+
     // Catálogo/Maestros - Admin only
     const catalogoItems: NavItem[] = [
         {
@@ -168,6 +177,9 @@ export function AppSidebar() {
             <SidebarContent>
                 {/* Operación - Always visible */}
                 {renderNavGroup('Operación', operacionItems)}
+
+                {/* Reportes - Always visible */}
+                {renderNavGroup('Reportes', reportesItems)}
 
                 {/* Catálogo/Maestros - Admin only */}
                 {isAdmin && renderNavGroup('Catálogo / Maestros', catalogoItems)}

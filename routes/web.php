@@ -6,6 +6,7 @@ use App\Http\Controllers\BranchController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\MedicineController;
 use App\Http\Controllers\SaleController;
+use App\Http\Controllers\SalesReportController;
 use App\Http\Controllers\ShiftController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -32,6 +33,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('sales/history', [SaleController::class, 'history'])->name('sales.history');
     Route::get('sales/search', [SaleController::class, 'search'])->name('sales.search');
     Route::get('sales/{sale}/ticket', [SaleController::class, 'ticket'])->name('sales.ticket');
+    Route::get('reports/sales', [SalesReportController::class, 'index'])->name('reports.sales.index');
+    Route::get('reports/sales/download', [SalesReportController::class, 'download'])->name('reports.sales.download');
     Route::post('sales', [SaleController::class, 'store'])->name('sales.store');
 });
 

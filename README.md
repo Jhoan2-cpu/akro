@@ -18,6 +18,7 @@ docker compose -f docker-compose.dev.yml up -d
 - Las tablas del sistema deben usar cabecera destacada con mayor peso tipográfico y filas intercaladas en blanco/verde claro para mejorar legibilidad.
 - El sidebar incluye una sección inferior de **Notificaciones** con conteo de productos vencidos, alertas de caducidad menor a 30 días y mensajes resumidos por producto.
 - Cuando existan productos vencidos o por caducar, la app muestra un aviso temporal flotante en la esquina inferior derecha para solicitar acciones correctivas/preventivas.
+- Se incorpora el módulo de **Reporte PDF de ventas por sucursal/rango de fecha** en `/reports/sales`, generando el PDF al momento de hacer clic en descargar.
 
 ## MER Fiscal (Resumen)
 ```mermaid
