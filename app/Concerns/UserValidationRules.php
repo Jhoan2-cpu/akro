@@ -33,9 +33,15 @@ trait UserValidationRules
         return ['required', 'integer', Rule::exists('branches', 'id')];
     }
 
-    protected function roleRules(): array
+    protected function roleRules(bool $includeSuperuser = false): array
     {
-        return ['required', Rule::in(['admin', 'employee'])];
+        $roles = ['admin', 'employee'];
+
+        if ($includeSuperuser) {
+            $roles[] = 'superuser';
+        }
+
+        return ['required', Rule::in($roles)];
     }
 
     protected function statusRules(): array

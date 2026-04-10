@@ -1,8 +1,17 @@
-import { Head, Link, router, useForm } from '@inertiajs/react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Head, router, useForm } from '@inertiajs/react';
 import { Trash2, Edit2, Plus, Search } from 'lucide-react';
 import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 type Branch = {
     id: number;
@@ -32,19 +41,24 @@ type Props = {
     };
 };
 
-function decodePaginationLabel(label: string): string {
-    return label
-        .replace(/&laquo;\s?/g, '‹ ')
-        .replace(/\s?&raquo;/g, ' ›')
-        .replace(/<[^>]*>/g, '');
-}
-
 export default function BranchesIndex({ branches, filters }: Props) {
     const [searchQuery, setSearchQuery] = useState(filters.search || '');
-    const [deletingId, setDeletingId] = useState<number | null>(null);
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [editingBranch, setEditingBranch] = useState<Branch | null>(null);
+    const [deletingBranch, setDeletingBranch] = useState<Branch | null>(null);
 
     const filterForm = useForm({
         search: filters.search ?? '',
+    });
+
+    const createForm = useForm({
+        name: '',
+        address: '',
+    });
+
+    const editForm = useForm({
+        name: '',
+        address: '',
     });
 
     const handleSearch = (value: string): void => {
@@ -62,9 +76,69 @@ export default function BranchesIndex({ branches, filters }: Props) {
         router.get('/branches', {}, { preserveScroll: true, replace: true });
     };
 
-    const handleDelete = (id: number): void => {
-        router.delete(`/branches/${id}`, {
-            onSuccess: () => setDeletingId(null),
+    const openCreateModal = (): void => {
+        createForm.reset();
+        createForm.clearErrors();
+        setIsCreateModalOpen(true);
+    };
+
+    const openEditModal = (branch: Branch): void => {
+        editForm.clearErrors();
+        editForm.setData({
+            name: branch.name,
+            address: branch.address,
+        });
+        setEditingBranch(branch);
+    };
+
+    const closeEditModal = (): void => {
+        setEditingBranch(null);
+        editForm.reset();
+        editForm.clearErrors();
+    };
+
+    const submitCreate = (event: React.FormEvent<HTMLFormElement>): void => {
+        event.preventDefault();
+
+        createForm.post('/branches', {
+            preserveScroll: true,
+            onSuccess: () => {
+                setIsCreateModalOpen(false);
+                createForm.reset();
+                createForm.clearErrors();
+            },
+            onError: () => {
+                setIsCreateModalOpen(true);
+            },
+        });
+    };
+
+    const submitEdit = (event: React.FormEvent<HTMLFormElement>): void => {
+        event.preventDefault();
+
+        if (!editingBranch) {
+            return;
+        }
+
+        editForm.patch(`/branches/${editingBranch.id}`, {
+            preserveScroll: true,
+            onSuccess: () => {
+                closeEditModal();
+            },
+            onError: () => {
+                setEditingBranch(editingBranch);
+            },
+        });
+    };
+
+    const submitDelete = (): void => {
+        if (!deletingBranch) {
+            return;
+        }
+
+        router.delete(`/branches/${deletingBranch.id}`, {
+            preserveScroll: true,
+            onSuccess: () => setDeletingBranch(null),
         });
     };
 
@@ -72,38 +146,46 @@ export default function BranchesIndex({ branches, filters }: Props) {
         <>
             <Head title="Sucursales" />
 
-            <div className="space-y-6 p-4 md:p-6">
-                {/* Header */}
-                <section className="flex flex-col gap-4 rounded-3xl border border-sidebar-border/70 bg-background p-5 shadow-sm md:flex-row md:items-end md:justify-between md:p-6">
-                    <div>
-                        <h1 className="text-3xl font-semibold tracking-tight">
-                            Sucursales
-                        </h1>
-                        <p className="mt-1 text-sm text-muted-foreground md:text-base">
-                            Gestiona todas las sucursales del sistema
-                        </p>
+            <div className="page-shell space-y-4 bg-transparent p-4 md:p-6">
+                <section className="overflow-hidden rounded-3xl border border-sidebar-border/70 bg-background shadow-sm">
+                    <div className="bg-primary px-5 py-4 text-primary-foreground md:px-6 md:py-5">
+                        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+                            <div>
+                                <h1 className="text-3xl font-semibold tracking-tight">Sucursales</h1>
+                                <p className="mt-1 text-sm text-primary-foreground/85 md:text-base">
+                                    Gestiona todas las sucursales del sistema
+                                </p>
+                            </div>
+                            <Button
+                                className="rounded-full border border-primary-foreground/20 bg-primary-foreground text-primary hover:bg-primary-foreground/90"
+                                onClick={openCreateModal}
+                            >
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    Nueva Sucursal
+                            </Button>
+                        </div>
                     </div>
-                    <Button className="rounded-full" asChild>
-                        <Link href="/branches/create">
-                            <Plus className="mr-2 h-4 w-4" />
-                            Nueva Sucursal
-                        </Link>
-                    </Button>
+
                 </section>
 
                 {/* Search */}
-                <form onSubmit={(e) => { e.preventDefault(); }} className="flex gap-2">
-                    <div className="relative flex-1 max-w-sm">
-                        <Search className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted-foreground" />
+                <form
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                    }}
+                    className="flex flex-col gap-3 rounded-3xl border border-sidebar-border/70 bg-background p-4 shadow-sm md:flex-row md:items-center"
+                >
+                    <div className="relative flex-1 md:max-w-sm">
+                        <Search className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-primary/80" />
                         <Input
                             placeholder="Buscar por nombre o dirección..."
                             value={searchQuery}
                             onChange={(e) => handleSearch(e.target.value)}
-                            className="h-11 rounded-full pl-11"
+                            className="h-11 rounded-full border-sidebar-border bg-background pl-11 text-foreground placeholder:text-muted-foreground/90 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
                         />
                     </div>
                     {searchQuery && (
-                        <Button type="button" variant="ghost" className="h-11 rounded-full px-5" onClick={clearFilters}>
+                        <Button type="button" variant="outline" className="h-11 rounded-full border-sidebar-border bg-background px-5 text-foreground hover:bg-muted" onClick={clearFilters}>
                             Limpiar
                         </Button>
                     )}
@@ -112,14 +194,14 @@ export default function BranchesIndex({ branches, filters }: Props) {
                 {/* Table */}
                 <div className="rounded-3xl border border-sidebar-border/70 bg-background shadow-sm overflow-hidden">
                     <div className="hidden xl:block">
-                        <div className="grid grid-cols-[1.5fr_2fr_1fr_0.8fr] border-b border-sidebar-border/70 px-6 py-4 text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground gap-4">
+                        <div className="table-header-highlight grid grid-cols-[1.5fr_2fr_1fr_0.8fr] border-b border-sidebar-border/70 px-6 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground gap-4">
                             <span>Nombre</span>
                             <span>Dirección</span>
-                            <span>Fecha de Creación</span>
+                            <span className="text-center">Fecha de Creación</span>
                             <span className="text-right">Acciones</span>
                         </div>
 
-                        <div className="divide-y divide-sidebar-border/70">
+                        <div className="table-zebra divide-y divide-sidebar-border/70">
                             {branches.data.length === 0 ? (
                                 <div className="px-6 py-8 text-center text-muted-foreground">
                                     No hay sucursales registradas
@@ -138,23 +220,25 @@ export default function BranchesIndex({ branches, filters }: Props) {
                                         <p className="text-sm text-foreground">
                                             {branch.address}
                                         </p>
-                                        <p className="text-sm text-muted-foreground">
+                                        <p className="text-center text-sm text-muted-foreground">
                                             {new Date(
                                                 branch.created_at
                                             ).toLocaleDateString('es-ES')}
                                         </p>
                                         <div className="flex justify-end gap-2">
-                                            <Button variant="ghost" size="sm" asChild>
-                                                <Link href={`/branches/${branch.id}/edit`}>
-                                                    <Edit2 className="h-4 w-4" />
-                                                </Link>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                className="border-sidebar-border bg-background text-foreground hover:bg-muted"
+                                                onClick={() => openEditModal(branch)}
+                                            >
+                                                <Edit2 className="h-4 w-4" />
                                             </Button>
                                             <Button
-                                                variant="ghost"
+                                                variant="outline"
                                                 size="sm"
-                                                onClick={() =>
-                                                    setDeletingId(branch.id)
-                                                }
+                                                className="border-sidebar-border bg-background text-foreground hover:bg-muted"
+                                                onClick={() => setDeletingBranch(branch)}
                                             >
                                                 <Trash2 className="h-4 w-4 text-destructive" />
                                             </Button>
@@ -186,17 +270,19 @@ export default function BranchesIndex({ branches, filters }: Props) {
                                             </p>
                                         </div>
                                         <div className="flex gap-2">
-                                            <Button variant="ghost" size="sm" asChild>
-                                                <Link href={`/branches/${branch.id}/edit`}>
-                                                    <Edit2 className="h-4 w-4" />
-                                                </Link>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                className="border-sidebar-border bg-background text-foreground hover:bg-muted"
+                                                onClick={() => openEditModal(branch)}
+                                            >
+                                                <Edit2 className="h-4 w-4" />
                                             </Button>
                                             <Button
-                                                variant="ghost"
+                                                variant="outline"
                                                 size="sm"
-                                                onClick={() =>
-                                                    setDeletingId(branch.id)
-                                                }
+                                                className="border-sidebar-border bg-background text-foreground hover:bg-muted"
+                                                onClick={() => setDeletingBranch(branch)}
                                             >
                                                 <Trash2 className="h-4 w-4 text-destructive" />
                                             </Button>
@@ -212,36 +298,134 @@ export default function BranchesIndex({ branches, filters }: Props) {
                 </div>
             </div>
 
-            {/* Delete Confirmation Modal */}
-            {deletingId !== null && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-                    <div className="rounded-lg bg-white p-6 shadow-lg max-w-sm mx-4">
-                        <h2 className="text-lg font-semibold mb-2">
-                            Eliminar Sucursal
-                        </h2>
-                        <p className="text-sm text-muted-foreground mb-6">
-                            ¿Está seguro que desea eliminar esta sucursal? Esta
-                            acción no se puede deshacer.
-                        </p>
-                        <div className="flex justify-end gap-2">
-                            <Button
-                                variant="outline"
-                                onClick={() => setDeletingId(null)}
-                            >
+            <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
+                <DialogContent className="sm:max-w-xl">
+                    <DialogHeader>
+                        <DialogTitle>Nueva sucursal</DialogTitle>
+                        <DialogDescription>
+                            Registra una sucursal con su nombre y dirección para habilitar operación y asignación de personal.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <form onSubmit={submitCreate} className="space-y-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="branch-create-name">Nombre</Label>
+                            <Input
+                                id="branch-create-name"
+                                placeholder="Ej. Sucursal Centro"
+                                value={createForm.data.name}
+                                onChange={(event) => createForm.setData('name', event.target.value)}
+                                className={createForm.errors.name ? 'border-destructive' : ''}
+                            />
+                            {createForm.errors.name && (
+                                <p className="text-xs text-destructive">{createForm.errors.name}</p>
+                            )}
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="branch-create-address">Dirección</Label>
+                            <Input
+                                id="branch-create-address"
+                                placeholder="Ej. Calle Principal 123, Puebla"
+                                value={createForm.data.address}
+                                onChange={(event) => createForm.setData('address', event.target.value)}
+                                className={createForm.errors.address ? 'border-destructive' : ''}
+                            />
+                            {createForm.errors.address && (
+                                <p className="text-xs text-destructive">{createForm.errors.address}</p>
+                            )}
+                        </div>
+
+                        <DialogFooter>
+                            <Button type="button" variant="outline" onClick={() => setIsCreateModalOpen(false)}>
                                 Cancelar
                             </Button>
-                            <Button
-                                variant="destructive"
-                                onClick={() =>
-                                    deletingId && handleDelete(deletingId)
-                                }
-                            >
-                                Eliminar
+                            <Button type="submit" disabled={createForm.processing}>
+                                {createForm.processing ? 'Registrando...' : 'Registrar sucursal'}
                             </Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={editingBranch !== null} onOpenChange={(open) => !open && closeEditModal()}>
+                <DialogContent className="sm:max-w-xl">
+                    <DialogHeader>
+                        <DialogTitle>Editar sucursal</DialogTitle>
+                        <DialogDescription>
+                            Actualiza la información de la sucursal seleccionada sin salir del listado.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <form onSubmit={submitEdit} className="space-y-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="branch-edit-name">Nombre</Label>
+                            <Input
+                                id="branch-edit-name"
+                                placeholder="Ej. Sucursal Centro"
+                                value={editForm.data.name}
+                                onChange={(event) => editForm.setData('name', event.target.value)}
+                                className={editForm.errors.name ? 'border-destructive' : ''}
+                            />
+                            {editForm.errors.name && (
+                                <p className="text-xs text-destructive">{editForm.errors.name}</p>
+                            )}
                         </div>
-                    </div>
-                </div>
-            )}
+
+                        <div className="space-y-2">
+                            <Label htmlFor="branch-edit-address">Dirección</Label>
+                            <Input
+                                id="branch-edit-address"
+                                placeholder="Ej. Calle Principal 123, Puebla"
+                                value={editForm.data.address}
+                                onChange={(event) => editForm.setData('address', event.target.value)}
+                                className={editForm.errors.address ? 'border-destructive' : ''}
+                            />
+                            {editForm.errors.address && (
+                                <p className="text-xs text-destructive">{editForm.errors.address}</p>
+                            )}
+                        </div>
+
+                        <DialogFooter>
+                            <Button type="button" variant="outline" onClick={closeEditModal}>
+                                Cancelar
+                            </Button>
+                            <Button type="submit" disabled={editForm.processing}>
+                                {editForm.processing ? 'Guardando...' : 'Guardar cambios'}
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={deletingBranch !== null} onOpenChange={(open) => !open && setDeletingBranch(null)}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>Eliminar sucursal</DialogTitle>
+                        <DialogDescription>
+                            Esta acción no se puede deshacer. La sucursal seleccionada será eliminada permanentemente.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <DialogFooter>
+                        <Button type="button" variant="outline" onClick={() => setDeletingBranch(null)}>
+                            Cancelar
+                        </Button>
+                        <Button type="button" variant="destructive" onClick={submitDelete}>
+                            Eliminar
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </>
     );
 }
+
+BranchesIndex.layout = {
+    breadcrumbs: [
+        {
+            title: 'Sucursales',
+            href: '/branches',
+        },
+    ],
+};

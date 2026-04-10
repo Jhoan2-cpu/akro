@@ -1,5 +1,6 @@
-﻿import { CircleAlert, FlaskConical, Pill, Save, UploadCloud, X } from 'lucide-react';
-import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 'react';
+﻿import { CircleAlert, FlaskConical, Pill, Plus, Save, UploadCloud, X } from 'lucide-react';
+import { useEffect, useRef, useState   } from 'react';
+import type {FormEvent, KeyboardEvent} from 'react';
 import BarcodeScannerDialog from '@/components/barcode-scanner-dialog';
 import InputError from '@/components/input-error';
 import { Badge } from '@/components/ui/badge';
@@ -50,6 +51,7 @@ type Props = {
     data: MedicineFormValues;
     errors: Record<string, string | undefined>;
     processing: boolean;
+    branches: SelectOption[];
     categories: SelectOption[];
     activeIngredients: SelectOption[];
     currentImagePath?: string | null;
@@ -61,6 +63,7 @@ type Props = {
     toggleActiveIngredient: (activeIngredientId: number) => void;
     onQuickCreateCategory: (name: string) => Promise<void>;
     onQuickCreateActiveIngredient: (name: string) => Promise<void>;
+    isSuperuser?: boolean;
 };
 
 export default function MedicineForm({
@@ -70,6 +73,7 @@ export default function MedicineForm({
     data,
     errors,
     processing,
+    branches,
     categories,
     activeIngredients,
     currentImagePath,
@@ -81,6 +85,7 @@ export default function MedicineForm({
     toggleActiveIngredient,
     onQuickCreateCategory,
     onQuickCreateActiveIngredient,
+    isSuperuser = true,
 }: Props) {
     const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
     const [newCategoryName, setNewCategoryName] = useState('');
@@ -89,6 +94,7 @@ export default function MedicineForm({
     const [ingredientError, setIngredientError] = useState<string | null>(null);
     const [isCreatingCategory, setIsCreatingCategory] = useState(false);
     const [isCreatingIngredient, setIsCreatingIngredient] = useState(false);
+    const [selectedBranchId, setSelectedBranchId] = useState<string>('');
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [isDraggingImage, setIsDraggingImage] = useState(false);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -109,6 +115,19 @@ export default function MedicineForm({
     }, [data.image]);
 
     const selectedActiveIngredients = activeIngredients.filter((option) => data.active_ingredient_ids.includes(option.id));
+    const availableBranches = branches.filter((branch) => !data.stocks.some((stock) => stock.branch_id === branch.id));
+
+    useEffect(() => {
+        if (availableBranches.length === 0) {
+            setSelectedBranchId('');
+
+            return;
+        }
+
+        if (selectedBranchId === '' || !availableBranches.some((branch) => String(branch.id) === selectedBranchId)) {
+            setSelectedBranchId(String(availableBranches[0].id));
+        }
+    }, [availableBranches, selectedBranchId]);
 
     const createCategory = async (): Promise<void> => {
         const name = newCategoryName.trim();
@@ -187,20 +206,48 @@ export default function MedicineForm({
         setData('image', file);
     };
 
+    const addBranchStock = (): void => {
+        if (selectedBranchId === '') {
+            return;
+        }
+
+        const branch = branches.find((item) => String(item.id) === selectedBranchId);
+
+        if (!branch) {
+            return;
+        }
+
+        setData('stocks', [
+            ...data.stocks,
+            {
+                branch_id: branch.id,
+                branch_name: branch.name,
+                current_stock: '0',
+                minimum_stock: '0',
+                expiration_date: '',
+                sale_price: '0.00',
+            },
+        ]);
+    };
+
+    const removeBranchStock = (branchId: number): void => {
+        setData('stocks', data.stocks.filter((stock) => stock.branch_id !== branchId));
+    };
+
     const hasImagePreview = previewUrl !== null || currentImagePath !== null;
 
     return (
         <>
             <form onSubmit={onSubmit} className="space-y-6">
                 <div className="rounded-3xl border border-sidebar-border/70 bg-background shadow-sm">
-                    <div className="border-b border-sidebar-border/70 px-5 py-5 md:px-6">
+                    <div className="border-b border-primary/20 bg-primary px-5 py-5 text-primary-foreground md:px-6">
                         <div className="flex items-start gap-3">
-                            <div className="rounded-2xl bg-emerald-100 p-3 text-emerald-700">
+                            <div className="rounded-2xl bg-primary-foreground/10 p-3 text-primary-foreground">
                                 <Pill className="size-6" />
                             </div>
                             <div>
-                                <h1 className="text-2xl font-semibold tracking-tight text-foreground md:text-3xl">{title}</h1>
-                                <p className="mt-1 text-sm text-muted-foreground md:text-base">{description}</p>
+                                <h1 className="text-2xl font-semibold tracking-tight text-primary-foreground md:text-3xl">{title}</h1>
+                                <p className="mt-1 text-sm text-primary-foreground/85 md:text-base">{description}</p>
                             </div>
                         </div>
                     </div>
@@ -410,14 +457,66 @@ export default function MedicineForm({
 
                     <div className="rounded-3xl border border-sidebar-border/70 bg-background p-5 shadow-sm md:p-6 xl:max-h-[34vh] xl:overflow-y-auto">
                         <h2 className="text-lg font-semibold text-foreground">Sucursales e inventario</h2>
-                        <p className="mb-4 text-sm text-muted-foreground">Configura stock actual, stock mínimo y fecha de caducidad por sucursal.</p>
+                        <p className="mb-4 text-sm text-muted-foreground">
+                            {isSuperuser
+                                ? 'Agrega solo las sucursales que necesites registrar y configura su inventario.'
+                                : 'Tu rol solo permite registrar inventario en tu sucursal asignada.'}
+                        </p>
+
+                        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end">
+                            <div className="flex-1 space-y-2">
+                                <Label htmlFor="stock_branch_selector">Sucursal a registrar</Label>
+                                <select
+                                    id="stock_branch_selector"
+                                    value={selectedBranchId}
+                                    onChange={(event) => setSelectedBranchId(event.target.value)}
+                                    className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm"
+                                    disabled={!isSuperuser || availableBranches.length === 0}
+                                >
+                                    {availableBranches.length === 0 ? (
+                                        <option value="">Todas las sucursales ya fueron agregadas</option>
+                                    ) : (
+                                        availableBranches.map((branch) => (
+                                            <option key={branch.id} value={String(branch.id)}>
+                                                {branch.name}
+                                            </option>
+                                        ))
+                                    )}
+                                </select>
+                                {!isSuperuser && (
+                                    <p className="text-xs text-muted-foreground">Solo los superusuarios pueden seleccionar sucursales distintas.</p>
+                                )}
+                            </div>
+
+                            <Button
+                                type="button"
+                                variant="outline"
+                                className="h-11 rounded-xl"
+                                onClick={addBranchStock}
+                                disabled={availableBranches.length === 0 || selectedBranchId === ''}
+                            >
+                                <Plus className="size-4" />
+                                Agregar sucursal
+                            </Button>
+                        </div>
 
                         <div className="space-y-4">
+                            {data.stocks.length === 0 && (
+                                <div className="rounded-2xl border border-dashed border-sidebar-border/70 px-4 py-6 text-sm text-muted-foreground">
+                                    Aún no agregaste sucursales. Selecciona una sucursal y presiona "Agregar sucursal".
+                                </div>
+                            )}
+
                             {data.stocks.map((stock, index) => (
                                 <div key={stock.branch_id} className="rounded-2xl border border-sidebar-border/70 p-4">
                                     <div className="mb-3 flex items-center justify-between">
                                         <p className="font-medium text-foreground">{stock.branch_name}</p>
-                                        <Badge variant="outline">Sucursal</Badge>
+                                        <div className="flex items-center gap-2">
+                                            <Badge variant="outline">Sucursal</Badge>
+                                            <Button type="button" variant="ghost" className="h-8 rounded-lg px-3" onClick={() => removeBranchStock(stock.branch_id)}>
+                                                Quitar
+                                            </Button>
+                                        </div>
                                     </div>
 
                                     <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">

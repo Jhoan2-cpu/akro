@@ -4,27 +4,37 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Actions\Alerts\SendInventoryAdminEmailAlertsAction;
 use App\Http\Requests\Sales\StoreQuickSaleRequest;
+use App\Models\Branch;
 use App\Models\BranchMedicinePrice;
 use App\Models\Inventory;
 use App\Models\Medicine;
 use App\Models\Sale;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
-use Inertia\Response;
+use Inertia\Response as InertiaResponse;
 use RuntimeException;
 use Throwable;
 
 class SaleController extends Controller
 {
-    public function index(Request $request): Response
+    public function index(Request $request): InertiaResponse
     {
         $user = $request->user();
         $branch = $user?->branch;
+        $isSuperuser = ($user?->role ?? null) === 'superuser';
+
+        // Get all branches for superuser, only current branch for others
+        $branches = $isSuperuser
+            ? Branch::query()->orderBy('name')->get()->map(fn($b) => ['id' => $b->id, 'name' => $b->name])->toArray()
+            : ($branch ? [['id' => $branch->id, 'name' => $branch->name]] : []);
 
         return Inertia::render('sales/index', [
             'branch' => $branch ? [
@@ -32,18 +42,30 @@ class SaleController extends Controller
                 'name' => $branch->name,
                 'address' => $branch->address,
             ] : null,
+            'branches' => $branches,
             'employee' => $user ? [
                 'id' => $user->id,
                 'name' => $user->name,
                 'role' => $user->role,
             ] : null,
             'canSell' => $branch !== null,
+            'is_superuser' => $isSuperuser,
         ]);
     }
 
     public function search(Request $request): JsonResponse
     {
-        $branchId = $request->user()?->branch_id;
+        $user = $request->user();
+        $isSuperuser = ($user?->role ?? null) === 'superuser';
+        
+        // If superuser, allow selecting branch_id from request; otherwise use user's branch
+        $requestedBranchId = $request->input('branch_id');
+        if ($isSuperuser && $requestedBranchId) {
+            $branchId = (int) $requestedBranchId;
+        } else {
+            $branchId = $user?->branch_id;
+        }
+
         $query = trim((string) $request->input('query', ''));
 
         if ($branchId === null) {
@@ -106,53 +128,74 @@ class SaleController extends Controller
         ]);
     }
 
-    public function history(Request $request): Response
+    public function history(Request $request): InertiaResponse
     {
         $user = $request->user();
+        $isSuperuser = ($user?->role ?? null) === 'superuser';
         $search = trim((string) $request->input('search', ''));
         $from = trim((string) $request->input('from', ''));
         $to = trim((string) $request->input('to', ''));
 
-        $salesQuery = Sale::query()
+        $baseHistoryQuery = function () use ($user, $isSuperuser, $search, $from, $to): Builder {
+            $query = Sale::query();
+
+            if (! $isSuperuser) {
+                if ($user?->branch_id === null) {
+                    $query->whereRaw('1 = 0');
+                } else {
+                    $query->where('branch_id', $user->branch_id);
+                }
+            }
+
+            if ($search !== '') {
+                $query->where(function (Builder $builder) use ($search): void {
+                    $builder
+                        ->whereHas('user', function (Builder $userBuilder) use ($search): void {
+                            $userBuilder->where('name', 'ilike', "%{$search}%");
+                        })
+                        ->orWhereHas('branch', function (Builder $branchBuilder) use ($search): void {
+                            $branchBuilder->where('name', 'ilike', "%{$search}%");
+                        })
+                        ->orWhereHas('details.medicine', function (Builder $medicineBuilder) use ($search): void {
+                            $medicineBuilder
+                                ->where('name', 'ilike', "%{$search}%")
+                                ->orWhere('barcode', 'ilike', "%{$search}%");
+                        });
+                });
+            }
+
+            if ($from !== '') {
+                $query->whereDate('created_at', '>=', $from);
+            }
+
+            if ($to !== '') {
+                $query->whereDate('created_at', '<=', $to);
+            }
+
+            return $query;
+        };
+
+        $dailySales = $baseHistoryQuery()
+            ->selectRaw('DATE(created_at) as day')
+            ->selectRaw('COUNT(*) as sales_count')
+            ->selectRaw('COALESCE(SUM(total), 0) as total_amount')
+            ->groupBy('day')
+            ->orderBy('day')
+            ->get()
+            ->map(fn (object $row): array => [
+                'day' => (string) $row->day,
+                'sales_count' => (int) $row->sales_count,
+                'total_amount' => round((float) $row->total_amount, 2),
+            ])
+            ->values();
+
+        $salesQuery = $baseHistoryQuery()
             ->with([
                 'branch:id,name',
                 'user:id,name',
                 'details.medicine:id,name,barcode',
             ])
             ->orderByDesc('created_at');
-
-        if (($user?->role ?? null) !== 'admin') {
-            if ($user?->branch_id === null) {
-                $salesQuery->whereRaw('1 = 0');
-            } else {
-                $salesQuery->where('branch_id', $user->branch_id);
-            }
-        }
-
-        if ($search !== '') {
-            $salesQuery->where(function (Builder $builder) use ($search): void {
-                $builder
-                    ->whereHas('user', function (Builder $userBuilder) use ($search): void {
-                        $userBuilder->where('name', 'ilike', "%{$search}%");
-                    })
-                    ->orWhereHas('branch', function (Builder $branchBuilder) use ($search): void {
-                        $branchBuilder->where('name', 'ilike', "%{$search}%");
-                    })
-                    ->orWhereHas('details.medicine', function (Builder $medicineBuilder) use ($search): void {
-                        $medicineBuilder
-                            ->where('name', 'ilike', "%{$search}%")
-                            ->orWhere('barcode', 'ilike', "%{$search}%");
-                    });
-            });
-        }
-
-        if ($from !== '') {
-            $salesQuery->whereDate('created_at', '>=', $from);
-        }
-
-        if ($to !== '') {
-            $salesQuery->whereDate('created_at', '<=', $to);
-        }
 
         $sales = $salesQuery
             ->paginate(12)
@@ -167,7 +210,9 @@ class SaleController extends Controller
                         'barcode' => $detail->medicine?->barcode,
                         'quantity' => $quantity,
                         'unit_price' => number_format($unitPrice, 2, '.', ''),
-                        'subtotal' => number_format($quantity * $unitPrice, 2, '.', ''),
+                        'subtotal' => number_format((float) $detail->subtotal, 2, '.', ''),
+                        'tax_amount' => number_format((float) $detail->tax_amount, 2, '.', ''),
+                        'is_price_overridden' => (bool) $detail->is_price_overridden,
                     ];
                 })->values();
 
@@ -176,6 +221,8 @@ class SaleController extends Controller
                     'created_at' => $sale->created_at?->format('Y-m-d H:i:s'),
                     'employee_name' => $sale->user?->name,
                     'branch_name' => $sale->branch?->name,
+                    'subtotal' => number_format((float) $sale->subtotal, 2, '.', ''),
+                    'total_tax' => number_format((float) $sale->total_tax, 2, '.', ''),
                     'total' => number_format((float) $sale->total, 2, '.', ''),
                     'items_count' => $sale->details->sum('quantity'),
                     'lines' => $lines,
@@ -184,6 +231,7 @@ class SaleController extends Controller
 
         return Inertia::render('sales/history', [
             'sales' => $sales,
+            'dailySales' => $dailySales,
             'filters' => [
                 'search' => $search,
                 'from' => $from,
@@ -195,7 +243,17 @@ class SaleController extends Controller
     public function store(StoreQuickSaleRequest $request): RedirectResponse
     {
         $user = $request->user();
-        $branchId = $user?->branch_id;
+        $isSuperuser = ($user?->role ?? null) === 'superuser';
+        
+        // If superuser, allow selecting branch_id from request; otherwise use user's branch
+        $requestedBranchId = $request->input('branch_id');
+        if ($isSuperuser && $requestedBranchId) {
+            $branchId = (int) $requestedBranchId;
+        } else {
+            $branchId = $user?->branch_id;
+        }
+        
+        $createdSaleId = null;
 
         if ($user === null || $branchId === null) {
             return back()->with('toast', [
@@ -206,11 +264,13 @@ class SaleController extends Controller
 
         $validated = $request->validated();
         $items = $validated['items'];
+        $subtotal = 0.0;
+        $totalTax = 0.0;
         $total = 0.0;
         $saleLines = [];
 
         try {
-            DB::transaction(function () use (&$total, &$saleLines, $items, $user, $branchId): void {
+            DB::transaction(function () use (&$subtotal, &$totalTax, &$total, &$saleLines, &$createdSaleId, $items, $user, $branchId): void {
                 foreach ($items as $item) {
                     $medicine = Medicine::query()->findOrFail((int) $item['medicine_id']);
                     $inventory = Inventory::query()
@@ -224,7 +284,11 @@ class SaleController extends Controller
                     }
 
                     $quantity = (int) $item['quantity'];
-                    $unitPrice = (float) $item['unit_price'];
+                    $grossUnitPrice = (float) $item['unit_price'];
+                    $taxRate = (float) ($medicine->tax_rate ?? 0.00);
+                    $baseUnitPrice = $grossUnitPrice / (1 + $taxRate);
+                    $lineSubtotal = round($baseUnitPrice * $quantity, 2);
+                    $lineTaxAmount = round(($grossUnitPrice - $baseUnitPrice) * $quantity, 2);
 
                     if ($inventory->current_stock < $quantity) {
                         throw new RuntimeException("Stock insuficiente para {$medicine->name}.");
@@ -233,21 +297,33 @@ class SaleController extends Controller
                     $saleLines[] = [
                         'medicine_id' => $medicine->id,
                         'quantity' => $quantity,
-                        'unit_price' => $unitPrice,
+                        'unit_price' => round($grossUnitPrice, 2),
+                        'subtotal' => $lineSubtotal,
+                        'tax_amount' => $lineTaxAmount,
+                        'is_price_overridden' => (bool) ($item['is_price_overridden'] ?? false),
                     ];
 
-                    $total += round($quantity * $unitPrice, 2);
+                    $subtotal += $lineSubtotal;
+                    $totalTax += $lineTaxAmount;
 
                     $inventory->update([
                         'current_stock' => $inventory->current_stock - $quantity,
                     ]);
                 }
 
+                $subtotal = round($subtotal, 2);
+                $totalTax = round($totalTax, 2);
+                $total = round($subtotal + $totalTax, 2);
+
                 $sale = Sale::query()->create([
                     'user_id' => $user->id,
                     'branch_id' => $branchId,
-                    'total' => round($total, 2),
+                    'subtotal' => $subtotal,
+                    'total_tax' => $totalTax,
+                    'total' => $total,
                 ]);
+
+                $createdSaleId = $sale->id;
 
                 foreach ($saleLines as $saleLine) {
                     $sale->details()->create($saleLine);
@@ -267,9 +343,54 @@ class SaleController extends Controller
             ]);
         }
 
-        return to_route('sales.quick')->with('toast', [
-            'type' => 'success',
-            'message' => 'Venta registrada correctamente.',
+        app(SendInventoryAdminEmailAlertsAction::class)->execute();
+
+        return to_route('sales.quick')
+            ->with('toast', [
+                'type' => 'success',
+                'message' => 'Venta registrada correctamente.',
+            ])
+            ->with('ticket', [
+                'sale_id' => $createdSaleId,
+                'preview_url' => route('sales.ticket', ['sale' => $createdSaleId]),
+                'print_url' => route('sales.ticket', ['sale' => $createdSaleId, 'print' => 1]),
+                'download_url' => route('sales.ticket', ['sale' => $createdSaleId, 'download' => 1]),
+            ]);
+    }
+
+    public function ticket(Request $request, Sale $sale): Response
+    {
+        $user = $request->user();
+        $isSuperuser = ($user?->role ?? null) === 'superuser';
+
+        if ($user === null) {
+            abort(403);
+        }
+
+        if (! $isSuperuser && $user->branch_id !== $sale->branch_id) {
+            abort(403);
+        }
+
+        $sale->load([
+            'user:id,name',
+            'branch:id,name,address',
+            'details.medicine:id,name,barcode',
+        ]);
+
+        $pdf = Pdf::loadView('pdf.sales-ticket', [
+            'sale' => $sale,
+            'generatedAt' => now()->format('Y-m-d H:i:s'),
+        ])->setPaper('letter');
+
+        $filename = sprintf('ticket-venta-%d.pdf', $sale->id);
+
+        if ($request->boolean('download')) {
+            return $pdf->download($filename);
+        }
+
+        return response($pdf->output(), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => sprintf('inline; filename="%s"', $filename),
         ]);
     }
 
@@ -281,6 +402,7 @@ class SaleController extends Controller
             'barcode' => $medicine->barcode,
             'category' => $medicine->category?->name,
             'description' => $medicine->description,
+            'tax_rate' => number_format((float) ($medicine->tax_rate ?? 0), 2, '.', ''),
             'sale_price' => number_format((float) ($salePrice ?? 0), 2, '.', ''),
             'image_path' => $medicine->image_path,
             'active_ingredients' => $medicine->activeIngredients->pluck('name')->values(),

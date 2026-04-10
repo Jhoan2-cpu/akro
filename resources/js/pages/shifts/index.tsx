@@ -93,49 +93,52 @@ export default function ShiftsIndex({ currentShift, recentShifts, stats }: Props
         <>
             <Head title="Turnos" />
 
-            <div className="space-y-6 p-4 md:p-6">
+            <div className="page-shell space-y-4 bg-transparent p-4 md:p-6">
                 <motion.section
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.2, delay: 0 }}
-                    className="overflow-hidden rounded-4xl border border-sidebar-border/70 bg-[radial-gradient(circle_at_top_left,rgba(6,95,70,0.14),transparent_38%),linear-gradient(180deg,rgba(255,255,255,0.96),rgba(248,250,252,0.96))] p-6 shadow-sm md:p-8"
+                    className="overflow-hidden rounded-4xl border border-sidebar-border/70 bg-background shadow-sm"
                 >
-                    <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-                        <div className="max-w-3xl space-y-3">
-                            <Badge variant="outline" className="rounded-full border-emerald-200 bg-emerald-50 px-3 py-1 text-emerald-800">
-                                <Clock3 className="mr-2 size-3.5" />
-                                CU-12 / CU-13
-                            </Badge>
+                    <div className="bg-primary px-6 py-6 text-primary-foreground md:px-8 md:py-8">
+                        <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+                            <div className="max-w-3xl space-y-3">
+                                <Badge variant="outline" className="rounded-full border-primary-foreground/20 bg-primary-foreground/10 px-3 py-1 text-primary-foreground">
+                                    <Clock3 className="mr-2 size-3.5" />
+                                    CU-12 / CU-13
+                                </Badge>
 
-                            <div className="space-y-2">
-                                <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-                                    Registro de turnos
-                                </h1>
-                                <p className="max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
-                                    Registra la entrada y salida del turno con validación automática de turno abierto.
-                                </p>
+                                <div className="space-y-2">
+                                    <h1 className="text-3xl font-semibold tracking-tight text-primary-foreground sm:text-4xl">
+                                        Registro de turnos
+                                    </h1>
+                                    <p className="max-w-2xl text-sm leading-6 text-primary-foreground/85 sm:text-base">
+                                        Registra la entrada y salida del turno con validación automática de turno abierto.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="flex flex-col gap-3 sm:flex-row">
+                                <Button
+                                    onClick={registerClockIn}
+                                    disabled={isOpen || pendingAction !== null}
+                                    className="h-12 rounded-full border border-primary-foreground/20 bg-primary-foreground px-6 text-primary hover:bg-primary-foreground/90"
+                                >
+                                    <LogIn className="size-4" />
+                                    {pendingAction === 'clock-in' ? 'Registrando...' : 'Registrar entrada'}
+                                </Button>
+                                <Button
+                                    onClick={registerClockOut}
+                                    disabled={!isOpen || pendingAction !== null}
+                                    variant="outline"
+                                    className="h-12 rounded-full border-primary-foreground/20 bg-transparent px-6 text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground"
+                                >
+                                    <LogOut className="size-4" />
+                                    {pendingAction === 'clock-out' ? 'Registrando...' : 'Registrar salida'}
+                                </Button>
                             </div>
                         </div>
 
-                        <div className="flex flex-col gap-3 sm:flex-row">
-                            <Button
-                                onClick={registerClockIn}
-                                disabled={isOpen || pendingAction !== null}
-                                className="h-12 rounded-full bg-emerald-700 px-6 text-white hover:bg-emerald-800"
-                            >
-                                <LogIn className="size-4" />
-                                {pendingAction === 'clock-in' ? 'Registrando...' : 'Registrar entrada'}
-                            </Button>
-                            <Button
-                                onClick={registerClockOut}
-                                disabled={!isOpen || pendingAction !== null}
-                                variant="outline"
-                                className="h-12 rounded-full px-6"
-                            >
-                                <LogOut className="size-4" />
-                                {pendingAction === 'clock-out' ? 'Registrando...' : 'Registrar salida'}
-                            </Button>
-                        </div>
                     </div>
 
                     {errors.shift && (
@@ -147,7 +150,7 @@ export default function ShiftsIndex({ currentShift, recentShifts, stats }: Props
                     )}
                 </motion.section>
 
-                <section className="grid gap-4 md:grid-cols-4">
+                <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                     {[
                         {
                             label: 'Turno actual',
@@ -186,14 +189,14 @@ export default function ShiftsIndex({ currentShift, recentShifts, stats }: Props
                                 initial={{ opacity: 0, y: 12 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.2, delay: 0 }}
-                                className="rounded-3xl border border-sidebar-border/70 bg-background p-5 shadow-sm"
+                                className="h-full rounded-3xl border border-sidebar-border/70 bg-background p-5 shadow-sm"
                             >
                                 <div className={`mb-4 inline-flex rounded-2xl p-3 ${card.tone}`}>
                                     <Icon className="size-6" />
                                 </div>
                                 <p className="text-sm font-medium text-muted-foreground">{card.label}</p>
                                 <p className="mt-1 text-2xl font-semibold tracking-tight text-foreground">{card.value}</p>
-                                <p className="mt-2 text-sm text-muted-foreground">{card.hint}</p>
+                                <p className="mt-2 hidden text-sm text-muted-foreground xl:block">{card.hint}</p>
                             </motion.article>
                         );
                     })}

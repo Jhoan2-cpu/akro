@@ -12,11 +12,18 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-#[Fillable(['category_id', 'name', 'barcode', 'image_path', 'description'])]
+#[Fillable(['category_id', 'name', 'barcode', 'image_path', 'description', 'tax_rate'])]
 class Medicine extends Model
 {
     /** @use HasFactory<\Database\Factories\MedicineFactory> */
     use HasFactory, SoftDeletes;
+
+    protected function casts(): array
+    {
+        return [
+            'tax_rate' => 'decimal:2',
+        ];
+    }
 
     public function category(): BelongsTo
     {

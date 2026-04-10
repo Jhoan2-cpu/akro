@@ -1,6 +1,8 @@
 import { Head, router, useForm } from '@inertiajs/react';
-import { useState, type FormEvent } from 'react';
-import MedicineForm, { type MedicineFormValues } from '@/components/medicines/medicine-form';
+import { useState  } from 'react';
+import type {FormEvent} from 'react';
+import MedicineForm from '@/components/medicines/medicine-form';
+import type {MedicineFormValues} from '@/components/medicines/medicine-form';
 
 type Option = { id: number; name: string };
 
@@ -21,14 +23,7 @@ export default function CreateMedicine({ categories, activeIngredients, branches
         description: '',
         image: null,
         active_ingredient_ids: [],
-        stocks: branches.map((branch) => ({
-            branch_id: branch.id,
-            branch_name: branch.name,
-            current_stock: '0',
-            minimum_stock: '0',
-            expiration_date: '',
-            sale_price: '0.00',
-        })),
+        stocks: [],
     });
 
     const submit = (event: FormEvent<HTMLFormElement>): void => {
@@ -129,7 +124,7 @@ export default function CreateMedicine({ categories, activeIngredients, branches
         <>
             <Head title="Registrar medicamento" />
 
-            <div className="p-4 md:p-6">
+            <div className="page-shell p-4 md:p-6">
                 <MedicineForm
                     title="Registrar medicamento"
                     description="Alta de medicamentos con categoría, imagen, descripción, principios activos y stock por sucursal."
@@ -137,6 +132,7 @@ export default function CreateMedicine({ categories, activeIngredients, branches
                     data={form.data}
                     errors={form.errors}
                     processing={form.processing}
+                    branches={branches}
                     categories={categoryOptions}
                     activeIngredients={activeIngredientOptions}
                     onSubmit={submit}

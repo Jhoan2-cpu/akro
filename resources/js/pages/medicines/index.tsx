@@ -1,8 +1,9 @@
-import { Head, Link, router, useForm } from '@inertiajs/react';
+﻿import { Head, Link, router, useForm } from '@inertiajs/react';
 import { AlertTriangle, Boxes, PencilLine, Pill, Plus, Search, Trash2, TriangleAlert } from 'lucide-react';
 import { useState } from 'react';
 import BarcodeScannerDialog from '@/components/barcode-scanner-dialog';
-import MedicineForm, { type MedicineFormValues } from '@/components/medicines/medicine-form';
+import MedicineForm from '@/components/medicines/medicine-form';
+import type {MedicineFormValues} from '@/components/medicines/medicine-form';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -33,6 +34,7 @@ type MedicineRow = {
     active_ingredients: string[];
     total_stock: number;
     low_stock: boolean;
+    expired: boolean;
     near_expiry: boolean;
 };
 
@@ -55,13 +57,15 @@ type Props = {
     };
     ui: {
         openCreateModal: boolean;
+        is_superuser: boolean;
+        user_branch_id: number | null;
     };
 };
 
 function decodePaginationLabel(label: string): string {
     return label
-        .replace(/&laquo;\s?/g, '‹ ')
-        .replace(/\s?&raquo;/g, ' ›')
+    .replace(/&laquo;\s?/g, '« ')
+    .replace(/\s?&raquo;/g, ' »')
         .replace(/<[^>]*>/g, '');
 }
 
@@ -82,14 +86,7 @@ export default function MedicinesIndex({ medicines, categories, activeIngredient
         description: '',
         image: null,
         active_ingredient_ids: [],
-        stocks: branches.map((branch) => ({
-            branch_id: branch.id,
-            branch_name: branch.name,
-            current_stock: '0',
-            minimum_stock: '0',
-            expiration_date: '',
-            sale_price: '0.00',
-        })),
+        stocks: [],
     });
 
     const submitFilters = (event: React.FormEvent<HTMLFormElement>): void => {
@@ -199,14 +196,7 @@ export default function MedicinesIndex({ medicines, categories, activeIngredient
             preserveScroll: true,
             onSuccess: () => {
                 createForm.reset();
-                createForm.setData('stocks', branches.map((branch) => ({
-                    branch_id: branch.id,
-                    branch_name: branch.name,
-                    current_stock: '0',
-                    minimum_stock: '0',
-                    expiration_date: '',
-                    sale_price: '0.00',
-                })));
+                createForm.setData('stocks', []);
                 setIsCreateModalOpen(false);
 
                 if (ui.openCreateModal) {
@@ -237,31 +227,35 @@ export default function MedicinesIndex({ medicines, categories, activeIngredient
         <>
             <Head title="Medicamentos" />
 
-            <div className="space-y-6 p-4 md:p-6">
-                <section className="flex flex-col gap-4 rounded-3xl border border-sidebar-border/70 bg-background p-5 shadow-sm md:flex-row md:items-end md:justify-between md:p-6">
-                    <div>
-                        <h1 className="text-3xl font-semibold tracking-tight">Catálogo de medicamentos</h1>
-                        <p className="mt-1 text-sm text-muted-foreground md:text-base">
-                            Registra, edita y da de baja medicamentos del catálogo.
-                        </p>
-                    </div>
+            <div className="page-shell space-y-4 bg-transparent p-4 md:p-6">
+                <section className="overflow-hidden rounded-3xl border border-sidebar-border/70 bg-background shadow-sm">
+                    <div className="bg-primary px-5 py-4 text-primary-foreground md:px-6 md:py-5">
+                        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+                            <div>
+                                <h1 className="text-3xl font-semibold tracking-tight">Catálogo de medicamentos</h1>
+                                <p className="mt-1 text-sm text-primary-foreground/85 md:text-base">
+                                    Registra, edita y da de baja medicamentos del catálogo.
+                                </p>
+                            </div>
 
-                    <div className="flex flex-col gap-2 sm:flex-row">
-                        <Button asChild variant="outline" className="rounded-full">
-                            <Link href="/medicines/stock">
-                                <Boxes className="size-4" />
-                                Ver stock
-                            </Link>
-                        </Button>
-                        <Button className="rounded-full" onClick={() => setIsCreateModalOpen(true)}>
-                            <Plus className="size-4" />
-                            Registrar medicamento
-                        </Button>
+                            <div className="flex flex-col gap-2 md:flex-row md:flex-wrap md:justify-end">
+                                <Button asChild variant="outline" className="rounded-full border-primary-foreground/20 bg-primary-foreground/10 text-primary-foreground hover:bg-primary-foreground/20 hover:text-primary-foreground">
+                                    <Link href="/medicines/stock">
+                                        <Boxes className="size-4" />
+                                        Ver stock
+                                    </Link>
+                                </Button>
+                                <Button onClick={() => setIsCreateModalOpen(true)} className="rounded-full border border-primary-foreground/20 bg-primary-foreground text-primary hover:bg-primary-foreground/90">
+                                    <Plus className="size-4" />
+                                    Registrar medicamento
+                                </Button>
+                            </div>
+                        </div>
                     </div>
                 </section>
 
-                <form onSubmit={submitFilters} className="flex flex-col gap-3 rounded-3xl border border-sidebar-border/70 bg-background p-4 shadow-sm xl:flex-row xl:items-center">
-                    <div className="relative flex-1">
+                <form onSubmit={submitFilters} className="flex flex-col gap-3 rounded-3xl border border-sidebar-border/70 bg-background p-4 shadow-sm lg:flex-row lg:items-center">
+                    <div className="relative w-full lg:flex-1">
                         <Search className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted-foreground" />
                         <Input
                             value={filterForm.data.search}
@@ -271,12 +265,12 @@ export default function MedicinesIndex({ medicines, categories, activeIngredient
                         />
                     </div>
 
-                    <div className="grid gap-3 md:grid-cols-3 xl:w-140">
+                    <div className="grid gap-3 md:grid-cols-2 lg:flex lg:w-auto lg:items-center lg:gap-2">
                         <Select
                             value={filterForm.data.category_id}
                             onValueChange={(value) => filterForm.setData('category_id', value)}
                         >
-                            <SelectTrigger className="h-11 rounded-full border-input bg-background px-4 text-sm shadow-xs">
+                            <SelectTrigger className="h-11 rounded-full border-input bg-background px-4 text-sm shadow-xs lg:w-56">
                                 <SelectValue placeholder="Todas las categorías" />
                             </SelectTrigger>
                             <SelectContent>
@@ -289,11 +283,13 @@ export default function MedicinesIndex({ medicines, categories, activeIngredient
                             </SelectContent>
                         </Select>
 
-                        <BarcodeScannerDialog onDetected={(barcode) => filterForm.setData('search', barcode)} triggerLabel="Escanear" />
+                        <div className="min-w-0">
+                            <BarcodeScannerDialog onDetected={(barcode) => filterForm.setData('search', barcode)} triggerLabel="Escanear" />
+                        </div>
 
-                        <div className="flex items-center justify-end gap-2">
+                        <div className="flex items-center justify-start gap-2 md:col-span-2 md:justify-end lg:justify-end">
                             <Button type="submit" className="h-11 rounded-full px-5">Buscar</Button>
-                            <Button type="button" variant="ghost" className="h-11 rounded-full px-5" onClick={clearFilters}>
+                            <Button type="button" variant="ghost" className="h-11 rounded-full px-5 whitespace-nowrap" onClick={clearFilters}>
                                 Limpiar
                             </Button>
                         </div>
@@ -301,20 +297,20 @@ export default function MedicinesIndex({ medicines, categories, activeIngredient
                 </form>
 
                 <div className="rounded-3xl border border-sidebar-border/70 bg-background shadow-sm">
-                    <div className="hidden overflow-hidden rounded-3xl xl:block">
-                        <div className="grid grid-cols-[1.3fr_1fr_0.9fr_0.8fr_0.9fr_0.8fr] border-b border-sidebar-border/70 px-6 py-4 text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-                            <span>Medicamento</span>
-                            <span>Categoría / Código</span>
-                            <span>Principios activos</span>
-                            <span>Stock total</span>
-                            <span>Alertas</span>
-                            <span className="text-right">Acciones</span>
+                    <div className="hidden overflow-hidden rounded-3xl lg:block">
+                        <div className="table-header-highlight grid grid-cols-[1.2fr_0.95fr_1.1fr_0.7fr_0.95fr_0.8fr] border-b border-sidebar-border/70 px-6 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                            <span className="leading-tight">Medicamento</span>
+                            <span className="text-center leading-tight">Categoría /<br />Código</span>
+                            <span className="text-center leading-tight">Principios<br />activos</span>
+                            <span className="text-center leading-tight">Stock<br />total</span>
+                            <span className="text-center leading-tight">Alertas</span>
+                            <span className="text-right leading-tight">Acciones</span>
                         </div>
 
-                        <div className="divide-y divide-sidebar-border/70">
+                        <div className="table-zebra divide-y divide-sidebar-border/70">
                             {medicines.data.length > 0 ? (
                                 medicines.data.map((medicine) => (
-                                    <div key={medicine.id} className="grid grid-cols-[1.3fr_1fr_0.9fr_0.8fr_0.9fr_0.8fr] items-center gap-4 px-6 py-5">
+                                    <div key={medicine.id} className="grid grid-cols-[1.2fr_0.95fr_1.1fr_0.7fr_0.95fr_0.8fr] items-center gap-4 px-6 py-5">
                                         <div className="flex min-w-0 items-center gap-3">
                                             <div className="flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-sidebar-border/70 bg-muted/40">
                                                 {medicine.image_path ? (
@@ -333,33 +329,45 @@ export default function MedicinesIndex({ medicines, categories, activeIngredient
                                             </div>
                                         </div>
 
-                                        <div>
+                                        <div className="text-center">
                                             <p className="text-sm text-foreground">{medicine.category ?? 'Sin categoría'}</p>
                                             <p className="text-xs text-muted-foreground">{medicine.barcode}</p>
                                         </div>
 
-                                        <p className="text-sm text-muted-foreground">
+                                        <p className="text-center text-sm text-muted-foreground">
                                             {medicine.active_ingredients.length > 0 ? medicine.active_ingredients.join(', ') : 'Sin principios activos'}
                                         </p>
 
-                                        <p className="text-sm font-semibold text-foreground">{medicine.total_stock}</p>
+                                        <p className="text-center text-sm font-semibold text-foreground">{medicine.total_stock}</p>
 
-                                        <div className="flex flex-wrap gap-2">
+                                        <div className="flex flex-wrap justify-center gap-2">
+                                            {medicine.expired && (
+                                                <Badge variant="outline" className="border-rose-200 bg-rose-50 text-rose-700">
+                                                    <AlertTriangle className="size-3" />
+                                                    Vencido
+                                                </Badge>
+                                            )}
                                             {medicine.low_stock && (
                                                 <Badge variant="outline" className="border-rose-200 bg-rose-50 text-rose-700">
                                                     <AlertTriangle className="size-3" />
                                                     Stock bajo
                                                 </Badge>
                                             )}
-                                            {medicine.near_expiry && (
+                                            {!medicine.expired && medicine.near_expiry && (
                                                 <Badge variant="outline" className="border-amber-200 bg-amber-50 text-amber-700">
                                                     <TriangleAlert className="size-3" />
                                                     Próximo a caducar
                                                 </Badge>
                                             )}
+                                            {!medicine.expired && !medicine.low_stock && !medicine.near_expiry && (
+                                                <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-700">
+                                                    <Boxes className="size-3" />
+                                                    Saludable
+                                                </Badge>
+                                            )}
                                         </div>
 
-                                        <div className="flex justify-end gap-2">
+                                        <div className="flex flex-col items-end gap-2 xl:flex-row xl:justify-end">
                                             <Button asChild variant="outline" size="sm" className="rounded-full">
                                                 <Link href={`/medicines/${medicine.id}/edit`}>
                                                     <PencilLine className="size-4" />
@@ -381,7 +389,7 @@ export default function MedicinesIndex({ medicines, categories, activeIngredient
                         </div>
                     </div>
 
-                    <div className="space-y-3 p-4 xl:hidden">
+                    <div className="space-y-3 p-4 lg:hidden">
                         {medicines.data.length > 0 ? (
                             medicines.data.map((medicine) => (
                                 <article key={medicine.id} className="rounded-2xl border border-sidebar-border/70 p-4">
@@ -405,12 +413,18 @@ export default function MedicinesIndex({ medicines, categories, activeIngredient
                                     <p className="mt-2 text-sm text-muted-foreground">Stock: <span className="font-medium text-foreground">{medicine.total_stock}</span></p>
 
                                     <div className="mt-3 flex flex-wrap gap-2">
+                                            {medicine.expired && (
+                                                <Badge variant="outline" className="border-rose-200 bg-rose-50 text-rose-700">Vencido</Badge>
+                                            )}
                                         {medicine.low_stock && (
                                             <Badge variant="outline" className="border-rose-200 bg-rose-50 text-rose-700">Stock bajo</Badge>
                                         )}
-                                        {medicine.near_expiry && (
+                                            {!medicine.expired && medicine.near_expiry && (
                                             <Badge variant="outline" className="border-amber-200 bg-amber-50 text-amber-700">Próximo a caducar</Badge>
                                         )}
+                                            {!medicine.expired && !medicine.low_stock && !medicine.near_expiry && (
+                                                <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-700">Saludable</Badge>
+                                            )}
                                     </div>
 
                                     <div className="mt-4 flex flex-wrap gap-2">
@@ -481,6 +495,7 @@ export default function MedicinesIndex({ medicines, categories, activeIngredient
                         data={createForm.data}
                         errors={createForm.errors}
                         processing={createForm.processing}
+                        branches={branches}
                         categories={categoryOptions}
                         activeIngredients={activeIngredientOptions}
                         onSubmit={submitCreateMedicine}
@@ -491,6 +506,7 @@ export default function MedicinesIndex({ medicines, categories, activeIngredient
                         toggleActiveIngredient={toggleCreateActiveIngredient}
                         onQuickCreateCategory={quickCreateCategory}
                         onQuickCreateActiveIngredient={quickCreateActiveIngredient}
+                                            isSuperuser={ui.is_superuser}
                     />
                 </DialogContent>
             </Dialog>

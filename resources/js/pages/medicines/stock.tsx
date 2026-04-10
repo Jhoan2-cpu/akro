@@ -5,6 +5,13 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 
 type Option = {
     id: number;
@@ -21,6 +28,7 @@ type InventoryRow = {
     minimum_stock: number;
     expiration_date: string;
     days_to_expire: number;
+    is_expired: boolean;
     is_low_stock: boolean;
     is_near_expiry: boolean;
     is_out_of_stock: boolean;
@@ -56,6 +64,7 @@ type Props = {
         out_of_stock_records: number;
         near_expiry_records: number;
     };
+    is_superuser: boolean;
 };
 
 function decodePaginationLabel(label: string): string {
@@ -65,7 +74,7 @@ function decodePaginationLabel(label: string): string {
         .replace(/<[^>]*>/g, '');
 }
 
-export default function MedicinesStock({ inventories, branches, categories, filters, summary }: Props) {
+export default function MedicinesStock({ inventories, branches, categories, filters, summary, is_superuser }: Props) {
     const form = useForm({
         search: filters.search ?? '',
         branch_id: filters.branch_id ?? 'all',
@@ -98,14 +107,16 @@ export default function MedicinesStock({ inventories, branches, categories, filt
         <>
             <Head title="Stock por sucursal" />
 
-            <div className="space-y-6 p-4 md:p-6">
-                <section className="rounded-3xl border border-sidebar-border/70 bg-background p-5 shadow-sm md:p-6">
-                    <h1 className="text-3xl font-semibold tracking-tight">Stock por sucursal</h1>
-                    <p className="mt-1 text-sm text-muted-foreground md:text-base">
-                        Filtra por medicamento, sucursal, categoría y estado para localizar inventario crítico rápidamente.
-                    </p>
+            <div className="page-shell space-y-4 bg-transparent p-4 md:p-6">
+                <section className="overflow-hidden rounded-3xl border border-sidebar-border/70 bg-background shadow-sm">
+                    <div className="bg-primary px-5 py-4 text-primary-foreground md:px-6 md:py-5">
+                        <h1 className="text-3xl font-semibold tracking-tight">Stock por sucursal</h1>
+                        <p className="mt-1 text-sm text-primary-foreground/85 md:text-base">
+                            Filtra por medicamento, sucursal, categoría y estado para localizar inventario crítico rápidamente.
+                        </p>
+                    </div>
 
-                    <form onSubmit={submit} className="mt-5 grid gap-4 lg:grid-cols-4">
+                    <form onSubmit={submit} className="mt-3 grid gap-4 p-5 pt-1 lg:grid-cols-4 md:p-6 md:pt-2">
                         <div className="space-y-2 lg:col-span-2">
                             <Label htmlFor="stock_search">Medicamento o código</Label>
                             <div className="flex flex-col gap-2 sm:flex-row">
@@ -135,53 +146,68 @@ export default function MedicinesStock({ inventories, branches, categories, filt
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="branch_id">Sucursal</Label>
-                            <select
-                                id="branch_id"
+                            <Label>Sucursal</Label>
+                            <Select
                                 value={form.data.branch_id}
-                                onChange={(event) => form.setData('branch_id', event.target.value)}
-                                className="h-11 w-full rounded-full border border-input bg-background px-4 text-sm"
+                                onValueChange={(value) => form.setData('branch_id', value)}
+                                disabled={!is_superuser}
                             >
-                                <option value="all">Todas las sucursales</option>
-                                {branches.map((branch) => (
-                                    <option key={branch.id} value={String(branch.id)}>
+                                <SelectTrigger className="h-11 w-full rounded-full border-input bg-background px-4 text-sm shadow-xs disabled:opacity-50 disabled:cursor-not-allowed">
+                                    <SelectValue placeholder="Todas las sucursales" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">Todas las sucursales</SelectItem>
+                                    {branches.map((branch) => (
+                                    <SelectItem key={branch.id} value={String(branch.id)}>
                                         {branch.name}
-                                    </option>
+                                    </SelectItem>
                                 ))}
-                            </select>
+                                </SelectContent>
+                            </Select>
+                            {!is_superuser && (
+                                <p className="text-xs text-muted-foreground">
+                                    Solo superusuarios pueden seleccionar sucursal
+                                </p>
+                            )}
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="category_id">Categoría</Label>
-                            <select
-                                id="category_id"
+                            <Label>Categoría</Label>
+                            <Select
                                 value={form.data.category_id}
-                                onChange={(event) => form.setData('category_id', event.target.value)}
-                                className="h-11 w-full rounded-full border border-input bg-background px-4 text-sm"
+                                onValueChange={(value) => form.setData('category_id', value)}
                             >
-                                <option value="all">Todas las categorías</option>
+                                <SelectTrigger className="h-11 w-full rounded-full border-input bg-background px-4 text-sm shadow-xs">
+                                    <SelectValue placeholder="Todas las categorías" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                <SelectItem value="all">Todas las categorías</SelectItem>
                                 {categories.map((category) => (
-                                    <option key={category.id} value={String(category.id)}>
+                                    <SelectItem key={category.id} value={String(category.id)}>
                                         {category.name}
-                                    </option>
+                                    </SelectItem>
                                 ))}
-                            </select>
+                                </SelectContent>
+                            </Select>
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="status">Estado</Label>
-                            <select
-                                id="status"
+                            <Label>Estado</Label>
+                            <Select
                                 value={form.data.status}
-                                onChange={(event) => form.setData('status', event.target.value)}
-                                className="h-11 w-full rounded-full border border-input bg-background px-4 text-sm"
+                                onValueChange={(value) => form.setData('status', value)}
                             >
-                                <option value="all">Todos</option>
-                                <option value="out">Sin stock</option>
-                                <option value="low">Stock bajo</option>
-                                <option value="near-expiry">Próximo a caducar (&lt;30 días)</option>
-                                <option value="healthy">Saludable</option>
-                            </select>
+                                <SelectTrigger className="h-11 w-full rounded-full border-input bg-background px-4 text-sm shadow-xs">
+                                    <SelectValue placeholder="Todos" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">Todos</SelectItem>
+                                    <SelectItem value="out">Sin stock</SelectItem>
+                                    <SelectItem value="low">Stock bajo</SelectItem>
+                                    <SelectItem value="near-expiry">Próximo a caducar (&lt;30 días)</SelectItem>
+                                    <SelectItem value="healthy">Saludable</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
 
                         <div className="flex items-end justify-end gap-2 lg:col-span-3">
@@ -215,12 +241,14 @@ export default function MedicinesStock({ inventories, branches, categories, filt
                     </article>
                 </section>
 
-                <section className="rounded-3xl border border-sidebar-border/70 bg-background p-5 shadow-sm md:p-6">
-                    <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                        <h2 className="text-lg font-semibold text-foreground">Detalle de inventario</h2>
-                        <p className="text-sm text-muted-foreground">
-                            Mostrando {inventories.from ?? 0} a {inventories.to ?? 0} de {inventories.total} registros
-                        </p>
+                <section className="overflow-hidden rounded-3xl border border-sidebar-border/70 bg-background shadow-sm">
+                    <div className="bg-primary px-5 py-4 text-primary-foreground md:px-6 md:py-5">
+                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                            <h2 className="text-lg font-semibold text-primary-foreground">Detalle de inventario</h2>
+                            <p className="text-sm text-primary-foreground/85">
+                                Mostrando {inventories.from ?? 0} a {inventories.to ?? 0} de {inventories.total} registros
+                            </p>
+                        </div>
                     </div>
 
                     {inventories.data.length === 0 ? (
@@ -230,15 +258,15 @@ export default function MedicinesStock({ inventories, branches, categories, filt
                     ) : (
                         <>
                             <div className="hidden overflow-x-auto rounded-2xl border border-sidebar-border/70 xl:block">
-                                <table className="min-w-full text-sm">
-                                    <thead className="bg-muted/50 text-left text-xs uppercase tracking-[0.12em] text-muted-foreground">
+                                <table className="table-zebra-native min-w-full text-sm">
+                                    <thead className="text-left text-xs uppercase tracking-[0.12em] text-muted-foreground">
                                         <tr>
                                             <th className="px-4 py-3">Sucursal</th>
                                             <th className="px-4 py-3">Medicamento</th>
                                             <th className="px-4 py-3">Categoría</th>
-                                            <th className="px-4 py-3">Stock actual</th>
-                                            <th className="px-4 py-3">Stock mínimo</th>
-                                            <th className="px-4 py-3">Caducidad</th>
+                                            <th className="px-4 py-3 text-center">Stock actual</th>
+                                            <th className="px-4 py-3 text-center">Stock mínimo</th>
+                                            <th className="px-4 py-3 text-center">Caducidad</th>
                                             <th className="px-4 py-3">Estado</th>
                                         </tr>
                                     </thead>
@@ -251,12 +279,12 @@ export default function MedicinesStock({ inventories, branches, categories, filt
                                                     <p className="text-xs text-muted-foreground">{inventory.barcode ?? 'Sin código'}</p>
                                                 </td>
                                                 <td className="px-4 py-3 text-foreground">{inventory.category ?? 'Sin categoría'}</td>
-                                                <td className="px-4 py-3 text-foreground">{inventory.current_stock}</td>
-                                                <td className="px-4 py-3 text-foreground">{inventory.minimum_stock}</td>
-                                                <td className="px-4 py-3">
+                                                <td className="px-4 py-3 text-center text-foreground">{inventory.current_stock}</td>
+                                                <td className="px-4 py-3 text-center text-foreground">{inventory.minimum_stock}</td>
+                                                <td className="px-4 py-3 text-center">
                                                     <p className="text-foreground">{inventory.expiration_date}</p>
-                                                    <p className={`text-xs ${inventory.days_to_expire < 0 ? 'text-rose-700' : 'text-muted-foreground'}`}>
-                                                        {inventory.days_to_expire < 0
+                                                    <p className={`text-xs ${inventory.is_expired ? 'text-rose-700' : 'text-muted-foreground'}`}>
+                                                        {inventory.is_expired
                                                             ? `Vencido hace ${Math.abs(inventory.days_to_expire)} días`
                                                             : `Faltan ${inventory.days_to_expire} días`}
                                                     </p>
@@ -269,10 +297,13 @@ export default function MedicinesStock({ inventories, branches, categories, filt
                                                         {inventory.is_low_stock && !inventory.is_out_of_stock && (
                                                             <Badge variant="outline" className="border-rose-200 bg-rose-50 text-rose-700">Stock bajo</Badge>
                                                         )}
-                                                        {inventory.is_near_expiry && (
+                                                        {inventory.is_expired && (
+                                                            <Badge variant="outline" className="border-rose-200 bg-rose-50 text-rose-700">Vencido</Badge>
+                                                        )}
+                                                        {!inventory.is_expired && inventory.is_near_expiry && (
                                                             <Badge variant="outline" className="border-amber-200 bg-amber-50 text-amber-700">Caduca pronto</Badge>
                                                         )}
-                                                        {!inventory.is_low_stock && !inventory.is_near_expiry && !inventory.is_out_of_stock && (
+                                                        {!inventory.is_expired && !inventory.is_low_stock && !inventory.is_near_expiry && !inventory.is_out_of_stock && (
                                                             <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-700">Saludable</Badge>
                                                         )}
                                                     </div>
@@ -307,10 +338,13 @@ export default function MedicinesStock({ inventories, branches, categories, filt
                                             {inventory.is_low_stock && !inventory.is_out_of_stock && (
                                                 <Badge variant="outline" className="border-rose-200 bg-rose-50 text-rose-700">Stock bajo</Badge>
                                             )}
-                                            {inventory.is_near_expiry && (
+                                            {inventory.is_expired && (
+                                                <Badge variant="outline" className="border-rose-200 bg-rose-50 text-rose-700">Vencido</Badge>
+                                            )}
+                                            {!inventory.is_expired && inventory.is_near_expiry && (
                                                 <Badge variant="outline" className="border-amber-200 bg-amber-50 text-amber-700">Caduca pronto</Badge>
                                             )}
-                                            {!inventory.is_low_stock && !inventory.is_near_expiry && !inventory.is_out_of_stock && (
+                                            {!inventory.is_expired && !inventory.is_low_stock && !inventory.is_near_expiry && !inventory.is_out_of_stock && (
                                                 <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-700">Saludable</Badge>
                                             )}
                                         </div>
@@ -318,27 +352,33 @@ export default function MedicinesStock({ inventories, branches, categories, filt
                                 ))}
                             </div>
 
-                            <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-sidebar-border/70 pt-4">
-                                {inventories.links.map((link, index) => (
-                                    link.url ? (
-                                        <Link
-                                            key={`${link.label}-${index}`}
-                                            href={link.url}
-                                            preserveScroll
-                                            preserveState
-                                            className={`rounded-full px-4 py-2 text-sm transition ${link.active ? 'bg-foreground text-background' : 'border border-sidebar-border/70 bg-background text-foreground hover:bg-muted'}`}
-                                        >
-                                            {decodePaginationLabel(link.label)}
-                                        </Link>
-                                    ) : (
-                                        <span
-                                            key={`${link.label}-${index}`}
-                                            className="rounded-full border border-sidebar-border/70 px-4 py-2 text-sm text-muted-foreground"
-                                        >
-                                            {decodePaginationLabel(link.label)}
-                                        </span>
-                                    )
-                                ))}
+                            <div className="mt-4 flex flex-col gap-4 border-t border-sidebar-border/70 px-4 pb-2 pt-4 md:flex-row md:items-center md:justify-between md:px-6">
+                                <p className="text-sm text-muted-foreground">
+                                    Mostrando {inventories.from ?? 0} a {inventories.to ?? 0} de {inventories.total} registros.
+                                </p>
+
+                                <div className="flex flex-wrap items-center gap-2 md:justify-end">
+                                    {inventories.links.map((link, index) => (
+                                        link.url ? (
+                                            <Link
+                                                key={`${link.label}-${index}`}
+                                                href={link.url}
+                                                preserveScroll
+                                                preserveState
+                                                className={`rounded-full px-4 py-2 text-sm transition ${link.active ? 'bg-foreground text-background' : 'border border-sidebar-border/70 bg-background text-foreground hover:bg-muted'}`}
+                                            >
+                                                {decodePaginationLabel(link.label)}
+                                            </Link>
+                                        ) : (
+                                            <span
+                                                key={`${link.label}-${index}`}
+                                                className="rounded-full border border-sidebar-border/70 px-4 py-2 text-sm text-muted-foreground"
+                                            >
+                                                {decodePaginationLabel(link.label)}
+                                            </span>
+                                        )
+                                    ))}
+                                </div>
                             </div>
                         </>
                     )}

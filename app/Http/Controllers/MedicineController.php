@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Actions\Alerts\SendInventoryAdminEmailAlertsAction;
 use Cloudinary\Api\Upload\UploadApi;
 use App\Http\Requests\Medicines\StoreMedicineRequest;
 use App\Http\Requests\Medicines\UpdateMedicineRequest;
@@ -13,6 +14,7 @@ use App\Models\Branch;
 use App\Models\Category;
 use App\Models\Inventory;
 use App\Models\Medicine;
+use App\Traits\ScopeByBranchForRole;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -25,6 +27,8 @@ use Throwable;
 
 class MedicineController extends Controller
 {
+    use ScopeByBranchForRole;
+
     public function index(Request $request): Response
     {
         $search = trim((string) $request->input('search', ''));
@@ -43,12 +47,26 @@ class MedicineController extends Controller
             ->when($categoryId !== 'all', fn (Builder $builder) => $builder->where('category_id', (int) $categoryId))
             ->orderBy('name');
 
+        // Scoping: admins/employees solo ven medicines con inventory en su sucursal
+        if (!$this->isSuperuser($request)) {
+            $branchId = $request->user()?->branch_id;
+
+            if ($branchId === null) {
+                $query->whereRaw('1 = 0'); // Sin sucursal: no mostrar nada
+            } else {
+                $query->whereHas('inventories', fn (Builder $builder) => $builder->where('branch_id', $branchId));
+            }
+        }
+
         $medicines = $query->paginate(10)->withQueryString()->through(function (Medicine $medicine): array {
             $totalStock = (int) $medicine->inventories->sum('current_stock');
             $nearExpiry = $medicine->inventories->contains(function (Inventory $inventory): bool {
                 $days = Carbon::today()->diffInDays($inventory->expiration_date, false);
 
                 return $days >= 0 && $days < 30;
+            });
+            $expired = $medicine->inventories->contains(function (Inventory $inventory): bool {
+                return Carbon::today()->diffInDays($inventory->expiration_date, false) < 0;
             });
 
             return [
@@ -61,6 +79,7 @@ class MedicineController extends Controller
                 'active_ingredients' => $medicine->activeIngredients->pluck('name')->values(),
                 'total_stock' => $totalStock,
                 'low_stock' => $medicine->inventories->contains(fn (Inventory $inventory) => $inventory->current_stock <= $inventory->minimum_stock),
+                'expired' => $expired,
                 'near_expiry' => $nearExpiry,
             ];
         });
@@ -69,17 +88,18 @@ class MedicineController extends Controller
             'medicines' => $medicines,
             'categories' => Category::query()->orderBy('name')->get(['id', 'name']),
             'activeIngredients' => ActiveIngredient::query()->orderBy('name')->get(['id', 'name']),
-            'branches' => Branch::query()->orderBy('name')->get(['id', 'name']),
+            'branches' => $this->getAvailableBranchesForRole($request),
             'filters' => [
                 'search' => $search,
                 'category_id' => $categoryId,
             ],
             'ui' => [
                 'openCreateModal' => $openCreate,
+                'is_superuser' => $this->isSuperuser($request),
+                'user_branch_id' => $request->user()?->branch_id,
             ],
         ]);
     }
-
     public function create(): RedirectResponse
     {
         return to_route('medicines.index', [
@@ -91,6 +111,14 @@ class MedicineController extends Controller
     {
         $validated = $request->validated();
         $upload = $this->uploadMedicineImage($request->file('image'));
+
+        if ($request->hasFile('image') && $upload['path'] === null) {
+            return back()
+                ->withErrors([
+                    'image' => $upload['warning'] ?? 'No se pudo subir la imagen a Cloudinary.',
+                ])
+                ->withInput();
+        }
 
         DB::transaction(function () use ($validated, $upload): void {
             $medicine = Medicine::query()->create([
@@ -130,6 +158,8 @@ class MedicineController extends Controller
             }
         });
 
+        app(SendInventoryAdminEmailAlertsAction::class)->execute();
+
         Inertia::flash('toast', [
             'type' => $upload['warning'] ? 'warning' : 'success',
             'message' => $upload['warning'] ?? 'Medicamento registrado correctamente.',
@@ -138,13 +168,15 @@ class MedicineController extends Controller
         return to_route('medicines.index');
     }
 
-    public function edit(Medicine $medicine): Response
+    public function edit(Request $request, Medicine $medicine): Response
     {
         $medicine->load(['activeIngredients', 'inventories.branch', 'branchPrices']);
+        $availableBranchIds = $this->getAvailableBranchesForRole($request)->pluck('id');
+        $inventories = $medicine->inventories->whereIn('branch_id', $availableBranchIds->all())->values();
         $pricesByBranch = $medicine->branchPrices->keyBy('branch_id');
 
         return Inertia::render('medicines/edit', [
-            ...$this->baseFormPayload(),
+            ...$this->baseFormPayload($request),
             'medicine' => [
                 'id' => $medicine->id,
                 'name' => $medicine->name,
@@ -153,7 +185,7 @@ class MedicineController extends Controller
                 'description' => $medicine->description,
                 'image_path' => $medicine->image_path,
                 'active_ingredient_ids' => $medicine->activeIngredients->pluck('id')->values(),
-                'stocks' => $medicine->inventories->map(function (Inventory $inventory) use ($pricesByBranch): array {
+                'stocks' => $inventories->map(function (Inventory $inventory) use ($pricesByBranch): array {
                     $salePrice = $pricesByBranch->get($inventory->branch_id)?->sale_price;
 
                     return [
@@ -166,6 +198,10 @@ class MedicineController extends Controller
                     ];
                 })->values(),
             ],
+            'ui' => [
+                'is_superuser' => $this->isSuperuser($request),
+                'user_branch_id' => $request->user()?->branch_id,
+            ],
         ]);
     }
 
@@ -173,6 +209,14 @@ class MedicineController extends Controller
     {
         $validated = $request->validated();
         $upload = $this->uploadMedicineImage($request->file('image'));
+
+        if ($request->hasFile('image') && $upload['path'] === null) {
+            return back()
+                ->withErrors([
+                    'image' => $upload['warning'] ?? 'No se pudo subir la imagen a Cloudinary.',
+                ])
+                ->withInput();
+        }
 
         DB::transaction(function () use ($medicine, $validated, $upload): void {
             $previousImage = $medicine->image_path;
@@ -222,6 +266,8 @@ class MedicineController extends Controller
             }
         });
 
+        app(SendInventoryAdminEmailAlertsAction::class)->execute();
+
         Inertia::flash('toast', [
             'type' => $upload['warning'] ? 'warning' : 'success',
             'message' => $upload['warning'] ?? 'Medicamento actualizado correctamente.',
@@ -244,8 +290,18 @@ class MedicineController extends Controller
 
     public function stock(Request $request): Response
     {
+        $user = $request->user();
+        $isSuperuser = ($user?->role ?? null) === 'superuser';
+        
+        // If not superuser, restrict to own branch
+        $requestedBranchId = (string) $request->input('branch_id', 'all');
+        if (!$isSuperuser && $user?->branch_id !== null) {
+            $branchId = (string) $user->branch_id;
+        } else {
+            $branchId = $requestedBranchId;
+        }
+
         $search = trim((string) $request->input('search', ''));
-        $branchId = (string) $request->input('branch_id', 'all');
         $categoryId = (string) $request->input('category_id', 'all');
         $status = (string) $request->input('status', 'all');
 
@@ -301,6 +357,7 @@ class MedicineController extends Controller
                 $daysToExpire = $today->diffInDays($inventory->expiration_date, false);
                 $isLowStock = $inventory->current_stock <= $inventory->minimum_stock;
                 $isOutOfStock = $inventory->current_stock === 0;
+                $isExpired = $daysToExpire < 0;
                 $isNearExpiry = $daysToExpire >= 0 && $daysToExpire < 30;
 
                 return [
@@ -313,6 +370,7 @@ class MedicineController extends Controller
                     'minimum_stock' => $inventory->minimum_stock,
                     'expiration_date' => substr((string) $inventory->expiration_date, 0, 10),
                     'days_to_expire' => $daysToExpire,
+                    'is_expired' => $isExpired,
                     'is_low_stock' => $isLowStock,
                     'is_near_expiry' => $isNearExpiry,
                     'is_out_of_stock' => $isOutOfStock,
@@ -330,6 +388,7 @@ class MedicineController extends Controller
                 'status' => $status,
             ],
             'summary' => $summary,
+            'is_superuser' => $isSuperuser,
         ]);
     }
 
@@ -340,6 +399,13 @@ class MedicineController extends Controller
     {
         if ($file === null) {
             return ['path' => null, 'warning' => null];
+        }
+
+        if (! $this->hasCloudinaryCredentials()) {
+            return [
+                'path' => null,
+                'warning' => 'Cloudinary no está configurado correctamente. Verifica CLOUDINARY_CLOUD_NAME, CLOUDINARY_KEY y CLOUDINARY_SECRET.',
+            ];
         }
 
         try {
@@ -360,9 +426,27 @@ class MedicineController extends Controller
 
             return [
                 'path' => null,
-                'warning' => 'El medicamento se guardó, pero la imagen no pudo subirse.',
+                'warning' => $this->buildCloudinaryUploadError($exception),
             ];
         }
+    }
+
+    protected function hasCloudinaryCredentials(): bool
+    {
+        return (string) config('cloudinary.cloud_name') !== ''
+            && (string) config('cloudinary.key') !== ''
+            && (string) config('cloudinary.secret') !== '';
+    }
+
+    protected function buildCloudinaryUploadError(Throwable $exception): string
+    {
+        $message = $exception->getMessage();
+
+        if (str_contains($message, 'cURL error 60')) {
+            return 'No se pudo conectar con Cloudinary por certificados SSL (cURL error 60). Configura cacert en tu PHP local.';
+        }
+
+        return 'No se pudo subir la imagen a Cloudinary. Revisa credenciales y conectividad.';
     }
 
     protected function deleteMedicineImage(string $imagePath): void
@@ -422,12 +506,26 @@ class MedicineController extends Controller
     /**
      * @return array{categories: \Illuminate\Database\Eloquent\Collection<int, Category>, activeIngredients: \Illuminate\Database\Eloquent\Collection<int, ActiveIngredient>, branches: \Illuminate\Database\Eloquent\Collection<int, Branch>}
      */
-    protected function baseFormPayload(): array
+    protected function baseFormPayload(Request $request): array
     {
         return [
             'categories' => Category::query()->orderBy('name')->get(['id', 'name']),
             'activeIngredients' => ActiveIngredient::query()->orderBy('name')->get(['id', 'name']),
-            'branches' => Branch::query()->orderBy('name')->get(['id', 'name']),
+            'branches' => $this->getAvailableBranchesForRole($request),
         ];
+    }
+
+    protected function getAvailableBranchesForRole(Request $request): \Illuminate\Support\Collection
+    {
+        if ($this->isSuperuser($request)) {
+            return Branch::query()->orderBy('name')->get(['id', 'name']);
+        }
+
+        $branchId = $request->user()?->branch_id;
+        if ($branchId === null) {
+            return collect([]);
+        }
+
+        return Branch::query()->where('id', $branchId)->get(['id', 'name']);
     }
 }

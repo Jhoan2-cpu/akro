@@ -1,7 +1,6 @@
-import { Head, useForm } from '@inertiajs/react';
-import UserUpsertModal, {
-    type UserUpsertFormValues,
-} from '@/components/users/user-upsert-modal';
+import { Head, router, useForm } from '@inertiajs/react';
+import UserUpsertModal from '@/components/users/user-upsert-modal';
+import type {UserUpsertFormValues} from '@/components/users/user-upsert-modal';
 
 type Branch = {
     id: number;
@@ -12,7 +11,7 @@ type User = {
     id: number;
     name: string;
     email: string;
-    role: 'admin' | 'employee';
+    role: 'admin' | 'employee' | 'superuser';
     status: 'active' | 'inactive' | 'suspended';
     branch_id: number;
     profile_photo_path: string | null;
@@ -22,9 +21,13 @@ type User = {
 type Props = {
     user: User;
     branches: Branch[];
+    ui: {
+        is_superuser: boolean;
+        user_branch_id: number | null;
+    };
 };
 
-export default function EditUser({ user, branches }: Props) {
+export default function EditUser({ user, branches, ui }: Props) {
     const form = useForm<UserUpsertFormValues>({
         name: user.name,
         email: user.email,
@@ -39,9 +42,17 @@ export default function EditUser({ user, branches }: Props) {
     const submit = (event: React.FormEvent<HTMLFormElement>): void => {
         event.preventDefault();
 
-        form.put(`/users/${user.id}`, {
+        form.transform((data) => ({
+            ...data,
+            _method: 'put',
+        }));
+
+        form.post(`/users/${user.id}`, {
             forceFormData: true,
             preserveScroll: true,
+            onFinish: () => {
+                form.transform((data) => data);
+            },
         });
     };
 
@@ -52,7 +63,7 @@ export default function EditUser({ user, branches }: Props) {
                 title="Editar Usuario"
                 description="Actualiza los datos, rol, estado y foto de perfil del personal."
                 submitLabel="Guardar Cambios"
-                cancelHref="/users"
+                onCancel={() => router.visit('/users')}
                 data={form.data}
                 setData={form.setData}
                 errors={form.errors}
@@ -60,6 +71,9 @@ export default function EditUser({ user, branches }: Props) {
                 processing={form.processing}
                 onSubmit={submit}
                 currentPhotoUrl={user.profile_photo_path}
+                mode="page"
+                canSelectBranch={ui.is_superuser}
+                canAssignSuperuser={ui.is_superuser}
             />
         </>
     );

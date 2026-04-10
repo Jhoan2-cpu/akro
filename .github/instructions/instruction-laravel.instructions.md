@@ -24,6 +24,15 @@ description: Describe when these instructions should be loaded by the agent base
 
 # Cualquier cambio a la Base de Datos debe ser gestionado a través de migraciones de Laravel.
 
+# Estándares Fiscales México (IVA)
+- Para productos en `medicines`, registrar `tax_rate` (decimal) y tratar el precio de captura en POS como **precio bruto** (IVA incluido).
+- En ventas (`sales`) guardar resumen fiscal: `subtotal` (base imponible), `total_tax` (IVA) y `total` (importe final).
+- En detalle de ventas (`sale_details`) guardar `subtotal`, `tax_amount` e `is_price_overridden` para auditoría fiscal y trazabilidad de cambios manuales de precio.
+- Regla de cálculo backend obligatoria:
+    - `base = precio_bruto / (1 + tax_rate)`
+    - `iva = precio_bruto - base`
+- La UI de venta rápida debe mostrar siempre `Subtotal`, `IVA` y `Total a pagar`.
+
 # Para cualquier cambio en la UI, asegúrate de que el diseño sea responsivo y siga las pautas de Tailwind CSS.
 
 # Preferencias de Respuesta

@@ -1,8 +1,7 @@
-import { Head, Link, router, useForm } from '@inertiajs/react';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import { motion } from 'framer-motion';
 import {
     PencilLine,
-    Plus,
     Search,
     ShieldBan,
     Users,
@@ -14,7 +13,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import CreateUserDialog from '@/components/users/create-user-dialog';
 import {
     Select,
     SelectContent,
@@ -22,6 +20,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import CreateUserDialog from '@/components/users/create-user-dialog';
 import { useInitials } from '@/hooks/use-initials';
 
 type Branch = {
@@ -33,7 +32,7 @@ type UserRow = {
     id: number;
     name: string;
     email: string;
-    role: 'admin' | 'employee';
+    role: 'admin' | 'employee' | 'superuser';
     status: 'active' | 'inactive' | 'suspended';
     profile_photo_path: string | null;
     branch: Branch | null;
@@ -68,6 +67,10 @@ type Props = {
         active: number;
         suspended: number;
     };
+    ui: {
+        is_superuser: boolean;
+        user_branch_id: number | null;
+    };
 };
 
 const statusMeta: Record<
@@ -91,7 +94,16 @@ const statusMeta: Record<
 const roleMeta: Record<UserRow['role'], { label: string }> = {
     admin: { label: 'Administrador' },
     employee: { label: 'Empleado' },
+    superuser: { label: 'Superusuario' },
 };
+
+function getRoleLabel(role: string): string {
+    if (role in roleMeta) {
+        return roleMeta[role as UserRow['role']].label;
+    }
+
+    return 'Rol desconocido';
+}
 
 function decodePaginationLabel(label: string): string {
     return label
@@ -100,7 +112,8 @@ function decodePaginationLabel(label: string): string {
         .replace(/<[^>]*>/g, '');
 }
 
-export default function UsersIndex({ users, branches, filters, stats }: Props) {
+export default function UsersIndex({ users, branches, filters, stats, ui }: Props) {
+    const { auth } = usePage<{ auth: { user: { id: number } } }>().props;
     const initials = useInitials();
     const [pendingSuspendId, setPendingSuspendId] = useState<number | null>(null);
     const filterForm = useForm({
@@ -146,27 +159,36 @@ export default function UsersIndex({ users, branches, filters, stats }: Props) {
         <>
             <Head title="Gestión de Usuarios" />
 
-            <div className="flex min-h-full flex-1 flex-col gap-6 rounded-3xl p-4 md:p-6">
+            <div className="page-shell relative isolate flex min-h-full flex-1 flex-col gap-4 rounded-3xl bg-transparent p-4 md:p-6">
                 <motion.section
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.2, delay: 0 }}
-                    className="flex flex-col gap-4 rounded-3xl border border-sidebar-border/70 bg-background p-5 shadow-sm md:flex-row md:items-end md:justify-between md:p-6"
+                    className="relative z-20 overflow-visible rounded-3xl border border-sidebar-border/70 bg-background shadow-sm"
                 >
-                    <div className="space-y-1">
-                        <p className="text-3xl font-semibold tracking-tight text-foreground">
-                            Gestión de Usuarios
-                        </p>
-                        <p className="max-w-2xl text-sm text-muted-foreground md:text-base">
-                            Administra el acceso y los permisos del personal de
-                            Farmacia San Lucas.
-                        </p>
-                    </div>
+                    <div className="bg-primary px-5 py-4 text-primary-foreground md:px-6 md:py-5">
+                        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+                            <div className="space-y-1">
+                                <p className="text-3xl font-semibold tracking-tight text-primary-foreground">
+                                    Gestión de Usuarios
+                                </p>
+                                <p className="max-w-2xl text-sm text-primary-foreground/85 md:text-base">
+                                    Administra el acceso y los permisos del personal de
+                                    Farmacia San Lucas.
+                                </p>
+                            </div>
 
-                    <CreateUserDialog branches={branches} />
+                            <CreateUserDialog
+                                branches={branches}
+                                canSelectBranch={ui.is_superuser}
+                                userBranchId={ui.user_branch_id}
+                                canAssignSuperuser={ui.is_superuser}
+                            />
+                        </div>
+                    </div>
                 </motion.section>
 
-                <section className="grid gap-4 md:grid-cols-3">
+                <section className="relative z-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     {[
                         {
                             title: 'Personal Total',
@@ -195,16 +217,16 @@ export default function UsersIndex({ users, branches, filters, stats }: Props) {
                                 initial={{ opacity: 0, y: 12 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.2, delay: 0 }}
-                                className="flex items-center gap-4 rounded-3xl border border-sidebar-border/70 bg-background p-5 shadow-sm"
+                                className="flex min-w-0 items-center gap-3 rounded-3xl border border-sidebar-border/70 bg-background p-4 shadow-sm md:p-5"
                             >
-                                <div className={`rounded-2xl p-3 ${card.tone}`}>
-                                    <Icon className="size-6" />
+                                <div className={`rounded-2xl p-2.5 ${card.tone}`}>
+                                    <Icon className="size-5 md:size-6" />
                                 </div>
-                                <div>
-                                    <p className="text-sm font-medium text-muted-foreground">
+                                <div className="min-w-0">
+                                    <p className="truncate text-xs font-medium text-muted-foreground sm:text-sm">
                                         {card.title}
                                     </p>
-                                    <p className="text-4xl font-semibold tracking-tight text-foreground">
+                                    <p className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
                                         {String(card.value).padStart(2, '0')}
                                     </p>
                                 </div>
@@ -215,9 +237,9 @@ export default function UsersIndex({ users, branches, filters, stats }: Props) {
 
                 <form
                     onSubmit={submitFilters}
-                    className="flex flex-col gap-3 rounded-3xl border border-sidebar-border/70 bg-background p-4 shadow-sm xl:flex-row xl:items-center"
+                    className="relative z-10 flex flex-col gap-3 rounded-3xl border border-sidebar-border/70 bg-background p-4 shadow-sm xl:flex-row xl:items-center"
                 >
-                    <div className="relative flex-1">
+                    <div className="relative w-full xl:w-[45%]">
                         <Search className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted-foreground" />
                         <Input
                             value={filterForm.data.search}
@@ -229,7 +251,7 @@ export default function UsersIndex({ users, branches, filters, stats }: Props) {
                         />
                     </div>
 
-                    <div className="grid gap-3 md:grid-cols-3 xl:w-140">
+                    <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3 xl:flex-1">
                         <Select
                             value={filterForm.data.branch_id}
                             onValueChange={(value) =>
@@ -275,7 +297,7 @@ export default function UsersIndex({ users, branches, filters, stats }: Props) {
                             </SelectContent>
                         </Select>
 
-                        <div className="flex items-center justify-end gap-2">
+                        <div className="flex flex-wrap items-center justify-start gap-2 md:col-span-2 md:justify-end lg:col-span-1">
                             <Button type="submit" className="h-11 rounded-full px-5">
                                 Buscar
                             </Button>
@@ -291,29 +313,33 @@ export default function UsersIndex({ users, branches, filters, stats }: Props) {
                     </div>
                 </form>
 
-                <div className="rounded-3xl border border-sidebar-border/70 bg-background shadow-sm">
+                <div className="relative z-10 rounded-3xl border border-sidebar-border/70 bg-background shadow-sm">
                     <div className="hidden overflow-hidden rounded-3xl xl:block">
-                        <div className="grid grid-cols-[1.4fr_1.2fr_0.8fr_0.9fr_0.8fr_0.9fr] border-b border-sidebar-border/70 px-6 py-4 text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                        <div className="table-header-highlight grid grid-cols-[1.45fr_1.2fr_0.75fr_0.9fr_0.75fr_0.95fr] border-b border-sidebar-border/70 px-6 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
                             <span>Nombre y perfil</span>
                             <span>Correo electrónico</span>
-                            <span>Rol</span>
-                            <span>Sucursal</span>
-                            <span>Estado</span>
+                            <span className="text-center">Rol</span>
+                            <span className="text-center">Sucursal</span>
+                            <span className="text-center">Estado</span>
                             <span className="text-right">Acciones</span>
                         </div>
 
-                        <div className="divide-y divide-sidebar-border/70">
+                        <div className="table-zebra divide-y divide-sidebar-border/70">
                             {users.data.length > 0 ? (
-                                users.data.map((user) => (
+                                users.data.map((user) => {
+                                    const isSelf = user.id === auth.user.id;
+
+                                    return (
                                     <div
                                         key={user.id}
-                                        className="grid grid-cols-[1.4fr_1.2fr_0.8fr_0.9fr_0.8fr_0.9fr] items-center gap-4 px-6 py-5"
+                                        className="grid grid-cols-[1.45fr_1.2fr_0.75fr_0.9fr_0.75fr_0.95fr] items-center gap-4 px-6 py-5"
                                     >
                                         <div className="flex items-center gap-3">
                                             <Avatar className="size-12 border border-sidebar-border/70">
                                                 <AvatarImage
                                                     src={user.profile_photo_path ?? undefined}
                                                     alt={user.name}
+                                                    className="h-full w-full object-cover"
                                                 />
                                                 <AvatarFallback className="bg-emerald-100 font-semibold text-emerald-700">
                                                     {initials(user.name)}
@@ -333,41 +359,45 @@ export default function UsersIndex({ users, branches, filters, stats }: Props) {
                                             {user.email}
                                         </p>
 
-                                        <Badge
-                                            variant="outline"
-                                            className="w-fit rounded-full px-3 py-1"
-                                        >
-                                            {roleMeta[user.role].label}
-                                        </Badge>
+                                        <div className="flex justify-center">
+                                            <Badge
+                                                variant="outline"
+                                                className="w-fit rounded-full px-3 py-1"
+                                            >
+                                                {getRoleLabel(user.role)}
+                                            </Badge>
+                                        </div>
 
-                                        <p className="text-sm text-foreground">
+                                        <p className="text-center text-sm text-foreground">
                                             {user.branch?.name ?? 'Sin sucursal'}
                                         </p>
 
-                                        <Badge
-                                            variant="outline"
-                                            className={`w-fit rounded-full px-3 py-1 ${statusMeta[user.status].className}`}
-                                        >
-                                            {statusMeta[user.status].label}
-                                        </Badge>
+                                        <div className="flex justify-center">
+                                            <Badge
+                                                variant="outline"
+                                                className={`w-fit rounded-full px-3 py-1 ${statusMeta[user.status].className}`}
+                                            >
+                                                {statusMeta[user.status].label}
+                                            </Badge>
+                                        </div>
 
-                                        <div className="flex justify-end gap-2">
+                                        <div className="flex flex-col items-end gap-2 2xl:flex-row 2xl:justify-end">
                                             <Button
                                                 asChild
                                                 variant="outline"
                                                 size="sm"
-                                                className="rounded-full"
+                                                className="min-w-34.5 justify-center rounded-full"
                                             >
-                                                <Link href={`/users/${user.id}/edit`}>
+                                                <Link href={isSelf ? '/settings/profile' : `/users/${user.id}/edit`}>
                                                     <PencilLine className="size-4" />
-                                                    Editar
+                                                    {isSelf ? 'Editar en perfil' : 'Editar'}
                                                 </Link>
                                             </Button>
 
                                             <Button
                                                 size="sm"
                                                 variant="destructive"
-                                                className="rounded-full"
+                                                className="min-w-34.5 justify-center rounded-full"
                                                 onClick={() => suspendUser(user.id)}
                                                 disabled={
                                                     user.status === 'suspended' ||
@@ -383,7 +413,8 @@ export default function UsersIndex({ users, branches, filters, stats }: Props) {
                                             </Button>
                                         </div>
                                     </div>
-                                ))
+                                    );
+                                })
                             ) : (
                                 <div className="px-6 py-12 text-center text-sm text-muted-foreground">
                                     No hay usuarios con estos filtros.
@@ -394,7 +425,10 @@ export default function UsersIndex({ users, branches, filters, stats }: Props) {
 
                     <div className="space-y-3 p-4 xl:hidden">
                         {users.data.length > 0 ? (
-                            users.data.map((user) => (
+                            users.data.map((user) => {
+                                const isSelf = user.id === auth.user.id;
+
+                                return (
                                 <article
                                     key={user.id}
                                     className="rounded-2xl border border-sidebar-border/70 p-4"
@@ -404,6 +438,7 @@ export default function UsersIndex({ users, branches, filters, stats }: Props) {
                                             <AvatarImage
                                                 src={user.profile_photo_path ?? undefined}
                                                 alt={user.name}
+                                                className="h-full w-full object-cover"
                                             />
                                             <AvatarFallback className="bg-emerald-100 font-semibold text-emerald-700">
                                                 {initials(user.name)}
@@ -434,7 +469,7 @@ export default function UsersIndex({ users, branches, filters, stats }: Props) {
                                                     variant="outline"
                                                     className="rounded-full px-3 py-1"
                                                 >
-                                                    {roleMeta[user.role].label}
+                                                    {getRoleLabel(user.role)}
                                                 </Badge>
                                                 <Badge
                                                     variant="outline"
@@ -451,9 +486,9 @@ export default function UsersIndex({ users, branches, filters, stats }: Props) {
                                                     size="sm"
                                                     className="rounded-full"
                                                 >
-                                                    <Link href={`/users/${user.id}/edit`}>
+                                                    <Link href={isSelf ? '/settings/profile' : `/users/${user.id}/edit`}>
                                                         <PencilLine className="size-4" />
-                                                        Editar
+                                                        {isSelf ? 'Editar en perfil' : 'Editar'}
                                                     </Link>
                                                 </Button>
 
@@ -478,7 +513,8 @@ export default function UsersIndex({ users, branches, filters, stats }: Props) {
                                         </div>
                                     </div>
                                 </article>
-                            ))
+                                );
+                            })
                         ) : (
                             <div className="rounded-2xl border border-dashed p-8 text-center text-sm text-muted-foreground">
                                 No hay usuarios con estos filtros.
@@ -531,14 +567,6 @@ export default function UsersIndex({ users, branches, filters, stats }: Props) {
     );
 }
 
-UsersIndex.layout = {
-    breadcrumbs: [
-        {
-            title: 'Usuarios',
-            href: '/users',
-        },
-    ],
-};
 UsersIndex.layout = {
     breadcrumbs: [
         {

@@ -26,9 +26,14 @@ class UpdateUserRequest extends FormRequest
             'email' => $this->emailRules($userId),
             'profile_photo' => $this->profilePhotoRules(),
             'branch_id' => $this->branchRules(),
-            'role' => $this->roleRules(),
+            'role' => $this->roleRules($this->canAssignSuperuserRole()),
             'status' => $this->statusRules(),
             'password' => $this->passwordRules(),
         ];
+    }
+
+    protected function canAssignSuperuserRole(): bool
+    {
+        return $this->user()?->role === 'superuser';
     }
 }

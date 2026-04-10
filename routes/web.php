@@ -1,11 +1,13 @@
 <?php
 
 use App\Http\Controllers\CloudinaryTestController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ActiveIngredientController;
 use App\Http\Controllers\BranchController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\MedicineController;
 use App\Http\Controllers\SaleController;
+use App\Http\Controllers\SalesReportController;
 use App\Http\Controllers\ShiftController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -22,7 +24,8 @@ Route::post('/cloudinary-test', [CloudinaryTestController::class, 'store'])
     ->name('cloudinary.test.store');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::inertia('dashboard', 'dashboard')->name('dashboard');
+    // Acceso para todos: empleados, admins, superusuarios
+    Route::get('dashboard', DashboardController::class)->name('dashboard');
     Route::inertia('library-check', 'library-check')->name('library-check');
     Route::get('shifts', [ShiftController::class, 'index'])->name('shifts.index');
     Route::post('shifts/clock-in', [ShiftController::class, 'clockIn'])->name('shifts.clock-in');
@@ -31,17 +34,29 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('sales/quick', [SaleController::class, 'index'])->name('sales.quick');
     Route::get('sales/history', [SaleController::class, 'history'])->name('sales.history');
     Route::get('sales/search', [SaleController::class, 'search'])->name('sales.search');
+    Route::get('sales/{sale}/ticket', [SaleController::class, 'ticket'])->name('sales.ticket');
+    Route::get('reports/sales', [SalesReportController::class, 'index'])->name('reports.sales.index');
+    Route::get('reports/sales/download', [SalesReportController::class, 'download'])->name('reports.sales.download');
+    Route::post('reports/sales', [SalesReportController::class, 'store'])->name('reports.sales.store');
+    Route::delete('reports/sales/{configuration}', [SalesReportController::class, 'destroy'])->name('reports.sales.destroy');
+    Route::get('reports/sales/{configuration}/pdf', [SalesReportController::class, 'generatePdf'])->name('reports.sales.generate-pdf');
     Route::post('sales', [SaleController::class, 'store'])->name('sales.store');
 });
 
-Route::middleware(['auth', 'verified', 'admin'])->group(function () {
-    Route::resource('users', UserController::class)->except(['show', 'destroy']);
-    Route::patch('users/{user}/suspend', [UserController::class, 'suspend'])->name('users.suspend');
+// Rutas solo para admins (branch-scoped) y superusuarios
+Route::middleware(['auth', 'verified', 'admin_or_superuser'])->group(function () {
+    Route::resource('categories', CategoryController::class)->only(['index', 'store', 'update', 'destroy']);
     Route::post('categories/quick-store', [CategoryController::class, 'storeInline'])->name('categories.quick-store');
     Route::post('active-ingredients/quick-store', [ActiveIngredientController::class, 'storeInline'])->name('active-ingredients.quick-store');
-    Route::resource('categories', CategoryController::class)->only(['index', 'store', 'update', 'destroy']);
-    Route::resource('branches', BranchController::class)->except(['show']);
     Route::resource('medicines', MedicineController::class)->except(['show']);
+    Route::resource('users', UserController::class)->except(['show', 'destroy']);
+    Route::patch('users/{user}/suspend', [UserController::class, 'suspend'])->name('users.suspend');
 });
+
+// Rutas solo para superusuarios
+Route::middleware(['auth', 'verified', 'superuser'])->group(function () {
+    Route::resource('branches', BranchController::class)->except(['show', 'create', 'edit']);
+});
+
 
 require __DIR__.'/settings.php';

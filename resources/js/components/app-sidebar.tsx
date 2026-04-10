@@ -7,13 +7,13 @@ import {
     LayoutGrid, 
     Pill, 
     ReceiptText,
+    FileSpreadsheet,
     Tags, 
     Users,
     Building2 
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
-import { NavUser } from '@/components/nav-user';
 import {
     Sidebar,
     SidebarContent,
@@ -25,8 +25,8 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { dashboard } from '@/routes';
 import { useCurrentUrl } from '@/hooks/use-current-url';
+import { dashboard } from '@/routes';
 import type { NavItem } from '@/types';
 
 const footerNavItems: NavItem[] = [
@@ -43,8 +43,13 @@ const footerNavItems: NavItem[] = [
 ];
 
 export function AppSidebar() {
-    const { auth } = usePage<{ auth: { user: { role?: string } } }>().props;
-    const isAdmin = auth.user.role === 'admin';
+    const { auth } = usePage<{
+        auth: { user: { role?: string } };
+    }>().props;
+    
+    const userRole = auth.user.role as 'employee' | 'admin' | 'superuser' | undefined;
+    const isSuperuser = userRole === 'superuser';
+    const isAdminOrSuperuser = userRole === 'admin' || userRole === 'superuser';
     const { isCurrentUrl } = useCurrentUrl();
 
     // Operación - Available to all users
@@ -76,7 +81,15 @@ export function AppSidebar() {
         },
     ];
 
-    // Catálogo/Maestros - Admin only
+    const reportesItems: NavItem[] = [
+        {
+            title: 'Reporte ventas PDF',
+            href: '/reports/sales',
+            icon: FileSpreadsheet,
+        },
+    ];
+
+    // Catálogo/Maestros - Admin and superuser only
     const catalogoItems: NavItem[] = [
         {
             title: 'Medicamentos',
@@ -88,14 +101,18 @@ export function AppSidebar() {
             href: '/categories',
             icon: Tags,
         },
-        {
-            title: 'Sucursales',
-            href: '/branches',
-            icon: Building2,
-        },
+        ...(isSuperuser
+            ? [
+                  {
+                      title: 'Sucursales',
+                      href: '/branches',
+                      icon: Building2,
+                  },
+              ]
+            : []),
     ];
 
-    // Administración - Admin only
+    // Administración - Admin and superuser only
     const adminItems: NavItem[] = [
         {
             title: 'Usuarios',
@@ -107,13 +124,14 @@ export function AppSidebar() {
     const renderNavGroup = (label: string, items: NavItem[]) => {
         return (
             <SidebarGroup key={label} className="px-2 py-0">
-                <SidebarGroupLabel>{label}</SidebarGroupLabel>
+                <SidebarGroupLabel className="font-semibold">{label}</SidebarGroupLabel>
                 <SidebarMenu>
                     {items.map((item) => (
                         <SidebarMenuItem key={item.title}>
                             <SidebarMenuButton
                                 asChild
                                 isActive={isCurrentUrl(item.href)}
+                                className="font-semibold"
                                 tooltip={{ children: item.title }}
                             >
                                 <Link href={item.href} prefetch>
@@ -146,16 +164,18 @@ export function AppSidebar() {
                 {/* Operación - Always visible */}
                 {renderNavGroup('Operación', operacionItems)}
 
-                {/* Catálogo/Maestros - Admin only */}
-                {isAdmin && renderNavGroup('Catálogo / Maestros', catalogoItems)}
+                {/* Reportes - Always visible */}
+                {renderNavGroup('Reportes', reportesItems)}
 
-                {/* Administración - Admin only */}
-                {isAdmin && renderNavGroup('Administración', adminItems)}
+                {/* Catálogo/Maestros - Admin and superuser only */}
+                {isAdminOrSuperuser && renderNavGroup('Catálogo / Maestros', catalogoItems)}
+
+                {/* Administración - Admin and superuser only */}
+                {isAdminOrSuperuser && renderNavGroup('Administración', adminItems)}
             </SidebarContent>
 
             <SidebarFooter>
                 <NavFooter items={footerNavItems} className="mt-auto" />
-                <NavUser />
             </SidebarFooter>
         </Sidebar>
     );

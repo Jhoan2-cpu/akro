@@ -139,28 +139,32 @@ export default function CategoriesIndex({ categories, filters }: Props) {
         <>
             <Head title="Categorías" />
 
-            <div className="space-y-6 p-4 md:p-6">
-                <section className="rounded-3xl border border-sidebar-border/70 bg-background p-5 shadow-sm md:p-6">
-                    <div className="flex items-start gap-3">
-                        <div className="rounded-2xl bg-emerald-100 p-3 text-emerald-700">
-                            <Tags className="size-6" />
-                        </div>
-                        <div>
-                            <h1 className="text-2xl font-semibold tracking-tight text-foreground md:text-3xl">Gestión de categorías</h1>
-                            <p className="mt-1 text-sm text-muted-foreground md:text-base">
-                                Registra, edita y elimina categorías para organizar medicamentos.
-                            </p>
+            <div className="page-shell space-y-4 bg-transparent p-4 md:p-6">
+                <section className="overflow-hidden rounded-3xl border border-sidebar-border/70 bg-background shadow-sm">
+                    <div className="bg-primary px-5 py-4 text-primary-foreground md:px-6 md:py-5">
+                        <div className="flex items-start gap-3">
+                            <div className="rounded-2xl bg-primary-foreground/10 p-3 text-primary-foreground">
+                                <Tags className="size-6" />
+                            </div>
+                            <div>
+                                <h1 className="text-2xl font-semibold tracking-tight text-primary-foreground md:text-3xl">Gestión de categorías</h1>
+                                <p className="mt-1 text-sm text-primary-foreground/85 md:text-base">
+                                    Registra, edita y elimina categorías para organizar medicamentos.
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </section>
 
-                <section className="rounded-3xl border border-sidebar-border/70 bg-background p-5 shadow-sm md:p-6">
-                    <div className="mb-4 flex items-center gap-2">
-                        <FolderPlus className="size-5 text-emerald-700" />
-                        <h2 className="text-lg font-semibold text-foreground">Registrar categoría</h2>
+                <section className="overflow-hidden rounded-3xl border border-sidebar-border/70 bg-background shadow-sm">
+                    <div className="bg-primary px-5 py-4 text-primary-foreground md:px-6 md:py-5">
+                        <div className="flex items-center gap-2">
+                            <FolderPlus className="size-5 text-primary-foreground" />
+                            <h2 className="text-lg font-semibold text-primary-foreground">Registrar categoría</h2>
+                        </div>
                     </div>
 
-                    <form onSubmit={createCategory} className="grid gap-4 md:grid-cols-2">
+                    <form onSubmit={createCategory} className="grid gap-4 p-5 pt-0 md:grid-cols-2 md:p-6 md:pt-0">
                         <div className="space-y-2">
                             <Label htmlFor="category_name">Nombre</Label>
                             <Input
@@ -214,22 +218,24 @@ export default function CategoriesIndex({ categories, filters }: Props) {
                     </form>
 
                     <div className="hidden overflow-hidden rounded-3xl border border-sidebar-border/70 xl:block">
-                        <div className="grid grid-cols-[1.1fr_1.6fr_0.7fr_1fr] border-b border-sidebar-border/70 px-6 py-4 text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                        <div className="table-header-highlight grid grid-cols-[1.1fr_1.6fr_0.7fr_1fr] border-b border-sidebar-border/70 px-6 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
                             <span>Nombre</span>
                             <span>Descripción</span>
-                            <span>Medicamentos</span>
+                            <span className="text-center">Medicamentos</span>
                             <span className="text-right">Acciones</span>
                         </div>
 
-                        <div className="divide-y divide-sidebar-border/70">
+                        <div className="table-zebra divide-y divide-sidebar-border/70">
                             {categories.data.length > 0 ? (
                                 categories.data.map((category) => (
                                     <article key={category.id} className="grid grid-cols-[1.1fr_1.6fr_0.7fr_1fr] items-center gap-4 px-6 py-5">
                                         <p className="font-semibold text-foreground">{category.name}</p>
                                         <p className="text-sm text-muted-foreground">{category.description ?? 'Sin descripción'}</p>
-                                        <Badge variant="outline" className="w-fit rounded-full px-3 py-1">
-                                            {category.medicines_count}
-                                        </Badge>
+                                        <div className="flex justify-center">
+                                            <Badge variant="outline" className="w-fit rounded-full px-3 py-1">
+                                                {category.medicines_count}
+                                            </Badge>
+                                        </div>
                                         <div className="flex justify-end gap-2">
                                             <Button type="button" variant="outline" size="sm" className="rounded-full" onClick={() => openEditDialog(category)}>
                                                 <Edit3 className="size-4" />
@@ -353,3 +359,10 @@ export default function CategoriesIndex({ categories, filters }: Props) {
         </>
     );
 }
+
+CategoriesIndex.layout = {
+    breadcrumbs: [
+        { title: 'Operación', href: '#' },
+        { title: 'Categorías', href: '/categories' },
+    ],
+};

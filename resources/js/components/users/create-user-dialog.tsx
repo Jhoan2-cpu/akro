@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { Plus } from 'lucide-react';
 import { useForm } from '@inertiajs/react';
+import { Plus } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -10,9 +10,8 @@ import {
     DialogTitle,
     DialogTrigger,
 } from '@/components/ui/dialog';
-import UserUpsertModal, {
-    type UserUpsertFormValues,
-} from '@/components/users/user-upsert-modal';
+import UserUpsertModal from '@/components/users/user-upsert-modal';
+import type {UserUpsertFormValues} from '@/components/users/user-upsert-modal';
 
 type Branch = {
     id: number;
@@ -21,20 +20,33 @@ type Branch = {
 
 type Props = {
     branches: Branch[];
+    canSelectBranch: boolean;
+    userBranchId: number | null;
+    canAssignSuperuser: boolean;
 };
 
-export default function CreateUserDialog({ branches }: Props) {
+export default function CreateUserDialog({ branches, canSelectBranch, userBranchId, canAssignSuperuser }: Props) {
     const [open, setOpen] = useState(false);
+    const defaultBranchId = !canSelectBranch && userBranchId !== null
+        ? String(userBranchId)
+        : '';
+
     const form = useForm<UserUpsertFormValues>({
         name: '',
         email: '',
         profile_photo: null,
-        branch_id: '',
+        branch_id: defaultBranchId,
         role: 'employee',
         status: 'active',
         password: '',
         password_confirmation: '',
     });
+
+    useEffect(() => {
+        if (!canSelectBranch && defaultBranchId !== '' && form.data.branch_id !== defaultBranchId) {
+            form.setData('branch_id', defaultBranchId);
+        }
+    }, [canSelectBranch, defaultBranchId, form]);
 
     const submit = (event: React.FormEvent<HTMLFormElement>): void => {
         event.preventDefault();
@@ -44,6 +56,11 @@ export default function CreateUserDialog({ branches }: Props) {
             preserveScroll: true,
             onSuccess: () => {
                 form.reset();
+
+                if (!canSelectBranch && defaultBranchId !== '') {
+                    form.setData('branch_id', defaultBranchId);
+                }
+
                 setOpen(false);
             },
         });
@@ -52,7 +69,7 @@ export default function CreateUserDialog({ branches }: Props) {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button className="h-11 rounded-full px-5">
+                <Button className="h-11 rounded-full border border-primary-foreground/30 bg-white px-5 text-primary hover:bg-primary-foreground/90">
                     <Plus className="size-4" />
                     Agregar Usuario
                 </Button>
@@ -75,6 +92,8 @@ export default function CreateUserDialog({ branches }: Props) {
                     setData={form.setData}
                     errors={form.errors}
                     branches={branches}
+                    canSelectBranch={canSelectBranch}
+                    canAssignSuperuser={canAssignSuperuser}
                     processing={form.processing}
                     onSubmit={submit}
                     passwordRequired
