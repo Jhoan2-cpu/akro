@@ -338,27 +338,33 @@ export default function MedicinesStock({ inventories, branches, categories, filt
                                 ))}
                             </div>
 
-                            <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-sidebar-border/70 pt-4">
-                                {inventories.links.map((link, index) => (
-                                    link.url ? (
-                                        <Link
-                                            key={`${link.label}-${index}`}
-                                            href={link.url}
-                                            preserveScroll
-                                            preserveState
-                                            className={`rounded-full px-4 py-2 text-sm transition ${link.active ? 'bg-foreground text-background' : 'border border-sidebar-border/70 bg-background text-foreground hover:bg-muted'}`}
-                                        >
-                                            {decodePaginationLabel(link.label)}
-                                        </Link>
-                                    ) : (
-                                        <span
-                                            key={`${link.label}-${index}`}
-                                            className="rounded-full border border-sidebar-border/70 px-4 py-2 text-sm text-muted-foreground"
-                                        >
-                                            {decodePaginationLabel(link.label)}
-                                        </span>
-                                    )
-                                ))}
+                            <div className="mt-4 flex flex-col gap-4 border-t border-sidebar-border/70 px-4 pb-2 pt-4 md:flex-row md:items-center md:justify-between md:px-6">
+                                <p className="text-sm text-muted-foreground">
+                                    Mostrando {inventories.from ?? 0} a {inventories.to ?? 0} de {inventories.total} registros.
+                                </p>
+
+                                <div className="flex flex-wrap items-center gap-2 md:justify-end">
+                                    {inventories.links.map((link, index) => (
+                                        link.url ? (
+                                            <Link
+                                                key={`${link.label}-${index}`}
+                                                href={link.url}
+                                                preserveScroll
+                                                preserveState
+                                                className={`rounded-full px-4 py-2 text-sm transition ${link.active ? 'bg-foreground text-background' : 'border border-sidebar-border/70 bg-background text-foreground hover:bg-muted'}`}
+                                            >
+                                                {decodePaginationLabel(link.label)}
+                                            </Link>
+                                        ) : (
+                                            <span
+                                                key={`${link.label}-${index}`}
+                                                className="rounded-full border border-sidebar-border/70 px-4 py-2 text-sm text-muted-foreground"
+                                            >
+                                                {decodePaginationLabel(link.label)}
+                                            </span>
+                                        )
+                                    ))}
+                                </div>
                             </div>
                         </>
                     )}
