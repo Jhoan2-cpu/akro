@@ -1,4 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
+import { memo } from 'react';
 import { 
     BookOpen, 
     Boxes, 
@@ -42,7 +43,7 @@ const footerNavItems: NavItem[] = [
     },
 ];
 
-export function AppSidebar() {
+export const AppSidebar = memo(function AppSidebar() {
     const { auth } = usePage<{
         auth: { user: { role?: string } };
     }>().props;
@@ -134,7 +135,7 @@ export function AppSidebar() {
                                 className="font-semibold"
                                 tooltip={{ children: item.title }}
                             >
-                                <Link href={item.href} prefetch>
+                                <Link href={item.href}>
                                     {item.icon && <item.icon />}
                                     <span>{item.title}</span>
                                 </Link>
@@ -152,7 +153,7 @@ export function AppSidebar() {
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
-                            <Link href={dashboard()} prefetch>
+                            <Link href={dashboard()}>
                                 <AppLogo />
                             </Link>
                         </SidebarMenuButton>
@@ -179,4 +180,4 @@ export function AppSidebar() {
             </SidebarFooter>
         </Sidebar>
     );
-}
+});
