@@ -68,7 +68,7 @@ class InventoryAdminEmailAlertTest extends TestCase
         );
     }
 
-    public function test_it_skips_non_verified_or_non_admin_users_and_avoids_duplicate_daily_send(): void
+    public function test_it_sends_on_every_execute_to_verified_users_in_branch(): void
     {
         Notification::fake();
 
@@ -134,6 +134,77 @@ class InventoryAdminEmailAlertTest extends TestCase
         app(SendInventoryAdminEmailAlertsAction::class)->execute();
         app(SendInventoryAdminEmailAlertsAction::class)->execute();
 
-        Notification::assertSentOnDemandTimes(InventoryRiskAlertNotification::class, 1);
+        Notification::assertSentOnDemandTimes(InventoryRiskAlertNotification::class, 4);
+    }
+
+    public function test_it_sends_superuser_alerts_for_every_branch_with_low_stock(): void
+    {
+        Notification::fake();
+
+        $branchNorth = Branch::query()->create([
+            'name' => 'Sucursal Norte',
+            'address' => 'Av. Norte 10',
+        ]);
+
+        $branchSouth = Branch::query()->create([
+            'name' => 'Sucursal Sur',
+            'address' => 'Av. Sur 20',
+        ]);
+
+        $category = Category::query()->create([
+            'name' => 'General',
+            'description' => null,
+        ]);
+
+        $medicineNorth = Medicine::query()->create([
+            'category_id' => $category->id,
+            'name' => 'Ibuprofeno',
+            'barcode' => '750000000003',
+            'description' => 'Analgesic',
+            'tax_rate' => 0,
+        ]);
+
+        $medicineSouth = Medicine::query()->create([
+            'category_id' => $category->id,
+            'name' => 'Loratadina',
+            'barcode' => '750000000004',
+            'description' => 'Antihistamine',
+            'tax_rate' => 0,
+        ]);
+
+        Inventory::query()->create([
+            'branch_id' => $branchNorth->id,
+            'medicine_id' => $medicineNorth->id,
+            'current_stock' => 1,
+            'minimum_stock' => 8,
+            'expiration_date' => Carbon::today()->addDays(7)->toDateString(),
+        ]);
+
+        Inventory::query()->create([
+            'branch_id' => $branchSouth->id,
+            'medicine_id' => $medicineSouth->id,
+            'current_stock' => 2,
+            'minimum_stock' => 9,
+            'expiration_date' => Carbon::today()->addDays(15)->toDateString(),
+        ]);
+
+        User::factory()->create([
+            'branch_id' => $branchNorth->id,
+            'role' => 'superuser',
+            'verification_email' => 'superuser@example.com',
+            'verification_email_verified_at' => now(),
+        ]);
+
+        app(SendInventoryAdminEmailAlertsAction::class)->execute();
+
+        Notification::assertSentOnDemand(
+            InventoryRiskAlertNotification::class,
+            function (InventoryRiskAlertNotification $notification, array $channels, object $notifiable): bool {
+                return in_array('mail', $channels, true)
+                    && (($notifiable->routes['mail'] ?? null) === 'superuser@example.com');
+            }
+        );
+
+        Notification::assertSentOnDemandTimes(InventoryRiskAlertNotification::class, 2);
     }
 }
