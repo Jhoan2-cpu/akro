@@ -27,9 +27,13 @@ type Props = {
     categories: Option[];
     activeIngredients: Option[];
     branches: Option[];
+    ui: {
+        is_superuser: boolean;
+        user_branch_id: number | null;
+    };
 };
 
-export default function EditMedicine({ medicine, categories, activeIngredients, branches }: Props) {
+export default function EditMedicine({ medicine, categories, activeIngredients, branches, ui }: Props) {
     const [categoryOptions, setCategoryOptions] = useState<Option[]>(categories);
     const [activeIngredientOptions, setActiveIngredientOptions] = useState<Option[]>(activeIngredients);
 
@@ -186,6 +190,7 @@ export default function EditMedicine({ medicine, categories, activeIngredients, 
                     toggleActiveIngredient={toggleActiveIngredient}
                     onQuickCreateCategory={quickCreateCategory}
                     onQuickCreateActiveIngredient={quickCreateActiveIngredient}
+                    isSuperuser={ui.is_superuser}
                 />
             </div>
         </>

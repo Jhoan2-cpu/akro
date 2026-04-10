@@ -56,6 +56,8 @@ type Props = {
     };
     ui: {
         openCreateModal: boolean;
+        is_superuser: boolean;
+        user_branch_id: number | null;
     };
 };
 
@@ -503,6 +505,7 @@ export default function MedicinesIndex({ medicines, categories, activeIngredient
                         toggleActiveIngredient={toggleCreateActiveIngredient}
                         onQuickCreateCategory={quickCreateCategory}
                         onQuickCreateActiveIngredient={quickCreateActiveIngredient}
+                                            isSuperuser={ui.is_superuser}
                     />
                 </DialogContent>
             </Dialog>

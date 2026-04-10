@@ -49,7 +49,6 @@ class MedicineController extends Controller
 
         // Scoping: admins/employees solo ven medicines con inventory en su sucursal
         if (!$this->isSuperuser($request)) {
-            $userId = $request->user()?->id;
             $branchId = $request->user()?->branch_id;
 
             if ($branchId === null) {
@@ -89,17 +88,18 @@ class MedicineController extends Controller
             'medicines' => $medicines,
             'categories' => Category::query()->orderBy('name')->get(['id', 'name']),
             'activeIngredients' => ActiveIngredient::query()->orderBy('name')->get(['id', 'name']),
-            'branches' => Branch::query()->orderBy('name')->get(['id', 'name']),
+            'branches' => $this->getAvailableBranchesForRole($request),
             'filters' => [
                 'search' => $search,
                 'category_id' => $categoryId,
             ],
             'ui' => [
                 'openCreateModal' => $openCreate,
+                'is_superuser' => $this->isSuperuser($request),
+                'user_branch_id' => $request->user()?->branch_id,
             ],
         ]);
     }
-
     public function create(): RedirectResponse
     {
         return to_route('medicines.index', [
@@ -168,13 +168,15 @@ class MedicineController extends Controller
         return to_route('medicines.index');
     }
 
-    public function edit(Medicine $medicine): Response
+    public function edit(Request $request, Medicine $medicine): Response
     {
         $medicine->load(['activeIngredients', 'inventories.branch', 'branchPrices']);
+        $availableBranchIds = $this->getAvailableBranchesForRole($request)->pluck('id');
+        $inventories = $medicine->inventories->whereIn('branch_id', $availableBranchIds->all())->values();
         $pricesByBranch = $medicine->branchPrices->keyBy('branch_id');
 
         return Inertia::render('medicines/edit', [
-            ...$this->baseFormPayload(),
+            ...$this->baseFormPayload($request),
             'medicine' => [
                 'id' => $medicine->id,
                 'name' => $medicine->name,
@@ -183,7 +185,7 @@ class MedicineController extends Controller
                 'description' => $medicine->description,
                 'image_path' => $medicine->image_path,
                 'active_ingredient_ids' => $medicine->activeIngredients->pluck('id')->values(),
-                'stocks' => $medicine->inventories->map(function (Inventory $inventory) use ($pricesByBranch): array {
+                'stocks' => $inventories->map(function (Inventory $inventory) use ($pricesByBranch): array {
                     $salePrice = $pricesByBranch->get($inventory->branch_id)?->sale_price;
 
                     return [
@@ -195,6 +197,10 @@ class MedicineController extends Controller
                         'sale_price' => $salePrice !== null ? (string) $salePrice : '0.00',
                     ];
                 })->values(),
+            ],
+            'ui' => [
+                'is_superuser' => $this->isSuperuser($request),
+                'user_branch_id' => $request->user()?->branch_id,
             ],
         ]);
     }
@@ -500,12 +506,26 @@ class MedicineController extends Controller
     /**
      * @return array{categories: \Illuminate\Database\Eloquent\Collection<int, Category>, activeIngredients: \Illuminate\Database\Eloquent\Collection<int, ActiveIngredient>, branches: \Illuminate\Database\Eloquent\Collection<int, Branch>}
      */
-    protected function baseFormPayload(): array
+    protected function baseFormPayload(Request $request): array
     {
         return [
             'categories' => Category::query()->orderBy('name')->get(['id', 'name']),
             'activeIngredients' => ActiveIngredient::query()->orderBy('name')->get(['id', 'name']),
-            'branches' => Branch::query()->orderBy('name')->get(['id', 'name']),
+            'branches' => $this->getAvailableBranchesForRole($request),
         ];
+    }
+
+    protected function getAvailableBranchesForRole(Request $request): \Illuminate\Support\Collection
+    {
+        if ($this->isSuperuser($request)) {
+            return Branch::query()->orderBy('name')->get(['id', 'name']);
+        }
+
+        $branchId = $request->user()?->branch_id;
+        if ($branchId === null) {
+            return collect([]);
+        }
+
+        return Branch::query()->where('id', $branchId)->get(['id', 'name']);
     }
 }

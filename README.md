@@ -24,6 +24,7 @@ docker compose -f docker-compose.dev.yml up -d
 - En `/settings/profile` el usuario puede cambiar únicamente su **foto de perfil** en una tarjeta dedicada, reutilizando Cloudinary y exponiendo `avatar` desde `profile_photo_path` para toda la interfaz.
 - El dashboard operativo consume métricas por rol/sucursal (empleado = su sucursal, admin = vista global), incluyendo KPIs diarios, alertas de stock/caducidad, tendencias de venta, top productos, colaboradores por sucursal y tareas accionables.
 - En dashboard se habilitaron selectores dinámicos para ver ventas por hora y ventas diarias en modo total o por sucursal; además, la tarjeta de colaboradores por sucursal muestra todas las sucursales activas.
+- La selección de sucursal queda gobernada por rol: solo `superuser` puede elegir entre múltiples sucursales (venta rápida y formularios de medicamentos); `admin/employee` operan únicamente con su sucursal asignada y la UI bloquea cambios de sucursal fuera de ese alcance.
 
 ## MER Fiscal (Resumen)
 ```mermaid

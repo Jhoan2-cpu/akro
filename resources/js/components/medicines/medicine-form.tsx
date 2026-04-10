@@ -62,6 +62,7 @@ type Props = {
     toggleActiveIngredient: (activeIngredientId: number) => void;
     onQuickCreateCategory: (name: string) => Promise<void>;
     onQuickCreateActiveIngredient: (name: string) => Promise<void>;
+    isSuperuser?: boolean;
 };
 
 export default function MedicineForm({
@@ -83,6 +84,7 @@ export default function MedicineForm({
     toggleActiveIngredient,
     onQuickCreateCategory,
     onQuickCreateActiveIngredient,
+    isSuperuser = true,
 }: Props) {
     const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
     const [newCategoryName, setNewCategoryName] = useState('');
@@ -454,7 +456,11 @@ export default function MedicineForm({
 
                     <div className="rounded-3xl border border-sidebar-border/70 bg-background p-5 shadow-sm md:p-6 xl:max-h-[34vh] xl:overflow-y-auto">
                         <h2 className="text-lg font-semibold text-foreground">Sucursales e inventario</h2>
-                        <p className="mb-4 text-sm text-muted-foreground">Agrega solo las sucursales que necesites registrar y configura su inventario.</p>
+                        <p className="mb-4 text-sm text-muted-foreground">
+                            {isSuperuser
+                                ? 'Agrega solo las sucursales que necesites registrar y configura su inventario.'
+                                : 'Tu rol solo permite registrar inventario en tu sucursal asignada.'}
+                        </p>
 
                         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end">
                             <div className="flex-1 space-y-2">
@@ -464,7 +470,7 @@ export default function MedicineForm({
                                     value={selectedBranchId}
                                     onChange={(event) => setSelectedBranchId(event.target.value)}
                                     className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm"
-                                    disabled={availableBranches.length === 0}
+                                    disabled={!isSuperuser || availableBranches.length === 0}
                                 >
                                     {availableBranches.length === 0 ? (
                                         <option value="">Todas las sucursales ya fueron agregadas</option>
@@ -476,6 +482,9 @@ export default function MedicineForm({
                                         ))
                                     )}
                                 </select>
+                                {!isSuperuser && (
+                                    <p className="text-xs text-muted-foreground">Solo los superusuarios pueden seleccionar sucursales distintas.</p>
+                                )}
                             </div>
 
                             <Button
