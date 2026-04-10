@@ -44,8 +44,15 @@ type SalesPaginator = {
     total: number;
 };
 
+type DailySalePoint = {
+    day: string;
+    sales_count: number;
+    total_amount: number;
+};
+
 type Props = {
     sales: SalesPaginator;
+    dailySales: DailySalePoint[];
     filters: {
         search: string;
         from: string;
@@ -60,7 +67,7 @@ function decodePaginationLabel(label: string): string {
         .replace(/<[^>]*>/g, '');
 }
 
-export default function SalesHistory({ sales, filters }: Props) {
+export default function SalesHistory({ sales, dailySales, filters }: Props) {
     const [selectedSale, setSelectedSale] = useState<SaleRow | null>(null);
     const filterForm = useForm({
         search: filters.search ?? '',
@@ -82,6 +89,8 @@ export default function SalesHistory({ sales, filters }: Props) {
         filterForm.setData({ search: '', from: '', to: '' });
         router.get('/sales/history', {}, { preserveScroll: true, replace: true });
     };
+
+    const maxDailyAmount = dailySales.reduce((max, point) => Math.max(max, point.total_amount), 0);
 
     return (
         <>
@@ -138,6 +147,39 @@ export default function SalesHistory({ sales, filters }: Props) {
                             </Button>
                         </div>
                     </form>
+
+                    <section className="rounded-2xl border border-sidebar-border/70 bg-emerald-50/30 p-4">
+                        <div className="mb-3 flex items-center justify-between gap-3">
+                            <h2 className="text-base font-bold text-emerald-900">Dashboard ventas diarias</h2>
+                            <p className="text-xs text-emerald-800/80">Gráfico por total vendido al día</p>
+                        </div>
+
+                        {dailySales.length === 0 ? (
+                            <div className="rounded-xl border border-dashed border-emerald-200 bg-white/70 px-4 py-8 text-center text-sm text-muted-foreground">
+                                No hay ventas para construir el gráfico en este rango.
+                            </div>
+                        ) : (
+                            <div className="overflow-x-auto pb-1">
+                                <div className="flex min-w-max items-end gap-3 rounded-xl border border-emerald-100 bg-white/80 p-3">
+                                    {dailySales.map((point) => {
+                                        const ratio = maxDailyAmount > 0 ? point.total_amount / maxDailyAmount : 0;
+                                        const barHeight = Math.max(18, Math.round(ratio * 110));
+
+                                        return (
+                                            <div key={point.day} className="w-16 text-center" title={`${point.day} · ${point.sales_count} venta(s) · $${point.total_amount.toFixed(2)}`}>
+                                                <p className="mb-1 truncate text-[10px] font-semibold text-emerald-900">${point.total_amount.toFixed(0)}</p>
+                                                <div className="mx-auto flex h-30 w-9 items-end rounded-md bg-emerald-100/70 p-1">
+                                                    <div className="w-full rounded-sm bg-emerald-600" style={{ height: `${barHeight}px` }} />
+                                                </div>
+                                                <p className="mt-1 text-[10px] font-medium text-muted-foreground">{point.day.slice(5)}</p>
+                                                <p className="text-[10px] text-emerald-800">{point.sales_count} vtas</p>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
+                    </section>
 
                     <div className="hidden overflow-hidden rounded-3xl border border-sidebar-border/70 xl:block">
                         <div className="table-header-highlight grid grid-cols-[0.45fr_0.8fr_0.8fr_0.45fr_0.55fr_1.5fr_0.6fr] border-b border-sidebar-border/70 px-6 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-emerald-800">

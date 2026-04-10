@@ -115,46 +115,66 @@ class SaleController extends Controller
         $from = trim((string) $request->input('from', ''));
         $to = trim((string) $request->input('to', ''));
 
-        $salesQuery = Sale::query()
+        $baseHistoryQuery = function () use ($user, $search, $from, $to): Builder {
+            $query = Sale::query();
+
+            if (($user?->role ?? null) !== 'admin') {
+                if ($user?->branch_id === null) {
+                    $query->whereRaw('1 = 0');
+                } else {
+                    $query->where('branch_id', $user->branch_id);
+                }
+            }
+
+            if ($search !== '') {
+                $query->where(function (Builder $builder) use ($search): void {
+                    $builder
+                        ->whereHas('user', function (Builder $userBuilder) use ($search): void {
+                            $userBuilder->where('name', 'ilike', "%{$search}%");
+                        })
+                        ->orWhereHas('branch', function (Builder $branchBuilder) use ($search): void {
+                            $branchBuilder->where('name', 'ilike', "%{$search}%");
+                        })
+                        ->orWhereHas('details.medicine', function (Builder $medicineBuilder) use ($search): void {
+                            $medicineBuilder
+                                ->where('name', 'ilike', "%{$search}%")
+                                ->orWhere('barcode', 'ilike', "%{$search}%");
+                        });
+                });
+            }
+
+            if ($from !== '') {
+                $query->whereDate('created_at', '>=', $from);
+            }
+
+            if ($to !== '') {
+                $query->whereDate('created_at', '<=', $to);
+            }
+
+            return $query;
+        };
+
+        $dailySales = $baseHistoryQuery()
+            ->selectRaw('DATE(created_at) as day')
+            ->selectRaw('COUNT(*) as sales_count')
+            ->selectRaw('COALESCE(SUM(total), 0) as total_amount')
+            ->groupBy('day')
+            ->orderBy('day')
+            ->get()
+            ->map(fn (object $row): array => [
+                'day' => (string) $row->day,
+                'sales_count' => (int) $row->sales_count,
+                'total_amount' => round((float) $row->total_amount, 2),
+            ])
+            ->values();
+
+        $salesQuery = $baseHistoryQuery()
             ->with([
                 'branch:id,name',
                 'user:id,name',
                 'details.medicine:id,name,barcode',
             ])
             ->orderByDesc('created_at');
-
-        if (($user?->role ?? null) !== 'admin') {
-            if ($user?->branch_id === null) {
-                $salesQuery->whereRaw('1 = 0');
-            } else {
-                $salesQuery->where('branch_id', $user->branch_id);
-            }
-        }
-
-        if ($search !== '') {
-            $salesQuery->where(function (Builder $builder) use ($search): void {
-                $builder
-                    ->whereHas('user', function (Builder $userBuilder) use ($search): void {
-                        $userBuilder->where('name', 'ilike', "%{$search}%");
-                    })
-                    ->orWhereHas('branch', function (Builder $branchBuilder) use ($search): void {
-                        $branchBuilder->where('name', 'ilike', "%{$search}%");
-                    })
-                    ->orWhereHas('details.medicine', function (Builder $medicineBuilder) use ($search): void {
-                        $medicineBuilder
-                            ->where('name', 'ilike', "%{$search}%")
-                            ->orWhere('barcode', 'ilike', "%{$search}%");
-                    });
-            });
-        }
-
-        if ($from !== '') {
-            $salesQuery->whereDate('created_at', '>=', $from);
-        }
-
-        if ($to !== '') {
-            $salesQuery->whereDate('created_at', '<=', $to);
-        }
 
         $sales = $salesQuery
             ->paginate(12)
@@ -190,6 +210,7 @@ class SaleController extends Controller
 
         return Inertia::render('sales/history', [
             'sales' => $sales,
+            'dailySales' => $dailySales,
             'filters' => [
                 'search' => $search,
                 'from' => $from,
