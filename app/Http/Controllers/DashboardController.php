@@ -13,7 +13,6 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Collection;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -48,20 +47,6 @@ class DashboardController extends Controller
         };
 
         $scopeInventory = function (Builder $builder) use ($isAdmin, $branchId): void {
-            if ($isAdmin) {
-                return;
-            }
-
-            if ($branchId === null) {
-                $builder->whereRaw('1 = 0');
-
-                return;
-            }
-
-            $builder->where('branch_id', $branchId);
-        };
-
-        $scopeUsers = function (Builder $builder) use ($isAdmin, $branchId): void {
             if ($isAdmin) {
                 return;
             }
@@ -182,6 +167,80 @@ class DashboardController extends Controller
             ])
             ->values();
 
+        $branchOptions = Branch::query()
+            ->select(['id', 'name'])
+            ->orderBy('name')
+            ->get()
+            ->map(fn (Branch $branch): array => [
+                'id' => (int) $branch->id,
+                'name' => (string) $branch->name,
+            ])
+            ->values();
+
+        $salesByHourBranchRows = Sale::query()
+            ->join('branches', 'branches.id', '=', 'sales.branch_id')
+            ->whereBetween('sales.created_at', [$todayStart, $todayEnd])
+            ->selectRaw('branches.id as branch_id')
+            ->selectRaw('branches.name as branch_name')
+            ->selectRaw('EXTRACT(HOUR FROM sales.created_at) as hour')
+            ->selectRaw('COALESCE(SUM(sales.total),0) as total_amount')
+            ->groupBy('branches.id', 'branches.name', 'hour')
+            ->orderBy('branches.name')
+            ->orderBy('hour')
+            ->get();
+
+        $salesByHourByBranch = $branchOptions
+            ->map(function (array $branch) use ($salesByHourBranchRows): array {
+                $rows = $salesByHourBranchRows
+                    ->where('branch_id', $branch['id'])
+                    ->mapWithKeys(fn (object $row): array => [(int) $row->hour => (float) $row->total_amount]);
+
+                $series = collect(range(0, 23))
+                    ->map(fn (int $hour): array => [
+                        'hour' => str_pad((string) $hour, 2, '0', STR_PAD_LEFT).':00',
+                        'total_amount' => round((float) ($rows[$hour] ?? 0), 2),
+                    ])
+                    ->values();
+
+                return [
+                    'branch_id' => $branch['id'],
+                    'branch_name' => $branch['name'],
+                    'series' => $series,
+                ];
+            })
+            ->values();
+
+        $salesByDayBranchRows = Sale::query()
+            ->join('branches', 'branches.id', '=', 'sales.branch_id')
+            ->whereBetween('sales.created_at', [$last30Start, $todayEnd])
+            ->selectRaw('branches.id as branch_id')
+            ->selectRaw('branches.name as branch_name')
+            ->selectRaw('DATE(sales.created_at) as day')
+            ->selectRaw('COALESCE(SUM(sales.total),0) as total_amount')
+            ->selectRaw('COUNT(sales.id) as tickets')
+            ->groupBy('branches.id', 'branches.name', 'day')
+            ->orderBy('branches.name')
+            ->orderBy('day')
+            ->get();
+
+        $salesByDayByBranch = $branchOptions
+            ->map(function (array $branch) use ($salesByDayBranchRows): array {
+                $rows = $salesByDayBranchRows->where('branch_id', $branch['id'])->values();
+
+                return [
+                    'branch_id' => $branch['id'],
+                    'branch_name' => $branch['name'],
+                    'series' => $rows
+                        ->map(fn (object $row): array => [
+                            'day' => (string) $row->day,
+                            'total_amount' => round((float) $row->total_amount, 2),
+                            'tickets' => (int) $row->tickets,
+                        ])
+                        ->values(),
+                ];
+            })
+            ->values();
+
         $topMedicines = SaleDetail::query()
             ->join('sales', 'sales.id', '=', 'sale_details.sale_id')
             ->join('medicines', 'medicines.id', '=', 'sale_details.medicine_id')
@@ -226,7 +285,6 @@ class DashboardController extends Controller
 
         $employeesByBranch = User::query()
             ->join('branches', 'branches.id', '=', 'users.branch_id')
-            ->when(true, $scopeUsers)
             ->where('users.role', 'employee')
             ->where(function (Builder $builder): void {
                 $builder->whereNull('users.status')->orWhere('users.status', 'active');
@@ -321,7 +379,10 @@ class DashboardController extends Controller
             ],
             'analytics' => [
                 'sales_by_hour' => $salesByHour,
+                'sales_by_hour_by_branch' => $salesByHourByBranch,
                 'sales_by_day' => $salesByDay,
+                'sales_by_day_by_branch' => $salesByDayByBranch,
+                'branch_options' => $branchOptions,
                 'top_medicines' => $topMedicines,
                 'branch_performance' => $branchPerformance,
             ],

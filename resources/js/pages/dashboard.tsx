@@ -1,4 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
+import { useMemo, useState } from 'react';
 import { Activity, AlertTriangle, BarChart3, ClipboardList, Clock3, PackageSearch, ReceiptText, ShoppingCart, TrendingUp, Users } from 'lucide-react';
 import { dashboard } from '@/routes';
 
@@ -43,10 +44,31 @@ type DashboardProps = {
             hour: string;
             total_amount: number;
         }>;
+        sales_by_hour_by_branch: Array<{
+            branch_id: number;
+            branch_name: string;
+            series: Array<{
+                hour: string;
+                total_amount: number;
+            }>;
+        }>;
         sales_by_day: Array<{
             day: string;
             total_amount: number;
             tickets: number;
+        }>;
+        sales_by_day_by_branch: Array<{
+            branch_id: number;
+            branch_name: string;
+            series: Array<{
+                day: string;
+                total_amount: number;
+                tickets: number;
+            }>;
+        }>;
+        branch_options: Array<{
+            id: number;
+            name: string;
         }>;
         top_medicines: Array<{
             medicine_name: string;
@@ -138,6 +160,40 @@ function CompactBarChart({
 
 export default function Dashboard({ scope, kpis, operations, analytics, inventory, teams, tasks }: DashboardProps) {
     const change = kpis.change_vs_yesterday;
+    const [hourlyView, setHourlyView] = useState<string>('total');
+    const [dailyView, setDailyView] = useState<string>('total');
+
+    const hourlyPoints = useMemo(() => {
+        if (hourlyView === 'total') {
+            return analytics.sales_by_hour
+                .filter((point) => point.total_amount > 0)
+                .map((point) => ({ label: point.hour.slice(0, 2), value: point.total_amount }));
+        }
+
+        const selectedBranch = analytics.sales_by_hour_by_branch.find((item) => String(item.branch_id) === hourlyView);
+
+        return (selectedBranch?.series ?? [])
+            .filter((point) => point.total_amount > 0)
+            .map((point) => ({ label: point.hour.slice(0, 2), value: point.total_amount }));
+    }, [analytics.sales_by_hour, analytics.sales_by_hour_by_branch, hourlyView]);
+
+    const dailyPoints = useMemo(() => {
+        if (dailyView === 'total') {
+            return analytics.sales_by_day.map((point) => ({
+                label: point.day.slice(5),
+                value: point.total_amount,
+                subValue: point.tickets,
+            }));
+        }
+
+        const selectedBranch = analytics.sales_by_day_by_branch.find((item) => String(item.branch_id) === dailyView);
+
+        return (selectedBranch?.series ?? []).map((point) => ({
+            label: point.day.slice(5),
+            value: point.total_amount,
+            subValue: point.tickets,
+        }));
+    }, [analytics.sales_by_day, analytics.sales_by_day_by_branch, dailyView]);
 
     return (
         <>
@@ -198,21 +254,51 @@ export default function Dashboard({ scope, kpis, operations, analytics, inventor
 
                 <section className="grid gap-4 xl:grid-cols-[1.4fr_1fr]">
                     <div className="space-y-4">
+                        <div className="grid gap-3 md:grid-cols-2">
+                            <label className="rounded-xl border border-sidebar-border/70 bg-white p-3 text-xs font-semibold text-foreground">
+                                Ventas por hora
+                                <select
+                                    className="mt-2 min-h-11 w-full rounded-lg border border-sidebar-border/70 bg-white px-3 py-2 text-sm font-medium outline-none focus:border-emerald-500"
+                                    value={hourlyView}
+                                    onChange={(event) => setHourlyView(event.target.value)}
+                                >
+                                    <option value="total">Total (todas)</option>
+                                    {analytics.branch_options.map((branch) => (
+                                        <option key={branch.id} value={String(branch.id)}>
+                                            {branch.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </label>
+
+                            <label className="rounded-xl border border-sidebar-border/70 bg-white p-3 text-xs font-semibold text-foreground">
+                                Ventas diarias
+                                <select
+                                    className="mt-2 min-h-11 w-full rounded-lg border border-sidebar-border/70 bg-white px-3 py-2 text-sm font-medium outline-none focus:border-emerald-500"
+                                    value={dailyView}
+                                    onChange={(event) => setDailyView(event.target.value)}
+                                >
+                                    <option value="total">Total (todas)</option>
+                                    {analytics.branch_options.map((branch) => (
+                                        <option key={branch.id} value={String(branch.id)}>
+                                            {branch.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </label>
+                        </div>
+
                         <CompactBarChart
                             title="Ventas por hora (hoy)"
                             icon={<Activity className="size-4 text-emerald-700" />}
-                            points={analytics.sales_by_hour.filter((point) => point.total_amount > 0).map((point) => ({ label: point.hour.slice(0, 2), value: point.total_amount }))}
+                            points={hourlyPoints}
                             pointLabel={(value) => currency.format(value)}
                         />
 
                         <CompactBarChart
                             title="Ventas diarias (últimos 30 días)"
                             icon={<BarChart3 className="size-4 text-emerald-700" />}
-                            points={analytics.sales_by_day.map((point) => ({
-                                label: point.day.slice(5),
-                                value: point.total_amount,
-                                subValue: point.tickets,
-                            }))}
+                            points={dailyPoints}
                             pointLabel={(value, tickets) => `${currency.format(value)} · ${tickets ?? 0} ticket(s)`}
                         />
                     </div>
