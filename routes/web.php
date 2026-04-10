@@ -37,6 +37,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('sales/{sale}/ticket', [SaleController::class, 'ticket'])->name('sales.ticket');
     Route::get('reports/sales', [SalesReportController::class, 'index'])->name('reports.sales.index');
     Route::get('reports/sales/download', [SalesReportController::class, 'download'])->name('reports.sales.download');
+    Route::post('reports/sales', [SalesReportController::class, 'store'])->name('reports.sales.store');
+    Route::delete('reports/sales/{configuration}', [SalesReportController::class, 'destroy'])->name('reports.sales.destroy');
+    Route::get('reports/sales/{configuration}/pdf', [SalesReportController::class, 'generatePdf'])->name('reports.sales.generate-pdf');
     Route::post('sales', [SaleController::class, 'store'])->name('sales.store');
 });
 
