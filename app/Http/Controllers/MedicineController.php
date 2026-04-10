@@ -92,6 +92,14 @@ class MedicineController extends Controller
         $validated = $request->validated();
         $upload = $this->uploadMedicineImage($request->file('image'));
 
+        if ($request->hasFile('image') && $upload['path'] === null) {
+            return back()
+                ->withErrors([
+                    'image' => $upload['warning'] ?? 'No se pudo subir la imagen a Cloudinary.',
+                ])
+                ->withInput();
+        }
+
         DB::transaction(function () use ($validated, $upload): void {
             $medicine = Medicine::query()->create([
                 'category_id' => (int) $validated['category_id'],
@@ -173,6 +181,14 @@ class MedicineController extends Controller
     {
         $validated = $request->validated();
         $upload = $this->uploadMedicineImage($request->file('image'));
+
+        if ($request->hasFile('image') && $upload['path'] === null) {
+            return back()
+                ->withErrors([
+                    'image' => $upload['warning'] ?? 'No se pudo subir la imagen a Cloudinary.',
+                ])
+                ->withInput();
+        }
 
         DB::transaction(function () use ($medicine, $validated, $upload): void {
             $previousImage = $medicine->image_path;
@@ -342,6 +358,13 @@ class MedicineController extends Controller
             return ['path' => null, 'warning' => null];
         }
 
+        if (! $this->hasCloudinaryCredentials()) {
+            return [
+                'path' => null,
+                'warning' => 'Cloudinary no está configurado correctamente. Verifica CLOUDINARY_CLOUD_NAME, CLOUDINARY_KEY y CLOUDINARY_SECRET.',
+            ];
+        }
+
         try {
             $uploadResult = (new UploadApi())->upload($file->getRealPath(), [
                 'folder' => 'medicines/images',
@@ -360,9 +383,27 @@ class MedicineController extends Controller
 
             return [
                 'path' => null,
-                'warning' => 'El medicamento se guardó, pero la imagen no pudo subirse.',
+                'warning' => $this->buildCloudinaryUploadError($exception),
             ];
         }
+    }
+
+    protected function hasCloudinaryCredentials(): bool
+    {
+        return (string) config('cloudinary.cloud_name') !== ''
+            && (string) config('cloudinary.key') !== ''
+            && (string) config('cloudinary.secret') !== '';
+    }
+
+    protected function buildCloudinaryUploadError(Throwable $exception): string
+    {
+        $message = $exception->getMessage();
+
+        if (str_contains($message, 'cURL error 60')) {
+            return 'No se pudo conectar con Cloudinary por certificados SSL (cURL error 60). Configura cacert en tu PHP local.';
+        }
+
+        return 'No se pudo subir la imagen a Cloudinary. Revisa credenciales y conectividad.';
     }
 
     protected function deleteMedicineImage(string $imagePath): void
