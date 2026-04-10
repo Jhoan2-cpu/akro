@@ -138,7 +138,7 @@ class SendInventoryAdminEmailAlertsAction
         $skippedDuplicates = 0;
 
         $recipients = User::query()
-            ->whereIn('role', ['superuser', 'admin', 'employee'])
+            ->whereIn('role', ['superuser', 'admin'])
             ->where(function ($query): void {
                 $query
                     ->whereNull('status')

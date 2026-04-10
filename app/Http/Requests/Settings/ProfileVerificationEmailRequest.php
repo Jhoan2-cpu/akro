@@ -15,7 +15,7 @@ class ProfileVerificationEmailRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'verification_email' => ['required', 'string', 'email:rfc,dns', 'max:255'],
+            'verification_email' => ['required', 'string', 'email:rfc', 'max:255'],
         ];
     }
 }
