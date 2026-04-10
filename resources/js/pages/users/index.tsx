@@ -318,6 +318,7 @@ export default function UsersIndex({ users, branches, filters, stats }: Props) {
                                                 <AvatarImage
                                                     src={user.profile_photo_path ?? undefined}
                                                     alt={user.name}
+                                                    className="h-full w-full object-cover"
                                                 />
                                                 <AvatarFallback className="bg-emerald-100 font-semibold text-emerald-700">
                                                     {initials(user.name)}
@@ -412,6 +413,7 @@ export default function UsersIndex({ users, branches, filters, stats }: Props) {
                                             <AvatarImage
                                                 src={user.profile_photo_path ?? undefined}
                                                 alt={user.name}
+                                                className="h-full w-full object-cover"
                                             />
                                             <AvatarFallback className="bg-emerald-100 font-semibold text-emerald-700">
                                                 {initials(user.name)}
