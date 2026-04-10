@@ -4,20 +4,24 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Settings;
 
+use App\Http\Requests\Settings\ProfilePhotoUpdateRequest;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\ProfileDeleteRequest;
 use App\Http\Requests\Settings\ProfileUpdateRequest;
 use App\Http\Requests\Settings\ProfileVerificationEmailRequest;
 use App\Notifications\ProfileVerificationEmailNotification;
+use Cloudinary\Api\Upload\UploadApi;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\URL;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
+use Throwable;
 
 class ProfileController extends Controller
 {
@@ -46,6 +50,26 @@ class ProfileController extends Controller
         $request->user()->save();
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Profile updated.')]);
+
+        return to_route('profile.edit');
+    }
+
+    /**
+     * Update the user's profile photo only.
+     */
+    public function updatePhoto(ProfilePhotoUpdateRequest $request): RedirectResponse
+    {
+        $user = $request->user();
+        $profilePhoto = $this->uploadProfilePhoto($request->file('profile_photo'));
+
+        $user->forceFill([
+            'profile_photo_path' => $profilePhoto,
+        ])->save();
+
+        Inertia::flash('toast', [
+            'type' => 'success',
+            'message' => __('Profile photo updated.'),
+        ]);
 
         return to_route('profile.edit');
     }
@@ -136,5 +160,30 @@ class ProfileController extends Controller
         $request->session()->regenerateToken();
 
         return redirect('/');
+    }
+
+    protected function uploadProfilePhoto(?UploadedFile $file): ?string
+    {
+        if ($file === null) {
+            return null;
+        }
+
+        try {
+            $uploadResult = (new UploadApi())->upload($file->getRealPath(), [
+                'folder' => 'users/profile-photos',
+                'public_id' => pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME),
+                'use_filename' => true,
+                'unique_filename' => true,
+                'overwrite' => false,
+            ]);
+
+            return $uploadResult['secure_url'] ?? $uploadResult['url'] ?? null;
+        } catch (Throwable $exception) {
+            report($exception);
+
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'profile_photo' => 'Unable to upload the profile photo. Please try again.',
+            ]);
+        }
     }
 }

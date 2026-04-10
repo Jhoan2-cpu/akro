@@ -1,12 +1,16 @@
 import { Form, Head, Link, useForm, usePage } from '@inertiajs/react';
+import { CloudUpload } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
 import DeleteUser from '@/components/delete-user';
 import Heading from '@/components/heading';
 import InputError from '@/components/input-error';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useInitials } from '@/hooks/use-initials';
 import { edit } from '@/routes/profile';
 import { send } from '@/routes/verification';
 
@@ -18,12 +22,33 @@ export default function Profile({
     status?: string;
 }) {
     const { auth } = usePage().props;
+    const getInitials = useInitials();
+    const [photoPreview, setPhotoPreview] = useState<string | null>(null);
     const verificationForm = useForm({
         verification_email: (auth.user.verification_email as string | null | undefined) ?? auth.user.email,
+    });
+    const photoForm = useForm<{ profile_photo: File | null }>({
+        profile_photo: null,
     });
 
     const hasVerificationEmail = Boolean(verificationForm.data.verification_email);
     const isVerificationEmailVerified = Boolean(auth.user.verification_email_verified_at);
+    const selectedPhotoUrl = useMemo(
+        () => photoPreview ?? auth.user.avatar ?? null,
+        [auth.user.avatar, photoPreview],
+    );
+
+    useEffect(() => {
+        if (!photoForm.data.profile_photo) {
+            setPhotoPreview(null);
+            return;
+        }
+
+        const objectUrl = URL.createObjectURL(photoForm.data.profile_photo);
+        setPhotoPreview(objectUrl);
+
+        return () => URL.revokeObjectURL(objectUrl);
+    }, [photoForm.data.profile_photo]);
 
     const submitVerificationEmail = (event: React.FormEvent<HTMLFormElement>): void => {
         event.preventDefault();
@@ -40,6 +65,88 @@ export default function Profile({
             <h1 className="sr-only">Profile settings</h1>
 
             <div className="space-y-8">
+                <div className="rounded-2xl border border-sidebar-border/70 bg-white/95 p-4 shadow-sm md:p-6">
+                    <Heading
+                        variant="small"
+                        title="Profile photo"
+                        description="Change only your profile image"
+                    />
+
+                    <form
+                        onSubmit={(event) => {
+                            event.preventDefault();
+
+                            photoForm.transform((data) => ({
+                                ...data,
+                                _method: 'patch',
+                            }));
+
+                            photoForm.post('/settings/profile/photo', {
+                                preserveScroll: true,
+                                forceFormData: true,
+                                onSuccess: () => photoForm.reset('profile_photo'),
+                                onFinish: () => {
+                                    photoForm.transform((data) => data);
+                                },
+                            });
+                        }}
+                        className="mt-5 space-y-4"
+                    >
+                        <div className="flex flex-col gap-4 rounded-2xl border border-dashed border-emerald-200 bg-emerald-50/60 p-4 md:flex-row md:items-center md:justify-between">
+                            <div className="flex items-center gap-4">
+                                <Avatar className="h-20 w-20 border border-white shadow-sm">
+                                    <AvatarImage src={selectedPhotoUrl ?? undefined} alt={auth.user.name} />
+                                    <AvatarFallback className="bg-emerald-100 text-emerald-800 text-lg font-semibold">
+                                        {getInitials(auth.user.name)}
+                                    </AvatarFallback>
+                                </Avatar>
+
+                                <div className="space-y-1">
+                                    <p className="font-semibold text-foreground">Current profile image</p>
+                                    <p className="text-sm text-muted-foreground">
+                                        JPG or PNG, up to 5MB. Replaces only your current image.
+                                    </p>
+                                    {photoForm.data.profile_photo && (
+                                        <p className="text-xs text-emerald-800">
+                                            Selected: {photoForm.data.profile_photo.name}
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="flex flex-wrap items-center gap-3">
+                                <label
+                                    htmlFor="profile_photo"
+                                    className="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-xl border border-emerald-200 bg-white px-4 py-2 text-sm font-medium text-emerald-800 transition hover:bg-emerald-50"
+                                >
+                                    <CloudUpload className="size-4" />
+                                    Choose image
+                                </label>
+
+                                <Input
+                                    id="profile_photo"
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    onChange={(event) => {
+                                        photoForm.setData('profile_photo', event.target.files?.[0] ?? null);
+                                    }}
+                                />
+
+                                <Button
+                                    type="submit"
+                                    disabled={photoForm.processing || !photoForm.data.profile_photo}
+                                    className="min-h-11"
+                                >
+                                    {photoForm.processing ? 'Uploading...' : 'Update photo'}
+                                </Button>
+                            </div>
+                        </div>
+
+                        <InputError message={photoForm.errors.profile_photo} />
+                    </form>
+                </div>
+
                 <div className="rounded-2xl border border-sidebar-border/70 bg-white/95 p-4 shadow-sm md:p-6">
                     <Heading
                         variant="small"

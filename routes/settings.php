@@ -9,6 +9,8 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('settings/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('settings/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::match(['post', 'patch'], 'settings/profile/photo', [ProfileController::class, 'updatePhoto'])
+        ->name('profile.photo.update');
     Route::post('settings/profile/verification-email', [ProfileController::class, 'sendVerificationEmail'])
         ->middleware('throttle:6,1')
         ->name('profile.verification-email.send');

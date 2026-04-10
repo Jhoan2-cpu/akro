@@ -21,6 +21,7 @@ docker compose -f docker-compose.dev.yml up -d
 - Se incorpora el módulo de **Reporte PDF de ventas por sucursal/rango de fecha** en `/reports/sales`, generando el PDF al momento de hacer clic en descargar.
 - En `/settings/profile` se agrega verificación de **correo de perfil** independiente al correo de login (puede ser el mismo o diferente), con envío de enlace firmado y estado de verificación visible en UI.
 - Se agrega notificación por correo para inventario crítico (stock bajo o próximos a vencer) dirigida **solo a administradores** con `verification_email` verificado, filtrada por la sucursal asignada y con control anti-duplicado diario.
+- En `/settings/profile` el usuario puede cambiar únicamente su **foto de perfil** en una tarjeta dedicada, reutilizando Cloudinary y exponiendo `avatar` desde `profile_photo_path` para toda la interfaz.
 
 ## MER Fiscal (Resumen)
 ```mermaid
