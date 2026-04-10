@@ -197,10 +197,10 @@ export default function SalesReportPage({ branches, configurations, filters, isS
                                 <thead className="border-b border-sidebar-border/70 bg-slate-50">
                                     <tr>
                                         <th className="px-4 py-3 text-left font-semibold">Nombre</th>
-                                        <th className="px-4 py-3 text-left font-semibold">Sucursal</th>
-                                        <th className="px-4 py-3 text-left font-semibold">Desde</th>
-                                        <th className="px-4 py-3 text-left font-semibold">Hasta</th>
-                                        <th className="px-4 py-3 text-left font-semibold">Creado</th>
+                                        <th className="px-4 py-3 text-center font-semibold">Sucursal</th>
+                                        <th className="px-4 py-3 text-center font-semibold">Desde</th>
+                                        <th className="px-4 py-3 text-center font-semibold">Hasta</th>
+                                        <th className="px-4 py-3 text-center font-semibold">Creado</th>
                                         <th className="px-4 py-3 text-center font-semibold">Acciones</th>
                                     </tr>
                                 </thead>
@@ -208,10 +208,10 @@ export default function SalesReportPage({ branches, configurations, filters, isS
                                     {configurations.map((config) => (
                                         <tr key={config.id} className="border-b border-sidebar-border/70 hover:bg-slate-50">
                                             <td className="px-4 py-3">{config.name}</td>
-                                            <td className="px-4 py-3">{config.branch_name || 'Todas'}</td>
-                                            <td className="px-4 py-3">{config.from_date}</td>
-                                            <td className="px-4 py-3">{config.to_date}</td>
-                                            <td className="px-4 py-3 text-xs text-muted-foreground">{new Date(config.created_at).toLocaleDateString('es-MX')}</td>
+                                            <td className="px-4 py-3 text-center">{config.branch_name || 'Todas'}</td>
+                                            <td className="px-4 py-3 text-center">{config.from_date}</td>
+                                            <td className="px-4 py-3 text-center">{config.to_date}</td>
+                                            <td className="px-4 py-3 text-center text-xs text-muted-foreground">{new Date(config.created_at).toLocaleDateString('es-MX')}</td>
                                             <td className="px-4 py-3">
                                                 <div className="flex justify-center gap-2">
                                                     <button

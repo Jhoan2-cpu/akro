@@ -197,7 +197,7 @@ export default function BranchesIndex({ branches, filters }: Props) {
                         <div className="table-header-highlight grid grid-cols-[1.5fr_2fr_1fr_0.8fr] border-b border-sidebar-border/70 px-6 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground gap-4">
                             <span>Nombre</span>
                             <span>Dirección</span>
-                            <span>Fecha de Creación</span>
+                            <span className="text-center">Fecha de Creación</span>
                             <span className="text-right">Acciones</span>
                         </div>
 
@@ -220,7 +220,7 @@ export default function BranchesIndex({ branches, filters }: Props) {
                                         <p className="text-sm text-foreground">
                                             {branch.address}
                                         </p>
-                                        <p className="text-sm text-muted-foreground">
+                                        <p className="text-center text-sm text-muted-foreground">
                                             {new Date(
                                                 branch.created_at
                                             ).toLocaleDateString('es-ES')}

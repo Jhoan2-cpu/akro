@@ -311,7 +311,7 @@ export default function UsersIndex({ users, branches, filters, stats }: Props) {
                             <span>Nombre y perfil</span>
                             <span>Correo electrónico</span>
                             <span className="text-center">Rol</span>
-                            <span>Sucursal</span>
+                            <span className="text-center">Sucursal</span>
                             <span className="text-center">Estado</span>
                             <span className="text-right">Acciones</span>
                         </div>
@@ -360,7 +360,7 @@ export default function UsersIndex({ users, branches, filters, stats }: Props) {
                                             </Badge>
                                         </div>
 
-                                        <p className="text-sm text-foreground">
+                                        <p className="text-center text-sm text-foreground">
                                             {user.branch?.name ?? 'Sin sucursal'}
                                         </p>
 

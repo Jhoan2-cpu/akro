@@ -183,31 +183,31 @@ export default function SalesHistory({ sales, dailySales, filters }: Props) {
 
                     <div className="hidden overflow-hidden rounded-3xl border border-sidebar-border/70 xl:block">
                         <div className="table-header-highlight grid grid-cols-[0.45fr_0.8fr_0.8fr_0.45fr_0.55fr_1.5fr_0.6fr] border-b border-sidebar-border/70 px-6 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-emerald-800">
-                            <span>ID</span>
-                            <span>Fecha</span>
-                            <span>Sucursal</span>
+                            <span className="text-center">ID</span>
+                            <span className="text-center">Fecha</span>
+                            <span className="text-center">Sucursal</span>
                             <span className="text-center">Items</span>
-                            <span className="text-right">Total</span>
-                            <span>Detalle</span>
-                            <span className="text-right">Acción</span>
+                            <span className="text-center">Total</span>
+                            <span className="text-center">Detalle</span>
+                            <span className="text-center">Acción</span>
                         </div>
 
                         <div className="table-zebra divide-y divide-sidebar-border/70">
                             {sales.data.length > 0 ? (
                                 sales.data.map((sale) => (
                                     <article key={sale.id} className="grid grid-cols-[0.45fr_0.8fr_0.8fr_0.45fr_0.55fr_1.5fr_0.6fr] gap-4 px-6 py-5 text-sm">
-                                        <p className="font-bold text-foreground">#{sale.id}</p>
-                                        <div>
+                                        <p className="text-center font-bold text-foreground">#{sale.id}</p>
+                                        <div className="text-center">
                                             <p className="font-medium text-foreground">{sale.created_at}</p>
                                             <p className="text-xs text-muted-foreground">{sale.employee_name ?? 'Sin empleado'}</p>
                                         </div>
-                                        <p className="text-emerald-800">{sale.branch_name ?? 'Sin sucursal'}</p>
+                                        <p className="text-center text-emerald-800">{sale.branch_name ?? 'Sin sucursal'}</p>
                                         <div className="flex justify-center">
                                             <Badge variant="outline" className="w-fit rounded-full border-emerald-200 bg-emerald-50 px-3 py-1 font-semibold text-emerald-700">
                                                 {sale.items_count}
                                             </Badge>
                                         </div>
-                                        <p className="text-right font-bold text-emerald-900">${sale.total}</p>
+                                        <p className="text-center font-bold text-emerald-900">${sale.total}</p>
                                         <div className="space-y-2">
                                             {sale.lines.map((line, index) => (
                                                 <div key={`${sale.id}-${line.medicine}-${index}`} className="rounded-xl border border-emerald-100 bg-emerald-50/25 px-3 py-2">
@@ -216,7 +216,7 @@ export default function SalesHistory({ sales, dailySales, filters }: Props) {
                                                 </div>
                                             ))}
                                         </div>
-                                        <div className="flex justify-end">
+                                        <div className="flex justify-center">
                                             <div className="flex gap-2">
                                                 <Button
                                                     type="button"
