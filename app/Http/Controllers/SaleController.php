@@ -9,19 +9,21 @@ use App\Models\BranchMedicinePrice;
 use App\Models\Inventory;
 use App\Models\Medicine;
 use App\Models\Sale;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
-use Inertia\Response;
+use Inertia\Response as InertiaResponse;
 use RuntimeException;
 use Throwable;
 
 class SaleController extends Controller
 {
-    public function index(Request $request): Response
+    public function index(Request $request): InertiaResponse
     {
         $user = $request->user();
         $branch = $user?->branch;
@@ -106,7 +108,7 @@ class SaleController extends Controller
         ]);
     }
 
-    public function history(Request $request): Response
+    public function history(Request $request): InertiaResponse
     {
         $user = $request->user();
         $search = trim((string) $request->input('search', ''));
@@ -200,6 +202,7 @@ class SaleController extends Controller
     {
         $user = $request->user();
         $branchId = $user?->branch_id;
+        $createdSaleId = null;
 
         if ($user === null || $branchId === null) {
             return back()->with('toast', [
@@ -216,7 +219,7 @@ class SaleController extends Controller
         $saleLines = [];
 
         try {
-            DB::transaction(function () use (&$subtotal, &$totalTax, &$total, &$saleLines, $items, $user, $branchId): void {
+            DB::transaction(function () use (&$subtotal, &$totalTax, &$total, &$saleLines, &$createdSaleId, $items, $user, $branchId): void {
                 foreach ($items as $item) {
                     $medicine = Medicine::query()->findOrFail((int) $item['medicine_id']);
                     $inventory = Inventory::query()
@@ -269,6 +272,8 @@ class SaleController extends Controller
                     'total' => $total,
                 ]);
 
+                $createdSaleId = $sale->id;
+
                 foreach ($saleLines as $saleLine) {
                     $sale->details()->create($saleLine);
                 }
@@ -287,9 +292,51 @@ class SaleController extends Controller
             ]);
         }
 
-        return to_route('sales.quick')->with('toast', [
-            'type' => 'success',
-            'message' => 'Venta registrada correctamente.',
+        return to_route('sales.quick')
+            ->with('toast', [
+                'type' => 'success',
+                'message' => 'Venta registrada correctamente.',
+            ])
+            ->with('ticket', [
+                'sale_id' => $createdSaleId,
+                'preview_url' => route('sales.ticket', ['sale' => $createdSaleId]),
+                'print_url' => route('sales.ticket', ['sale' => $createdSaleId, 'print' => 1]),
+                'download_url' => route('sales.ticket', ['sale' => $createdSaleId, 'download' => 1]),
+            ]);
+    }
+
+    public function ticket(Request $request, Sale $sale): Response
+    {
+        $user = $request->user();
+
+        if ($user === null) {
+            abort(403);
+        }
+
+        if (($user->role ?? null) !== 'admin' && $user->branch_id !== $sale->branch_id) {
+            abort(403);
+        }
+
+        $sale->load([
+            'user:id,name',
+            'branch:id,name,address',
+            'details.medicine:id,name,barcode',
+        ]);
+
+        $pdf = Pdf::loadView('pdf.sales-ticket', [
+            'sale' => $sale,
+            'generatedAt' => now()->format('Y-m-d H:i:s'),
+        ])->setPaper('letter');
+
+        $filename = sprintf('ticket-venta-%d.pdf', $sale->id);
+
+        if ($request->boolean('download')) {
+            return $pdf->download($filename);
+        }
+
+        return response($pdf->output(), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => sprintf('inline; filename="%s"', $filename),
         ]);
     }
 

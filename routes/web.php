@@ -31,6 +31,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('sales/quick', [SaleController::class, 'index'])->name('sales.quick');
     Route::get('sales/history', [SaleController::class, 'history'])->name('sales.history');
     Route::get('sales/search', [SaleController::class, 'search'])->name('sales.search');
+    Route::get('sales/{sale}/ticket', [SaleController::class, 'ticket'])->name('sales.ticket');
     Route::post('sales', [SaleController::class, 'store'])->name('sales.store');
 });
 

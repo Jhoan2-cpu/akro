@@ -1,11 +1,19 @@
-import { Head, useForm } from '@inertiajs/react';
+import { Head, useForm, usePage } from '@inertiajs/react';
 import { AlertTriangle, Edit, Plus, Search, ShoppingCart, Trash2 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import BarcodeScannerDialog from '@/components/barcode-scanner-dialog';
 import PriceEditWarningModal from '@/components/price-edit-warning-modal';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 
 type Branch = {
@@ -64,7 +72,22 @@ type Props = {
     canSell: boolean;
 };
 
+type FlashTicket = {
+    sale_id: number;
+    preview_url: string;
+    print_url: string;
+    download_url: string;
+};
+
+type PageFlash = {
+    flash?: {
+        ticket?: FlashTicket | null;
+    };
+};
+
 export default function SalesIndex({ branch, employee, canSell }: Props) {
+    const page = usePage<PageFlash>();
+    const flashTicket = page.props.flash?.ticket ?? null;
     const [searchQuery, setSearchQuery] = useState('');
     const [searchError, setSearchError] = useState<string | null>(null);
     const [searching, setSearching] = useState(false);
@@ -79,8 +102,15 @@ export default function SalesIndex({ branch, employee, canSell }: Props) {
         medicineName: string;
         currentPrice: string;
     } | null>(null);
+    const [ticketPreview, setTicketPreview] = useState<FlashTicket | null>(null);
 
     const saleForm = useForm<{ items: SaleFormItem[] }>({ items: [] });
+
+    useEffect(() => {
+        if (flashTicket) {
+            setTicketPreview(flashTicket);
+        }
+    }, [flashTicket]);
 
     const buildSaleItems = (items: CartItem[]): SaleFormItem[] => {
         return items.map((item) => ({
@@ -703,6 +733,60 @@ export default function SalesIndex({ branch, employee, canSell }: Props) {
                 }}
                 onCancel={() => setPriceEditModal(null)}
             />
+
+            <Dialog open={ticketPreview !== null} onOpenChange={(open) => !open && setTicketPreview(null)}>
+                <DialogContent className="max-h-[92vh] w-[calc(100vw-1.5rem)] max-w-4xl overflow-hidden p-0">
+                    <DialogHeader className="border-b border-sidebar-border/70 px-5 py-4">
+                        <DialogTitle>Ticket de venta #{ticketPreview?.sale_id}</DialogTitle>
+                        <DialogDescription>
+                            Comprobante de venta no fiscal generado al momento.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="h-[68vh] bg-muted/20">
+                        {ticketPreview && (
+                            <iframe
+                                src={ticketPreview.preview_url}
+                                title={`Ticket de venta ${ticketPreview.sale_id}`}
+                                className="h-full w-full border-0"
+                            />
+                        )}
+                    </div>
+
+                    <DialogFooter className="border-t border-sidebar-border/70 px-5 py-4 sm:justify-between">
+                        <Button type="button" variant="outline" onClick={() => setTicketPreview(null)}>
+                            Cerrar
+                        </Button>
+                        <div className="flex flex-wrap gap-2">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => {
+                                    if (!ticketPreview) {
+                                        return;
+                                    }
+
+                                    window.open(ticketPreview.print_url, '_blank', 'noopener,noreferrer');
+                                }}
+                            >
+                                Imprimir
+                            </Button>
+                            <Button
+                                type="button"
+                                onClick={() => {
+                                    if (!ticketPreview) {
+                                        return;
+                                    }
+
+                                    window.open(ticketPreview.download_url, '_blank', 'noopener,noreferrer');
+                                }}
+                            >
+                                Descargar PDF
+                            </Button>
+                        </div>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </>
     );
 }
