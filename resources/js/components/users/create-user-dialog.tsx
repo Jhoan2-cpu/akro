@@ -52,7 +52,7 @@ export default function CreateUserDialog({ branches }: Props) {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button className="h-11 rounded-full px-5">
+                <Button className="h-11 rounded-full border border-primary-foreground/30 bg-white px-5 text-primary hover:bg-primary-foreground/90">
                     <Plus className="size-4" />
                     Agregar Usuario
                 </Button>

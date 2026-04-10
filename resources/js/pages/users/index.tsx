@@ -222,7 +222,7 @@ export default function UsersIndex({ users, branches, filters, stats }: Props) {
                     onSubmit={submitFilters}
                     className="flex flex-col gap-3 rounded-3xl border border-sidebar-border/70 bg-background p-4 shadow-sm xl:flex-row xl:items-center"
                 >
-                    <div className="relative flex-1">
+                    <div className="relative w-full xl:w-[45%]">
                         <Search className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted-foreground" />
                         <Input
                             value={filterForm.data.search}
@@ -234,7 +234,7 @@ export default function UsersIndex({ users, branches, filters, stats }: Props) {
                         />
                     </div>
 
-                    <div className="grid gap-3 md:grid-cols-3 xl:w-140">
+                    <div className="grid gap-3 md:grid-cols-3 xl:flex-1">
                         <Select
                             value={filterForm.data.branch_id}
                             onValueChange={(value) =>
