@@ -26,6 +26,7 @@ docker compose -f docker-compose.dev.yml up -d
 - En dashboard se habilitaron selectores dinámicos para ver ventas por hora y ventas diarias en modo total o por sucursal; además, la tarjeta de colaboradores por sucursal muestra todas las sucursales activas.
 - La selección de sucursal queda gobernada por rol: solo `superuser` puede elegir entre múltiples sucursales (venta rápida y formularios de medicamentos); `admin/employee` operan únicamente con su sucursal asignada y la UI bloquea cambios de sucursal fuera de ese alcance.
 - En creación de usuarios desde `/users`, el rol `admin` tiene la sucursal preasignada y bloqueada (sin selector editable); únicamente `superuser` puede seleccionar sucursal para el nuevo usuario.
+- La asignación del rol `superuser` está restringida: `admin` no puede crear usuarios con ese rol ni actualizar usuarios existentes para convertirlos en `superuser` (regla aplicada en formulario y backend).
 
 ## MER Fiscal (Resumen)
 ```mermaid

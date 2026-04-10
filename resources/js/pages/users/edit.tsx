@@ -22,9 +22,13 @@ type User = {
 type Props = {
     user: User;
     branches: Branch[];
+    ui: {
+        is_superuser: boolean;
+        user_branch_id: number | null;
+    };
 };
 
-export default function EditUser({ user, branches }: Props) {
+export default function EditUser({ user, branches, ui }: Props) {
     const form = useForm<UserUpsertFormValues>({
         name: user.name,
         email: user.email,
@@ -69,6 +73,8 @@ export default function EditUser({ user, branches }: Props) {
                 onSubmit={submit}
                 currentPhotoUrl={user.profile_photo_path}
                 mode="page"
+                canSelectBranch={ui.is_superuser}
+                canAssignSuperuser={ui.is_superuser}
             />
         </>
     );

@@ -23,9 +23,10 @@ type Props = {
     branches: Branch[];
     canSelectBranch: boolean;
     userBranchId: number | null;
+    canAssignSuperuser: boolean;
 };
 
-export default function CreateUserDialog({ branches, canSelectBranch, userBranchId }: Props) {
+export default function CreateUserDialog({ branches, canSelectBranch, userBranchId, canAssignSuperuser }: Props) {
     const [open, setOpen] = useState(false);
     const defaultBranchId = !canSelectBranch && userBranchId !== null
         ? String(userBranchId)
@@ -91,6 +92,7 @@ export default function CreateUserDialog({ branches, canSelectBranch, userBranch
                     errors={form.errors}
                     branches={branches}
                     canSelectBranch={canSelectBranch}
+                    canAssignSuperuser={canAssignSuperuser}
                     processing={form.processing}
                     onSubmit={submit}
                     passwordRequired

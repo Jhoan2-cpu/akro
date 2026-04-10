@@ -46,6 +46,7 @@ type Props = {
     passwordRequired?: boolean;
     mode?: 'dialog' | 'page';
     canSelectBranch?: boolean;
+    canAssignSuperuser?: boolean;
 };
 
 const roleOptions = [
@@ -75,6 +76,7 @@ export default function UserUpsertModal({
     passwordRequired = false,
     mode = 'dialog',
     canSelectBranch = true,
+    canAssignSuperuser = false,
 }: Props) {
     const getInitials = useInitials();
     const [photoPreview, setPhotoPreview] = useState<string | null>(null);
@@ -86,6 +88,14 @@ export default function UserUpsertModal({
     const selectedPhotoUrl = useMemo(() => {
         return photoPreview ?? currentPhotoUrl ?? null;
     }, [currentPhotoUrl, photoPreview]);
+
+    const availableRoleOptions = useMemo(() => {
+        if (canAssignSuperuser) {
+            return roleOptions;
+        }
+
+        return roleOptions.filter((option) => option.value !== 'superuser');
+    }, [canAssignSuperuser]);
 
     useEffect(() => {
         if (!data.profile_photo) {
@@ -211,7 +221,7 @@ export default function UserUpsertModal({
                                     <SelectValue placeholder="Seleccionar rol" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {roleOptions.map((option) => (
+                                    {availableRoleOptions.map((option) => (
                                         <SelectItem key={option.value} value={option.value}>
                                             {option.label}
                                         </SelectItem>

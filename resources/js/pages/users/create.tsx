@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useRouter } from '@inertiajs/react';
 import { useForm } from '@inertiajs/react';
+import { useEffect } from 'react';
 import UserUpsertModal, {
     type UserUpsertFormValues,
 } from '@/components/users/user-upsert-modal';
@@ -14,19 +15,33 @@ type Branch = {
 
 type Props = {
     branches: Branch[];
+    ui: {
+        is_superuser: boolean;
+        user_branch_id: number | null;
+    };
 };
 
-export default function CreateUser({ branches }: Props) {
+export default function CreateUser({ branches, ui }: Props) {
+    const defaultBranchId = !ui.is_superuser && ui.user_branch_id !== null
+        ? String(ui.user_branch_id)
+        : '';
+
     const form = useForm<UserUpsertFormValues>({
         name: '',
         email: '',
         profile_photo: null,
-        branch_id: '',
+        branch_id: defaultBranchId,
         role: 'employee',
         status: 'active',
         password: '',
         password_confirmation: '',
     });
+
+    useEffect(() => {
+        if (!ui.is_superuser && defaultBranchId !== '' && form.data.branch_id !== defaultBranchId) {
+            form.setData('branch_id', defaultBranchId);
+        }
+    }, [defaultBranchId, form, ui.is_superuser]);
 
     const submit = (event: React.FormEvent<HTMLFormElement>): void => {
         event.preventDefault();
@@ -65,6 +80,8 @@ export default function CreateUser({ branches }: Props) {
                         processing={form.processing}
                         onSubmit={submit}
                         passwordRequired
+                        canSelectBranch={ui.is_superuser}
+                        canAssignSuperuser={ui.is_superuser}
                     />
                 </DialogContent>
             </Dialog>

@@ -183,6 +183,7 @@ export default function UsersIndex({ users, branches, filters, stats, ui }: Prop
                                 branches={branches}
                                 canSelectBranch={ui.is_superuser}
                                 userBranchId={ui.user_branch_id}
+                                canAssignSuperuser={ui.is_superuser}
                             />
                         </div>
                     </div>

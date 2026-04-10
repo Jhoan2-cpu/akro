@@ -101,6 +101,10 @@ class UserController extends Controller
 
         return Inertia::render('users/create', [
             'branches' => $branchesQuery->get(['id', 'name']),
+            'ui' => [
+                'is_superuser' => $isSuperuser,
+                'user_branch_id' => $userBranchId,
+            ],
         ]);
     }
 
@@ -109,10 +113,15 @@ class UserController extends Controller
         $isSuperuser = $request->user()?->role === 'superuser';
         $userBranchId = $request->user()?->branch_id;
         $targetBranchId = (int) $request->validated('branch_id');
+        $targetRole = (string) $request->validated('role');
 
         // Validación: admins solo pueden crear usuarios en su sucursal
         if (!$isSuperuser && $targetBranchId !== $userBranchId) {
             abort(403, 'No puedes crear usuarios en sucursales ajenas a la tuya.');
+        }
+
+        if (!$isSuperuser && $targetRole === 'superuser') {
+            abort(403, 'No puedes crear usuarios con rol superusuario.');
         }
 
         User::query()->create([
@@ -120,7 +129,7 @@ class UserController extends Controller
             'email' => $request->validated('email'),
             'profile_photo_path' => $this->uploadProfilePhoto($request->file('profile_photo')),
             'branch_id' => $targetBranchId,
-            'role' => $request->validated('role'),
+            'role' => $targetRole,
             'status' => $request->validated('status'),
             'password' => Hash::make((string) $request->validated('password')),
         ]);
@@ -165,6 +174,10 @@ class UserController extends Controller
         return Inertia::render('users/edit', [
             'user' => $user,
             'branches' => $branchesQuery->get(['id', 'name']),
+            'ui' => [
+                'is_superuser' => $isSuperuser,
+                'user_branch_id' => $userBranchId,
+            ],
         ]);
     }
 
@@ -174,6 +187,7 @@ class UserController extends Controller
         $isSuperuser = $authUser?->role === 'superuser';
         $userBranchId = $authUser?->branch_id;
         $targetBranchId = (int) $request->validated('branch_id', $user->branch_id);
+        $targetRole = (string) $request->validated('role', $user->role);
 
         // Validación: admins no pueden editar usuarios de otras sucursales
         if (!$isSuperuser && $user->branch_id !== $userBranchId) {
@@ -183,6 +197,10 @@ class UserController extends Controller
         // Validación: admins no pueden reasignar usuarios a otras sucursales
         if (!$isSuperuser && $targetBranchId !== $userBranchId) {
             abort(403, 'No puedes asignar usuarios a sucursales ajenas a la tuya.');
+        }
+
+        if (!$isSuperuser && $targetRole === 'superuser') {
+            abort(403, 'No puedes asignar el rol superusuario.');
         }
 
         if ($authUser !== null && $authUser->role === 'admin' && $authUser->is($user)) {
@@ -201,7 +219,7 @@ class UserController extends Controller
             'email' => $validated['email'],
             'profile_photo_path' => $this->uploadProfilePhoto($request->file('profile_photo')) ?? $user->profile_photo_path,
             'branch_id' => $validated['branch_id'],
-            'role' => $validated['role'],
+            'role' => $targetRole,
             'status' => $validated['status'],
         ]);
 
