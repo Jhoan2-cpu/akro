@@ -107,13 +107,14 @@ export function AppSidebar() {
     const renderNavGroup = (label: string, items: NavItem[]) => {
         return (
             <SidebarGroup key={label} className="px-2 py-0">
-                <SidebarGroupLabel>{label}</SidebarGroupLabel>
+                <SidebarGroupLabel className="font-semibold text-sidebar-foreground">{label}</SidebarGroupLabel>
                 <SidebarMenu>
                     {items.map((item) => (
                         <SidebarMenuItem key={item.title}>
                             <SidebarMenuButton
                                 asChild
                                 isActive={isCurrentUrl(item.href)}
+                                className="font-semibold text-sidebar-foreground"
                                 tooltip={{ children: item.title }}
                             >
                                 <Link href={item.href} prefetch>
