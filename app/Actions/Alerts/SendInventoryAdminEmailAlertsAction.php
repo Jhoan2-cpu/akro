@@ -196,7 +196,7 @@ class SendInventoryAdminEmailAlertsAction
 
             $cacheKey = sprintf('alerts:inventory-email:%d:%s', (int) $recipient->id, $today->toDateString());
 
-            if (Cache::has($cacheKey)) {
+            if (! Cache::add($cacheKey, true, $today->copy()->endOfDay())) {
                 $skippedDuplicates++;
 
                 continue;
@@ -223,8 +223,6 @@ class SendInventoryAdminEmailAlertsAction
                 )) {
                     $sentRecipients++;
 
-                    Cache::put($cacheKey, true, $today->copy()->endOfDay());
-
                     continue;
                 }
 
@@ -233,8 +231,6 @@ class SendInventoryAdminEmailAlertsAction
                     branchSummaries: $branchSummaries,
                     totals: $totals,
                 ));
-
-                Cache::put($cacheKey, true, $today->copy()->endOfDay());
                 $sentRecipients++;
             } catch (Throwable $exception) {
                 Log::error('inventory_alert_email_send_failed', [
