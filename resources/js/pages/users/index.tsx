@@ -33,7 +33,7 @@ type UserRow = {
     id: number;
     name: string;
     email: string;
-    role: 'admin' | 'employee';
+    role: 'admin' | 'employee' | 'superuser';
     status: 'active' | 'inactive' | 'suspended';
     profile_photo_path: string | null;
     branch: Branch | null;
@@ -91,7 +91,16 @@ const statusMeta: Record<
 const roleMeta: Record<UserRow['role'], { label: string }> = {
     admin: { label: 'Administrador' },
     employee: { label: 'Empleado' },
+    superuser: { label: 'Superusuario' },
 };
+
+function getRoleLabel(role: string): string {
+    if (role in roleMeta) {
+        return roleMeta[role as UserRow['role']].label;
+    }
+
+    return 'Rol desconocido';
+}
 
 function decodePaginationLabel(label: string): string {
     return label
@@ -346,7 +355,7 @@ export default function UsersIndex({ users, branches, filters, stats }: Props) {
                                             variant="outline"
                                             className="w-fit rounded-full px-3 py-1"
                                         >
-                                            {roleMeta[user.role].label}
+                                            {getRoleLabel(user.role)}
                                         </Badge>
 
                                         <p className="text-sm text-foreground">
@@ -448,7 +457,7 @@ export default function UsersIndex({ users, branches, filters, stats }: Props) {
                                                     variant="outline"
                                                     className="rounded-full px-3 py-1"
                                                 >
-                                                    {roleMeta[user.role].label}
+                                                    {getRoleLabel(user.role)}
                                                 </Badge>
                                                 <Badge
                                                     variant="outline"

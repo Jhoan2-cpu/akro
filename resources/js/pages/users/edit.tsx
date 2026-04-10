@@ -12,7 +12,7 @@ type User = {
     id: number;
     name: string;
     email: string;
-    role: 'admin' | 'employee';
+    role: 'admin' | 'employee' | 'superuser';
     status: 'active' | 'inactive' | 'suspended';
     branch_id: number;
     profile_photo_path: string | null;

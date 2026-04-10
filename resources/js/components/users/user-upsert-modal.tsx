@@ -50,6 +50,7 @@ type Props = {
 const roleOptions = [
     { value: 'employee', label: 'Empleado' },
     { value: 'admin', label: 'Administrador' },
+    { value: 'superuser', label: 'Superusuario' },
 ];
 
 const statusOptions = [
