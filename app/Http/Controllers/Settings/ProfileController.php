@@ -15,6 +15,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\URL;
@@ -99,6 +100,18 @@ class ProfileController extends Controller
             Notification::route('mail', $verificationEmail)
                 ->notify(new ProfileVerificationEmailNotification($verificationUrl, $verificationEmail));
         } catch (Throwable $exception) {
+            Log::error('profile_verification_email_send_failed', [
+                'user_id' => $user->id,
+                'target_verification_email' => $verificationEmail,
+                'mailer' => config('mail.default'),
+                'smtp_host' => config('mail.mailers.smtp.host'),
+                'smtp_port' => config('mail.mailers.smtp.port'),
+                'smtp_scheme' => config('mail.mailers.smtp.scheme'),
+                'smtp_timeout' => config('mail.mailers.smtp.timeout'),
+                'exception_class' => $exception::class,
+                'exception_message' => $exception->getMessage(),
+            ]);
+
             report($exception);
 
             Inertia::flash('toast', [
