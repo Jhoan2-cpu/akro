@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Actions\Alerts\SendInventoryAdminEmailAlertsAction;
 use Cloudinary\Api\Upload\UploadApi;
 use App\Http\Requests\Medicines\StoreMedicineRequest;
 use App\Http\Requests\Medicines\UpdateMedicineRequest;
@@ -153,6 +154,8 @@ class MedicineController extends Controller
             }
         });
 
+        app(SendInventoryAdminEmailAlertsAction::class)->execute();
+
         Inertia::flash('toast', [
             'type' => $upload['warning'] ? 'warning' : 'success',
             'message' => $upload['warning'] ?? 'Medicamento registrado correctamente.',
@@ -252,6 +255,8 @@ class MedicineController extends Controller
                 $this->deleteMedicineImage($previousImage);
             }
         });
+
+        app(SendInventoryAdminEmailAlertsAction::class)->execute();
 
         Inertia::flash('toast', [
             'type' => $upload['warning'] ? 'warning' : 'success',

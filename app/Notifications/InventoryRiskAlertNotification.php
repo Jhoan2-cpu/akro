@@ -34,39 +34,15 @@ class InventoryRiskAlertNotification extends Notification
 
     public function toMail(object $notifiable): MailMessage
     {
-        $mail = (new MailMessage)
+        return (new MailMessage)
             ->subject('Alerta de inventario - '.$this->branchName)
-            ->greeting('Hola '.$this->recipientName.',')
-            ->line('Detectamos alertas de inventario en la sucursal: '.$this->branchName.'.');
-
-        if ($this->lowStockItems !== []) {
-            $mail->line('Productos con stock bajo: '.count($this->lowStockItems));
-
-            foreach (array_slice($this->lowStockItems, 0, 10) as $item) {
-                $mail->line(sprintf(
-                    '- %s: stock %d (mínimo %d)',
-                    $item['medicine_name'],
-                    $item['current_stock'],
-                    $item['minimum_stock'],
-                ));
-            }
-        }
-
-        if ($this->nearExpiryItems !== []) {
-            $mail->line('Productos próximos a vencer (<30 días): '.count($this->nearExpiryItems));
-
-            foreach (array_slice($this->nearExpiryItems, 0, 10) as $item) {
-                $mail->line(sprintf(
-                    '- %s: vence %s (en %d día(s))',
-                    $item['medicine_name'],
-                    $item['expiration_date'],
-                    $item['days_to_expire'],
-                ));
-            }
-        }
-
-        return $mail
-            ->line('Revisa el módulo de stock para tomar acciones preventivas.')
-            ->action('Ir a Stock', url('/medicines/stock'));
+            ->view('emails.inventory-risk-alert', [
+                'recipientName' => $this->recipientName,
+                'branchName' => $this->branchName,
+                'lowStockItems' => $this->lowStockItems,
+                'nearExpiryItems' => $this->nearExpiryItems,
+                'stockUrl' => url('/medicines/stock'),
+                'logoUrl' => asset('images/logo.png'),
+            ]);
     }
 }

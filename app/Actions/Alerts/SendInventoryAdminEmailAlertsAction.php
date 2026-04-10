@@ -29,8 +29,7 @@ class SendInventoryAdminEmailAlertsAction
                     ->whereColumn('current_stock', '<=', 'minimum_stock')
                     ->orWhere(function ($expiringQuery) use ($today, $nearExpiryLimit): void {
                         $expiringQuery
-                            ->whereDate('expiration_date', '>=', $today)
-                            ->whereDate('expiration_date', '<', $nearExpiryLimit);
+                            ->whereDate('expiration_date', '<=', $nearExpiryLimit);
                     });
             })
             ->orderBy('branch_id')
@@ -72,7 +71,7 @@ class SendInventoryAdminEmailAlertsAction
 
                     $expirationDate = Carbon::parse((string) $inventory->expiration_date);
 
-                    return $expirationDate->betweenIncluded($today, $nearExpiryLimit->copy()->subDay());
+                    return $expirationDate->lessThanOrEqualTo($nearExpiryLimit);
                 })
                 ->map(function (Inventory $inventory) use ($today): array {
                     $expirationDate = Carbon::parse((string) $inventory->expiration_date);
@@ -92,6 +91,11 @@ class SendInventoryAdminEmailAlertsAction
             }
 
             $branchName = (string) ($branchInventories->first()?->branch?->name ?? 'Sucursal');
+            $snapshotHash = sha1(json_encode([
+                'branch_id' => (int) $branchId,
+                'low_stock_items' => $lowStockItems,
+                'near_expiry_items' => $nearExpiryItems,
+            ], JSON_THROW_ON_ERROR));
 
             $recipients = User::query()
                 ->where(function ($query) use ($branchId): void {
@@ -108,16 +112,16 @@ class SendInventoryAdminEmailAlertsAction
                         ->whereNull('status')
                         ->orWhere('status', 'active');
                 })
-                ->whereNotNull('email')
-                ->whereNotNull('email_verified_at')
-                ->get(['id', 'name', 'email', 'role', 'branch_id']);
+                ->whereNotNull('verification_email')
+                ->whereNotNull('verification_email_verified_at')
+                ->get(['id', 'name', 'verification_email', 'role', 'branch_id']);
 
             foreach ($recipients as $recipient) {
                 $cacheKey = sprintf(
                     'alerts:inventory-email:%d:%d:%s',
                     $recipient->id,
                     (int) $branchId,
-                    $today->toDateString(),
+                    $snapshotHash,
                 );
 
                 if (Cache::has($cacheKey)) {
@@ -126,7 +130,9 @@ class SendInventoryAdminEmailAlertsAction
                     continue;
                 }
 
-                Notification::send($recipient, new InventoryRiskAlertNotification(
+                $verificationEmail = (string) $recipient->verification_email;
+
+                Notification::route('mail', $verificationEmail)->notify(new InventoryRiskAlertNotification(
                     recipientName: $recipient->name,
                     branchName: $branchName,
                     lowStockItems: $lowStockItems,

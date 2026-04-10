@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Actions\Alerts\SendInventoryAdminEmailAlertsAction;
 use App\Http\Requests\Sales\StoreQuickSaleRequest;
 use App\Models\BranchMedicinePrice;
 use App\Models\Inventory;
@@ -312,6 +313,8 @@ class SaleController extends Controller
                 'message' => 'No se pudo registrar la venta.',
             ]);
         }
+
+        app(SendInventoryAdminEmailAlertsAction::class)->execute();
 
         return to_route('sales.quick')
             ->with('toast', [
