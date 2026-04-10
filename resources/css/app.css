@@ -113,13 +113,13 @@
     --chart-4: oklch(0.828 0.189 84.429);
     --chart-5: oklch(0.769 0.188 70.08);
     --radius: 3px;
-    --sidebar: #f1f4fa;
-    --sidebar-foreground: #000000;
-    --sidebar-primary: #0f6e56;
+    --sidebar: #e9edf4;
+    --sidebar-foreground: #66748e;
+    --sidebar-primary: #13785f;
     --sidebar-primary-foreground: #ffffff;
-    --sidebar-accent: #e1f5ee;
-    --sidebar-accent-foreground: #005440;
-    --sidebar-border: #bde7d9;
+    --sidebar-accent: #13785f;
+    --sidebar-accent-foreground: #ffffff;
+    --sidebar-border: #d5dce8;
     --sidebar-ring: #3fb392;
 }
 
