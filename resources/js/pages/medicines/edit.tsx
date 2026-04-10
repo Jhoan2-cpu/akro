@@ -166,7 +166,7 @@ export default function EditMedicine({ medicine, categories, activeIngredients, 
         <>
             <Head title="Editar medicamento" />
 
-            <div className="p-4 md:p-6">
+            <div className="page-shell p-4 md:p-6">
                 <MedicineForm
                     title="Editar medicamento"
                     description="Actualiza atributos del medicamento, incluyendo imagen, categoría, descripción y stock por sucursal."

@@ -227,6 +227,62 @@
     .space-y-6 > section:first-of-type {
         @apply border-brand-300 bg-brand-100/55 shadow-clinical;
     }
+
+    .page-shell > section:first-of-type {
+        margin-top: -1rem;
+        margin-left: -1rem;
+        width: calc(100% + 2rem);
+        max-width: none;
+        border-radius: 0 !important;
+    }
+
+    .page-shell-wide > section:first-of-type {
+        margin-top: 0;
+        margin-left: -1rem;
+        width: calc(100% + 2rem);
+        max-width: none;
+        border-radius: 0 !important;
+    }
+
+    @media (min-width: 768px) {
+        .page-shell > section:first-of-type {
+            margin-top: -1.5rem;
+            margin-left: -1.5rem;
+            width: calc(100% + 3rem);
+        }
+
+        .page-shell-wide > section:first-of-type {
+            margin-left: -1.5rem;
+            width: calc(100% + 3rem);
+        }
+    }
+
+    @media (min-width: 1280px) {
+        .page-shell-wide > section:first-of-type {
+            margin-left: -2rem;
+            width: calc(100% + 4rem);
+        }
+    }
+
+    @media (min-width: 1536px) {
+        .page-shell-wide > section:first-of-type {
+            margin-left: -2.5rem;
+            width: calc(100% + 5rem);
+        }
+    }
+
+    section.overflow-hidden > .bg-primary:first-child {
+        @apply w-full;
+        font-family: var(--font-sans);
+    }
+
+    section.overflow-hidden > .bg-primary:first-child h1,
+    section.overflow-hidden > .bg-primary:first-child h2,
+    section.overflow-hidden > .bg-primary:first-child h3,
+    section.overflow-hidden > .bg-primary:first-child p,
+    section.overflow-hidden > .bg-primary:first-child span {
+        font-family: var(--font-sans);
+    }
 }
 
 @layer utilities {

@@ -223,7 +223,7 @@ export default function MedicinesIndex({ medicines, categories, activeIngredient
         <>
             <Head title="Medicamentos" />
 
-            <div className="space-y-4 bg-transparent p-4 md:p-6">
+            <div className="page-shell space-y-4 bg-transparent p-4 md:p-6">
                 <section className="overflow-hidden rounded-3xl border border-sidebar-border/70 bg-background shadow-sm">
                     <div className="bg-primary px-5 py-4 text-primary-foreground md:px-6 md:py-5">
                         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">

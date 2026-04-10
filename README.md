@@ -12,6 +12,7 @@ docker compose -f docker-compose.dev.yml up -d
 - En el formulario de medicamentos, no es obligatorio registrar todas las sucursales: se seleccionan de forma explicita desde un desplegable y solo esas sucursales se guardan en `stocks`.
 - Se implementa soporte fiscal MX para IVA en ventas: `medicines.tax_rate`, `sales.subtotal`, `sales.total_tax`, `sale_details.subtotal`, `sale_details.tax_amount` y `sale_details.is_price_overridden`.
 - En venta rápida el empleado captura **precio bruto** (IVA incluido) y el backend calcula base e IVA por línea con la fórmula `base = bruto / (1 + tax_rate)`.
+- Los encabezados principales de cada módulo deben renderizarse a ancho completo (sin margen/padding horizontal del contenedor padre), manteniendo sin cambios el comportamiento de las tarjetas de contenido inferiores.
 
 ## MER Fiscal (Resumen)
 ```mermaid

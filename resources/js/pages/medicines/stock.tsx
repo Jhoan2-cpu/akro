@@ -98,7 +98,7 @@ export default function MedicinesStock({ inventories, branches, categories, filt
         <>
             <Head title="Stock por sucursal" />
 
-            <div className="space-y-4 bg-transparent p-4 md:p-6">
+            <div className="page-shell space-y-4 bg-transparent p-4 md:p-6">
                 <section className="overflow-hidden rounded-3xl border border-sidebar-border/70 bg-background shadow-sm">
                     <div className="bg-primary px-5 py-4 text-primary-foreground md:px-6 md:py-5">
                         <h1 className="text-3xl font-semibold tracking-tight">Stock por sucursal</h1>

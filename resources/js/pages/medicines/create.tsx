@@ -122,7 +122,7 @@ export default function CreateMedicine({ categories, activeIngredients, branches
         <>
             <Head title="Registrar medicamento" />
 
-            <div className="p-4 md:p-6">
+            <div className="page-shell p-4 md:p-6">
                 <MedicineForm
                     title="Registrar medicamento"
                     description="Alta de medicamentos con categoría, imagen, descripción, principios activos y stock por sucursal."
