@@ -147,12 +147,12 @@ export default function UsersIndex({ users, branches, filters, stats }: Props) {
         <>
             <Head title="Gestión de Usuarios" />
 
-            <div className="page-shell flex min-h-full flex-1 flex-col gap-4 rounded-3xl bg-transparent p-4 md:p-6">
+            <div className="page-shell relative isolate flex min-h-full flex-1 flex-col gap-4 rounded-3xl bg-transparent p-4 md:p-6">
                 <motion.section
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.2, delay: 0 }}
-                    className="overflow-hidden rounded-3xl border border-sidebar-border/70 bg-background shadow-sm"
+                    className="relative z-20 overflow-visible rounded-3xl border border-sidebar-border/70 bg-background shadow-sm"
                 >
                     <div className="bg-primary px-5 py-4 text-primary-foreground md:px-6 md:py-5">
                         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
@@ -171,7 +171,7 @@ export default function UsersIndex({ users, branches, filters, stats }: Props) {
                     </div>
                 </motion.section>
 
-                <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                <section className="relative z-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     {[
                         {
                             title: 'Personal Total',
@@ -220,7 +220,7 @@ export default function UsersIndex({ users, branches, filters, stats }: Props) {
 
                 <form
                     onSubmit={submitFilters}
-                    className="flex flex-col gap-3 rounded-3xl border border-sidebar-border/70 bg-background p-4 shadow-sm xl:flex-row xl:items-center"
+                    className="relative z-10 flex flex-col gap-3 rounded-3xl border border-sidebar-border/70 bg-background p-4 shadow-sm xl:flex-row xl:items-center"
                 >
                     <div className="relative w-full xl:w-[45%]">
                         <Search className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -296,7 +296,7 @@ export default function UsersIndex({ users, branches, filters, stats }: Props) {
                     </div>
                 </form>
 
-                <div className="rounded-3xl border border-sidebar-border/70 bg-background shadow-sm">
+                <div className="relative z-10 rounded-3xl border border-sidebar-border/70 bg-background shadow-sm">
                     <div className="hidden overflow-hidden rounded-3xl xl:block">
                         <div className="grid grid-cols-[1.4fr_1.2fr_0.8fr_0.9fr_0.8fr_0.9fr] border-b border-sidebar-border/70 px-6 py-4 text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
                             <span>Nombre y perfil</span>
