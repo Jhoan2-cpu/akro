@@ -81,6 +81,8 @@ class ProfileController extends Controller
     {
         $user = $request->user();
         $verificationEmail = strtolower(trim((string) $request->validated('verification_email')));
+        $smtpTimeout = (int) config('mail.mailers.smtp.timeout', 10);
+        $previousSocketTimeout = ini_get('default_socket_timeout');
 
         $user->forceFill([
             'verification_email' => $verificationEmail,
@@ -97,8 +99,25 @@ class ProfileController extends Controller
         );
 
         try {
+            if ($smtpTimeout > 0) {
+                config(['mail.mailers.smtp.timeout' => $smtpTimeout]);
+
+                if ($previousSocketTimeout !== false) {
+                    @ini_set('default_socket_timeout', (string) $smtpTimeout);
+                }
+            }
+
             Notification::route('mail', $verificationEmail)
                 ->notify(new ProfileVerificationEmailNotification($verificationUrl, $verificationEmail));
+
+            Log::info('profile_verification_email_sent', [
+                'user_id' => $user->id,
+                'target_verification_email' => $verificationEmail,
+                'mailer' => 'smtp',
+                'smtp_host' => config('mail.mailers.smtp.host'),
+                'smtp_port' => config('mail.mailers.smtp.port'),
+                'smtp_scheme' => config('mail.mailers.smtp.scheme'),
+            ]);
         } catch (Throwable $exception) {
             Log::error('profile_verification_email_send_failed', [
                 'user_id' => $user->id,
@@ -107,7 +126,8 @@ class ProfileController extends Controller
                 'smtp_host' => config('mail.mailers.smtp.host'),
                 'smtp_port' => config('mail.mailers.smtp.port'),
                 'smtp_scheme' => config('mail.mailers.smtp.scheme'),
-                'smtp_timeout' => config('mail.mailers.smtp.timeout'),
+                'smtp_timeout' => $smtpTimeout,
+                'default_socket_timeout' => ini_get('default_socket_timeout'),
                 'exception_class' => $exception::class,
                 'exception_message' => $exception->getMessage(),
             ]);
@@ -120,6 +140,10 @@ class ProfileController extends Controller
             ]);
 
             return to_route('profile.edit');
+        } finally {
+            if ($previousSocketTimeout !== false) {
+                @ini_set('default_socket_timeout', (string) $previousSocketTimeout);
+            }
         }
 
         Inertia::flash('toast', [
