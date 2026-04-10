@@ -1,10 +1,8 @@
 import { Link, usePage } from '@inertiajs/react';
 import { memo } from 'react';
 import { 
-    BookOpen, 
     Boxes, 
     Clock3, 
-    FolderGit2, 
     LayoutGrid, 
     Pill, 
     ReceiptText,
@@ -14,11 +12,9 @@ import {
     Building2 
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
-import { NavFooter } from '@/components/nav-footer';
 import {
     Sidebar,
     SidebarContent,
-    SidebarFooter,
     SidebarGroup,
     SidebarGroupLabel,
     SidebarHeader,
@@ -29,19 +25,6 @@ import {
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { dashboard } from '@/routes';
 import type { NavItem } from '@/types';
-
-const footerNavItems: NavItem[] = [
-    {
-        title: 'Repository',
-        href: 'https://github.com/laravel/react-starter-kit',
-        icon: FolderGit2,
-    },
-    {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#react',
-        icon: BookOpen,
-    },
-];
 
 export const AppSidebar = memo(function AppSidebar() {
     const { auth } = usePage<{
@@ -175,9 +158,6 @@ export const AppSidebar = memo(function AppSidebar() {
                 {isAdminOrSuperuser && renderNavGroup('Administración', adminItems)}
             </SidebarContent>
 
-            <SidebarFooter>
-                <NavFooter items={footerNavItems} className="mt-auto" />
-            </SidebarFooter>
         </Sidebar>
     );
 });
