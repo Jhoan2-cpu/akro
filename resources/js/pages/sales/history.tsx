@@ -1,7 +1,15 @@
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { FileClock, Search } from 'lucide-react';
+import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 
 type SaleLine = {
@@ -53,6 +61,7 @@ function decodePaginationLabel(label: string): string {
 }
 
 export default function SalesHistory({ sales, filters }: Props) {
+    const [selectedSale, setSelectedSale] = useState<SaleRow | null>(null);
     const filterForm = useForm({
         search: filters.search ?? '',
         from: filters.from ?? '',
@@ -131,36 +140,48 @@ export default function SalesHistory({ sales, filters }: Props) {
                     </form>
 
                     <div className="hidden overflow-hidden rounded-3xl border border-sidebar-border/70 xl:block">
-                        <div className="grid grid-cols-[0.45fr_0.8fr_0.8fr_0.45fr_0.5fr_1.8fr] border-b border-sidebar-border/70 px-6 py-4 text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                        <div className="grid grid-cols-[0.45fr_0.8fr_0.8fr_0.45fr_0.55fr_1.5fr_0.6fr] border-b border-sidebar-border/70 bg-muted/35 px-6 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-emerald-800">
                             <span>ID</span>
                             <span>Fecha</span>
                             <span>Sucursal</span>
                             <span>Items</span>
                             <span>Total</span>
                             <span>Detalle</span>
+                            <span className="text-right">Acción</span>
                         </div>
 
                         <div className="divide-y divide-sidebar-border/70">
                             {sales.data.length > 0 ? (
-                                sales.data.map((sale) => (
-                                    <article key={sale.id} className="grid grid-cols-[0.45fr_0.8fr_0.8fr_0.45fr_0.5fr_1.8fr] gap-4 px-6 py-5 text-sm">
-                                        <p className="font-semibold text-foreground">#{sale.id}</p>
+                                sales.data.map((sale, index) => (
+                                    <article key={sale.id} className={`grid grid-cols-[0.45fr_0.8fr_0.8fr_0.45fr_0.55fr_1.5fr_0.6fr] gap-4 px-6 py-5 text-sm ${index % 2 === 0 ? 'bg-background' : 'bg-emerald-50/20'}`}>
+                                        <p className="font-bold text-foreground">#{sale.id}</p>
                                         <div>
-                                            <p className="text-foreground">{sale.created_at}</p>
+                                            <p className="font-medium text-foreground">{sale.created_at}</p>
                                             <p className="text-xs text-muted-foreground">{sale.employee_name ?? 'Sin empleado'}</p>
                                         </div>
-                                        <p className="text-muted-foreground">{sale.branch_name ?? 'Sin sucursal'}</p>
-                                        <Badge variant="outline" className="w-fit rounded-full px-3 py-1">
+                                        <p className="text-emerald-800">{sale.branch_name ?? 'Sin sucursal'}</p>
+                                        <Badge variant="outline" className="w-fit rounded-full border-emerald-200 bg-emerald-50 px-3 py-1 font-semibold text-emerald-700">
                                             {sale.items_count}
                                         </Badge>
-                                        <p className="font-semibold text-foreground">${sale.total}</p>
+                                        <p className="font-bold text-emerald-900">${sale.total}</p>
                                         <div className="space-y-2">
                                             {sale.lines.map((line, index) => (
-                                                <div key={`${sale.id}-${line.medicine}-${index}`} className="rounded-xl border border-sidebar-border/70 px-3 py-2">
-                                                    <p className="font-medium text-foreground">{line.medicine}</p>
+                                                <div key={`${sale.id}-${line.medicine}-${index}`} className="rounded-xl border border-emerald-100 bg-emerald-50/25 px-3 py-2">
+                                                    <p className="font-semibold text-foreground">{line.medicine}</p>
                                                     <p className="text-xs text-muted-foreground">{line.barcode ?? 'Sin código'} · {line.quantity} x ${line.unit_price} = ${line.subtotal}</p>
                                                 </div>
                                             ))}
+                                        </div>
+                                        <div className="flex justify-end">
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                size="sm"
+                                                className="border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100"
+                                                onClick={() => setSelectedSale(sale)}
+                                            >
+                                                Ver detalle
+                                            </Button>
                                         </div>
                                     </article>
                                 ))
@@ -175,15 +196,15 @@ export default function SalesHistory({ sales, filters }: Props) {
                     <div className="space-y-3 xl:hidden">
                         {sales.data.length > 0 ? (
                             sales.data.map((sale) => (
-                                <article key={sale.id} className="rounded-2xl border border-sidebar-border/70 p-4">
+                                <article key={sale.id} className="rounded-2xl border border-sidebar-border/70 bg-emerald-50/20 p-4">
                                     <div className="flex items-start justify-between gap-2">
                                         <div>
-                                            <p className="font-semibold text-foreground">Venta #{sale.id}</p>
+                                            <p className="font-bold text-foreground">Venta #{sale.id}</p>
                                             <p className="text-sm text-muted-foreground">{sale.created_at}</p>
                                             <p className="text-sm text-muted-foreground">{sale.employee_name ?? 'Sin empleado'}</p>
-                                            <p className="text-sm text-muted-foreground">{sale.branch_name ?? 'Sin sucursal'}</p>
+                                            <p className="text-sm text-emerald-800">{sale.branch_name ?? 'Sin sucursal'}</p>
                                         </div>
-                                        <Badge variant="outline" className="rounded-full">{sale.items_count} items</Badge>
+                                        <Badge variant="outline" className="rounded-full border-emerald-200 bg-emerald-50 text-emerald-700">{sale.items_count} items</Badge>
                                     </div>
 
                                     <div className="mt-4 space-y-2">
@@ -198,7 +219,19 @@ export default function SalesHistory({ sales, filters }: Props) {
 
                                     <div className="mt-4 flex items-center justify-between rounded-xl border border-sidebar-border/70 bg-muted/30 px-3 py-2">
                                         <span className="text-sm text-muted-foreground">Total</span>
-                                        <span className="text-base font-semibold text-foreground">${sale.total}</span>
+                                        <span className="text-base font-bold text-emerald-900">${sale.total}</span>
+                                    </div>
+
+                                    <div className="mt-3 flex justify-end">
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            className="border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100"
+                                            onClick={() => setSelectedSale(sale)}
+                                        >
+                                            Ver detalle
+                                        </Button>
                                     </div>
                                 </article>
                             ))
@@ -239,6 +272,38 @@ export default function SalesHistory({ sales, filters }: Props) {
                     </div>
                 </section>
             </div>
+
+            <Dialog open={selectedSale !== null} onOpenChange={(open) => !open && setSelectedSale(null)}>
+                <DialogContent className="max-h-[88vh] overflow-y-auto sm:max-w-3xl">
+                    <DialogHeader>
+                        <DialogTitle className="font-bold text-foreground">
+                            Detalle de venta #{selectedSale?.id}
+                        </DialogTitle>
+                        <DialogDescription>
+                            {selectedSale?.created_at} · {selectedSale?.employee_name ?? 'Sin empleado'} · {selectedSale?.branch_name ?? 'Sin sucursal'}
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="space-y-3">
+                        {selectedSale?.lines.map((line, index) => (
+                            <div key={`modal-line-${selectedSale.id}-${line.medicine}-${index}`} className="rounded-2xl border border-emerald-100 bg-emerald-50/30 p-3">
+                                <p className="font-semibold text-foreground">{line.medicine}</p>
+                                <p className="text-xs text-muted-foreground">{line.barcode ?? 'Sin código'}</p>
+                                <div className="mt-2 grid gap-2 text-sm sm:grid-cols-3">
+                                    <p className="text-slate-700">Cantidad: <span className="font-semibold text-foreground">{line.quantity}</span></p>
+                                    <p className="text-slate-700">Precio unitario: <span className="font-semibold text-foreground">${line.unit_price}</span></p>
+                                    <p className="text-slate-700">Subtotal: <span className="font-semibold text-emerald-900">${line.subtotal}</span></p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="mt-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-right">
+                        <p className="text-sm text-emerald-800">Total de la venta</p>
+                        <p className="text-2xl font-bold text-emerald-900">${selectedSale?.total ?? '0.00'}</p>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </>
     );
 }
