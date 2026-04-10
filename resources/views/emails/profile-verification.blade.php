@@ -29,57 +29,18 @@
         }
 
         .header {
-            background: #eff8f2;
-            padding: 30px 32px 26px;
+            background: #0f7a5b;
+            padding: 34px 32px;
             text-align: center;
         }
 
-        .brand-mark {
-            display: inline-flex;
-            align-items: center;
-            gap: 14px;
-            margin: 0 auto;
-            padding: 16px 22px;
-            background: #ffffff;
-            border: 1px solid #d8eadf;
-            border-radius: 18px;
-            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
-        }
-
-        .brand-icon {
-            width: 52px;
-            height: 52px;
-            border-radius: 16px;
-            background: linear-gradient(135deg, #0f7a5b, #0c5f47);
-            color: #ffffff;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 28px;
-            line-height: 1;
-            font-weight: 700;
-            flex: 0 0 auto;
-        }
-
-        .brand-text {
-            text-align: left;
-        }
-
-        .brand-kicker {
-            color: #0f7a5b;
-            font-size: 12px;
-            letter-spacing: 0.16em;
-            text-transform: uppercase;
-            font-weight: 700;
-            margin-bottom: 4px;
-        }
-
         .brand-name {
-            color: #17342b;
-            font-size: 18px;
+            color: #ffffff;
+            font-size: 28px;
             line-height: 1.1;
             font-weight: 800;
-            letter-spacing: 0.02em;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
         }
 
         .content {
@@ -159,16 +120,6 @@
                 padding-right: 20px;
             }
 
-            .brand-mark {
-                width: 100%;
-                box-sizing: border-box;
-                justify-content: center;
-            }
-
-            .brand-text {
-                text-align: center;
-            }
-
             h1 {
                 font-size: 22px;
             }
@@ -179,13 +130,7 @@
     <div class="wrapper">
         <div class="card">
             <div class="header">
-                <div class="brand-mark" role="img" aria-label="Farmacia San Lucas">
-                    <div class="brand-icon">+</div>
-                    <div class="brand-text">
-                        <div class="brand-kicker">Farmacia</div>
-                        <div class="brand-name">SAN LUCAS</div>
-                    </div>
-                </div>
+                <div class="brand-name">Farmacia San Lucas</div>
             </div>
 
             <div class="content">
