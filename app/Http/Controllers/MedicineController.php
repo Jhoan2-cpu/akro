@@ -13,6 +13,7 @@ use App\Models\Branch;
 use App\Models\Category;
 use App\Models\Inventory;
 use App\Models\Medicine;
+use App\Traits\ScopeByBranchForRole;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -25,6 +26,8 @@ use Throwable;
 
 class MedicineController extends Controller
 {
+    use ScopeByBranchForRole;
+
     public function index(Request $request): Response
     {
         $search = trim((string) $request->input('search', ''));
@@ -42,6 +45,18 @@ class MedicineController extends Controller
             })
             ->when($categoryId !== 'all', fn (Builder $builder) => $builder->where('category_id', (int) $categoryId))
             ->orderBy('name');
+
+        // Scoping: admins/employees solo ven medicines con inventory en su sucursal
+        if (!$this->isSuperuser($request)) {
+            $userId = $request->user()?->id;
+            $branchId = $request->user()?->branch_id;
+
+            if ($branchId === null) {
+                $query->whereRaw('1 = 0'); // Sin sucursal: no mostrar nada
+            } else {
+                $query->whereHas('inventories', fn (Builder $builder) => $builder->where('branch_id', $branchId));
+            }
+        }
 
         $medicines = $query->paginate(10)->withQueryString()->through(function (Medicine $medicine): array {
             $totalStock = (int) $medicine->inventories->sum('current_stock');

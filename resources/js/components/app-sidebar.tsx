@@ -46,7 +46,10 @@ export function AppSidebar() {
     const { auth } = usePage<{
         auth: { user: { role?: string } };
     }>().props;
-    const isAdmin = auth.user.role === 'admin';
+    
+    const userRole = auth.user.role as 'employee' | 'admin' | 'superuser' | undefined;
+    const isSuperuser = userRole === 'superuser';
+    const isAdminOrSuperuser = userRole === 'admin' || userRole === 'superuser';
     const { isCurrentUrl } = useCurrentUrl();
 
     // Operación - Available to all users
@@ -86,7 +89,7 @@ export function AppSidebar() {
         },
     ];
 
-    // Catálogo/Maestros - Admin only
+    // Catálogo/Maestros - Admin and superuser only
     const catalogoItems: NavItem[] = [
         {
             title: 'Medicamentos',
@@ -98,14 +101,18 @@ export function AppSidebar() {
             href: '/categories',
             icon: Tags,
         },
-        {
-            title: 'Sucursales',
-            href: '/branches',
-            icon: Building2,
-        },
+        ...(isSuperuser
+            ? [
+                  {
+                      title: 'Sucursales',
+                      href: '/branches',
+                      icon: Building2,
+                  },
+              ]
+            : []),
     ];
 
-    // Administración - Admin only
+    // Administración - Admin and superuser only
     const adminItems: NavItem[] = [
         {
             title: 'Usuarios',
@@ -160,11 +167,11 @@ export function AppSidebar() {
                 {/* Reportes - Always visible */}
                 {renderNavGroup('Reportes', reportesItems)}
 
-                {/* Catálogo/Maestros - Admin only */}
-                {isAdmin && renderNavGroup('Catálogo / Maestros', catalogoItems)}
+                {/* Catálogo/Maestros - Admin and superuser only */}
+                {isAdminOrSuperuser && renderNavGroup('Catálogo / Maestros', catalogoItems)}
 
-                {/* Administración - Admin only */}
-                {isAdmin && renderNavGroup('Administración', adminItems)}
+                {/* Administración - Admin and superuser only */}
+                {isAdminOrSuperuser && renderNavGroup('Administración', adminItems)}
             </SidebarContent>
 
             <SidebarFooter>

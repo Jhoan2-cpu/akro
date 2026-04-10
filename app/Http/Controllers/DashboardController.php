@@ -21,7 +21,8 @@ class DashboardController extends Controller
     public function __invoke(Request $request): Response
     {
         $user = $request->user();
-        $isAdmin = ($user?->role ?? null) === 'admin';
+        $isSuperuser = ($user?->role ?? null) === 'superuser';
+        $isAdmin = $isSuperuser || ($user?->role ?? null) === 'admin';
         $branchId = $user?->branch_id;
 
         $todayStart = Carbon::today();
