@@ -1,4 +1,5 @@
-import { BrowserMultiFormatReader, type IScannerControls } from '@zxing/browser';
+import { BrowserMultiFormatReader  } from '@zxing/browser';
+import type {IScannerControls} from '@zxing/browser';
 import { Camera, ScanLine, XCircle } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -32,6 +33,7 @@ export default function BarcodeScannerDialog({ onDetected, triggerLabel = 'Escan
         if (!open) {
             console.log('[scanner] dialog closed');
             hasDetectedRef.current = false;
+
             return;
         }
 
@@ -39,6 +41,7 @@ export default function BarcodeScannerDialog({ onDetected, triggerLabel = 'Escan
 
         const reader = new BrowserMultiFormatReader();
         let cancelled = false;
+        const videoElement = videoRef.current;
 
         const waitForVideoElement = async (): Promise<HTMLVideoElement> => {
             const maxAttempts = 20;
@@ -114,6 +117,7 @@ export default function BarcodeScannerDialog({ onDetected, triggerLabel = 'Escan
 
                 if (cancelled) {
                     controls.stop();
+
                     return;
                 }
 
@@ -121,13 +125,13 @@ export default function BarcodeScannerDialog({ onDetected, triggerLabel = 'Escan
                 console.log('[scanner] camera stream ready');
             } catch (error) {
                 console.error('[scanner] failed to start camera', error);
+
                 if (!cancelled) {
                     setErrorMessage('No se pudo iniciar la cámara. Verifica permisos del navegador.');
                 }
             }
         };
 
-        setErrorMessage(null);
         void start();
 
         return () => {
@@ -137,15 +141,24 @@ export default function BarcodeScannerDialog({ onDetected, triggerLabel = 'Escan
             scannerControlsRef.current = null;
             hasDetectedRef.current = false;
 
-            if (videoRef.current?.srcObject instanceof MediaStream) {
-                videoRef.current.srcObject.getTracks().forEach((track) => track.stop());
-                videoRef.current.srcObject = null;
+            if (videoElement?.srcObject instanceof MediaStream) {
+                videoElement.srcObject.getTracks().forEach((track) => track.stop());
+                videoElement.srcObject = null;
             }
         };
     }, [open]);
 
     return (
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog
+            open={open}
+            onOpenChange={(nextOpen) => {
+                if (nextOpen) {
+                    setErrorMessage(null);
+                }
+
+                setOpen(nextOpen);
+            }}
+        >
             <DialogTrigger asChild>
                 <Button type="button" variant="outline" className="rounded-full">
                     <Camera className="size-4" />

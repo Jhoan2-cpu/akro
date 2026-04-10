@@ -1,5 +1,6 @@
 ﻿import { CircleAlert, FlaskConical, Pill, Plus, Save, UploadCloud, X } from 'lucide-react';
-import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 'react';
+import { useEffect, useRef, useState   } from 'react';
+import type {FormEvent, KeyboardEvent} from 'react';
 import BarcodeScannerDialog from '@/components/barcode-scanner-dialog';
 import InputError from '@/components/input-error';
 import { Badge } from '@/components/ui/badge';

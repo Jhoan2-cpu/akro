@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
-import { Plus } from 'lucide-react';
 import { useForm } from '@inertiajs/react';
+import { Plus } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -10,9 +10,8 @@ import {
     DialogTitle,
     DialogTrigger,
 } from '@/components/ui/dialog';
-import UserUpsertModal, {
-    type UserUpsertFormValues,
-} from '@/components/users/user-upsert-modal';
+import UserUpsertModal from '@/components/users/user-upsert-modal';
+import type {UserUpsertFormValues} from '@/components/users/user-upsert-modal';
 
 type Branch = {
     id: number;
@@ -57,9 +56,11 @@ export default function CreateUserDialog({ branches, canSelectBranch, userBranch
             preserveScroll: true,
             onSuccess: () => {
                 form.reset();
+
                 if (!canSelectBranch && defaultBranchId !== '') {
                     form.setData('branch_id', defaultBranchId);
                 }
+
                 setOpen(false);
             },
         });

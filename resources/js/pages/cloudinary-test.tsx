@@ -1,5 +1,6 @@
 import { Head, useForm } from '@inertiajs/react';
 import { motion } from 'framer-motion';
+import { useMemo } from 'react';
 import {
     FaCloudArrowUp,
     FaCircleCheck,
@@ -8,10 +9,8 @@ import {
     FaLink,
     FaRotate,
 } from 'react-icons/fa6';
-import { useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 
 type CloudinaryResult = {
     public_id?: string | null;

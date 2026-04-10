@@ -2,7 +2,8 @@
 import { AlertTriangle, Boxes, PencilLine, Pill, Plus, Search, Trash2, TriangleAlert } from 'lucide-react';
 import { useState } from 'react';
 import BarcodeScannerDialog from '@/components/barcode-scanner-dialog';
-import MedicineForm, { type MedicineFormValues } from '@/components/medicines/medicine-form';
+import MedicineForm from '@/components/medicines/medicine-form';
+import type {MedicineFormValues} from '@/components/medicines/medicine-form';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';

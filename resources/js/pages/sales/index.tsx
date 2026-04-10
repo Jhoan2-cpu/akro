@@ -115,6 +115,7 @@ export default function SalesIndex({ branch, branches, employee, canSell, is_sup
     const [ticketPreview, setTicketPreview] = useState<FlashTicket | null>(null);
 
     const saleForm = useForm<{ items: SaleFormItem[]; branch_id?: number }>({ items: [], branch_id: branch?.id });
+    const setSaleFormData = saleForm.setData;
 
     useEffect(() => {
         if (flashTicket) {
@@ -124,9 +125,9 @@ export default function SalesIndex({ branch, branches, employee, canSell, is_sup
 
     useEffect(() => {
         if (is_superuser) {
-            saleForm.setData('branch_id', parseInt(selectedBranchId, 10));
+            setSaleFormData('branch_id', parseInt(selectedBranchId, 10));
         }
-    }, [selectedBranchId, is_superuser]);
+    }, [selectedBranchId, is_superuser, setSaleFormData]);
 
     const buildSaleItems = (items: CartItem[]): SaleFormItem[] => {
         return items.map((item) => ({

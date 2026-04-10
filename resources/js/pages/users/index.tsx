@@ -2,7 +2,6 @@ import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import { motion } from 'framer-motion';
 import {
     PencilLine,
-    Plus,
     Search,
     ShieldBan,
     Users,
@@ -14,7 +13,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import CreateUserDialog from '@/components/users/create-user-dialog';
 import {
     Select,
     SelectContent,
@@ -22,6 +20,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import CreateUserDialog from '@/components/users/create-user-dialog';
 import { useInitials } from '@/hooks/use-initials';
 
 type Branch = {

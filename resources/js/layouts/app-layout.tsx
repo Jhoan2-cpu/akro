@@ -1,6 +1,6 @@
-import AppLayoutTemplate from '@/layouts/app/app-sidebar-layout';
 import { useExpiryAlertToast } from '@/hooks/use-expiry-alert-toast';
 import { useFlashToast } from '@/hooks/use-flash-toast';
+import AppLayoutTemplate from '@/layouts/app/app-sidebar-layout';
 import type { BreadcrumbItem } from '@/types';
 
 function FlashToastBridge(): null {

@@ -1,7 +1,6 @@
 import { Head, router, useForm } from '@inertiajs/react';
-import UserUpsertModal, {
-    type UserUpsertFormValues,
-} from '@/components/users/user-upsert-modal';
+import UserUpsertModal from '@/components/users/user-upsert-modal';
+import type {UserUpsertFormValues} from '@/components/users/user-upsert-modal';
 
 type Branch = {
     id: number;

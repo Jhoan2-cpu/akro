@@ -1,6 +1,6 @@
 import { Head, Link } from '@inertiajs/react';
-import { useMemo, useState } from 'react';
 import { Activity, AlertTriangle, BarChart3, ClipboardList, Clock3, PackageSearch, ReceiptText, ShoppingCart, TrendingUp, Users } from 'lucide-react';
+import { useMemo, useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { dashboard } from '@/routes';
 

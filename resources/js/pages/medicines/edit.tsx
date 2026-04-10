@@ -1,6 +1,8 @@
 import { Head, router, useForm } from '@inertiajs/react';
-import { useState, type FormEvent } from 'react';
-import MedicineForm, { type MedicineFormValues } from '@/components/medicines/medicine-form';
+import { useState  } from 'react';
+import type {FormEvent} from 'react';
+import MedicineForm from '@/components/medicines/medicine-form';
+import type {MedicineFormValues} from '@/components/medicines/medicine-form';
 
 type Option = { id: number; name: string };
 

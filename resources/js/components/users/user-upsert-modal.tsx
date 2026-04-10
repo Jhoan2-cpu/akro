@@ -1,9 +1,9 @@
-import { ChevronDown, Circle, CloudUpload } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { Circle, CloudUpload } from 'lucide-react';
+import { useEffect, useMemo } from 'react';
 import type { FormEvent } from 'react';
+import InputError from '@/components/input-error';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import InputError from '@/components/input-error';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -79,11 +79,18 @@ export default function UserUpsertModal({
     canAssignSuperuser = false,
 }: Props) {
     const getInitials = useInitials();
-    const [photoPreview, setPhotoPreview] = useState<string | null>(null);
     const fieldSurfaceClass = mode === 'page' ? 'bg-neutral-100/60' : 'bg-neutral-50';
     const formShellClassName = mode === 'page'
         ? 'rounded-3xl border border-sidebar-border/70 bg-white p-5 shadow-sm sm:p-8'
         : 'p-5 sm:p-8';
+
+    const photoPreview = useMemo(() => {
+        if (!data.profile_photo) {
+            return null;
+        }
+
+        return URL.createObjectURL(data.profile_photo);
+    }, [data.profile_photo]);
 
     const selectedPhotoUrl = useMemo(() => {
         return photoPreview ?? currentPhotoUrl ?? null;
@@ -98,16 +105,12 @@ export default function UserUpsertModal({
     }, [canAssignSuperuser]);
 
     useEffect(() => {
-        if (!data.profile_photo) {
-            setPhotoPreview(null);
-            return;
-        }
-
-        const objectUrl = URL.createObjectURL(data.profile_photo);
-        setPhotoPreview(objectUrl);
-
-        return () => URL.revokeObjectURL(objectUrl);
-    }, [data.profile_photo]);
+        return () => {
+            if (photoPreview) {
+                URL.revokeObjectURL(photoPreview);
+            }
+        };
+    }, [photoPreview]);
 
     return (
         <form onSubmit={onSubmit} className={formShellClassName}>

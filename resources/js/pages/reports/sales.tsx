@@ -1,6 +1,8 @@
-import { Head, useForm, usePage } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react';
 import { FileDown, FileText, Trash2, Eye } from 'lucide-react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
     Select,
@@ -9,8 +11,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
-import { useState } from 'react';
 
 type Branch = {
     id: number;
@@ -39,7 +39,6 @@ type Props = {
 };
 
 export default function SalesReportPage({ branches, configurations, filters, isSuperuser }: Props) {
-    const { auth } = usePage().props;
     const [saving, setSaving] = useState(false);
 
     const form = useForm({

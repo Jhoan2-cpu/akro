@@ -1,6 +1,6 @@
 import { Form, Head, Link, useForm, usePage } from '@inertiajs/react';
 import { CloudUpload } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
 import DeleteUser from '@/components/delete-user';
 import Heading from '@/components/heading';
@@ -23,13 +23,20 @@ export default function Profile({
 }) {
     const { auth } = usePage().props;
     const getInitials = useInitials();
-    const [photoPreview, setPhotoPreview] = useState<string | null>(null);
     const verificationForm = useForm({
         verification_email: (auth.user.verification_email as string | null | undefined) ?? auth.user.email,
     });
     const photoForm = useForm<{ profile_photo: File | null }>({
         profile_photo: null,
     });
+
+    const photoPreview = useMemo(() => {
+        if (!photoForm.data.profile_photo) {
+            return null;
+        }
+
+        return URL.createObjectURL(photoForm.data.profile_photo);
+    }, [photoForm.data.profile_photo]);
 
     const hasVerificationEmail = Boolean(verificationForm.data.verification_email);
     const isVerificationEmailVerified = Boolean(auth.user.verification_email_verified_at);
@@ -39,16 +46,12 @@ export default function Profile({
     );
 
     useEffect(() => {
-        if (!photoForm.data.profile_photo) {
-            setPhotoPreview(null);
-            return;
-        }
-
-        const objectUrl = URL.createObjectURL(photoForm.data.profile_photo);
-        setPhotoPreview(objectUrl);
-
-        return () => URL.revokeObjectURL(objectUrl);
-    }, [photoForm.data.profile_photo]);
+        return () => {
+            if (photoPreview) {
+                URL.revokeObjectURL(photoPreview);
+            }
+        };
+    }, [photoPreview]);
 
     const submitVerificationEmail = (event: React.FormEvent<HTMLFormElement>): void => {
         event.preventDefault();

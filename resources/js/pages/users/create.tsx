@@ -1,12 +1,9 @@
 import { Head } from '@inertiajs/react';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { useRouter } from '@inertiajs/react';
 import { useForm } from '@inertiajs/react';
 import { useEffect } from 'react';
-import UserUpsertModal, {
-    type UserUpsertFormValues,
-} from '@/components/users/user-upsert-modal';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import UserUpsertModal from '@/components/users/user-upsert-modal';
+import type {UserUpsertFormValues} from '@/components/users/user-upsert-modal';
 
 type Branch = {
     id: number;
@@ -59,7 +56,11 @@ export default function CreateUser({ branches, ui }: Props) {
     return (
         <>
             <Head title="Agregar Usuario" />
-            <Dialog open onOpenChange={(nextOpen) => { if (!nextOpen) close(); }}>
+            <Dialog open onOpenChange={(nextOpen) => {
+ if (!nextOpen) {
+close();
+} 
+}}>
                 <DialogContent className="max-h-[92vh] max-w-6xl overflow-y-auto rounded-3xl border-sidebar-border/70 bg-background p-0 sm:max-w-6xl">
                     <DialogHeader className="sr-only">
                         <DialogTitle>Agregar Nuevo Usuario</DialogTitle>
