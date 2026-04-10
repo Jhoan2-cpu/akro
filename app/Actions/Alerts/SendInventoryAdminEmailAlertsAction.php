@@ -194,13 +194,7 @@ class SendInventoryAdminEmailAlertsAction
                 'near_expiry' => (int) $recipientBranchAlerts->sum(fn (array $summary): int => count($summary['near_expiry_items'])),
             ];
 
-            $snapshotHash = sha1(json_encode([
-                'recipient_id' => (int) $recipient->id,
-                'branches' => $branchSummaries,
-                'totals' => $totals,
-            ], JSON_THROW_ON_ERROR));
-
-            $cacheKey = sprintf('alerts:inventory-email:%d:%s', (int) $recipient->id, $snapshotHash);
+            $cacheKey = sprintf('alerts:inventory-email:%d:%s', (int) $recipient->id, $today->toDateString());
 
             if (Cache::has($cacheKey)) {
                 $skippedDuplicates++;
