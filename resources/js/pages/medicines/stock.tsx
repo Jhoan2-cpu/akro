@@ -28,6 +28,7 @@ type InventoryRow = {
     minimum_stock: number;
     expiration_date: string;
     days_to_expire: number;
+    is_expired: boolean;
     is_low_stock: boolean;
     is_near_expiry: boolean;
     is_out_of_stock: boolean;
@@ -275,8 +276,8 @@ export default function MedicinesStock({ inventories, branches, categories, filt
                                                 <td className="px-4 py-3 text-foreground">{inventory.minimum_stock}</td>
                                                 <td className="px-4 py-3">
                                                     <p className="text-foreground">{inventory.expiration_date}</p>
-                                                    <p className={`text-xs ${inventory.days_to_expire < 0 ? 'text-rose-700' : 'text-muted-foreground'}`}>
-                                                        {inventory.days_to_expire < 0
+                                                    <p className={`text-xs ${inventory.is_expired ? 'text-rose-700' : 'text-muted-foreground'}`}>
+                                                        {inventory.is_expired
                                                             ? `Vencido hace ${Math.abs(inventory.days_to_expire)} días`
                                                             : `Faltan ${inventory.days_to_expire} días`}
                                                     </p>
@@ -289,10 +290,13 @@ export default function MedicinesStock({ inventories, branches, categories, filt
                                                         {inventory.is_low_stock && !inventory.is_out_of_stock && (
                                                             <Badge variant="outline" className="border-rose-200 bg-rose-50 text-rose-700">Stock bajo</Badge>
                                                         )}
-                                                        {inventory.is_near_expiry && (
+                                                        {inventory.is_expired && (
+                                                            <Badge variant="outline" className="border-rose-200 bg-rose-50 text-rose-700">Vencido</Badge>
+                                                        )}
+                                                        {!inventory.is_expired && inventory.is_near_expiry && (
                                                             <Badge variant="outline" className="border-amber-200 bg-amber-50 text-amber-700">Caduca pronto</Badge>
                                                         )}
-                                                        {!inventory.is_low_stock && !inventory.is_near_expiry && !inventory.is_out_of_stock && (
+                                                        {!inventory.is_expired && !inventory.is_low_stock && !inventory.is_near_expiry && !inventory.is_out_of_stock && (
                                                             <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-700">Saludable</Badge>
                                                         )}
                                                     </div>
@@ -327,10 +331,13 @@ export default function MedicinesStock({ inventories, branches, categories, filt
                                             {inventory.is_low_stock && !inventory.is_out_of_stock && (
                                                 <Badge variant="outline" className="border-rose-200 bg-rose-50 text-rose-700">Stock bajo</Badge>
                                             )}
-                                            {inventory.is_near_expiry && (
+                                            {inventory.is_expired && (
+                                                <Badge variant="outline" className="border-rose-200 bg-rose-50 text-rose-700">Vencido</Badge>
+                                            )}
+                                            {!inventory.is_expired && inventory.is_near_expiry && (
                                                 <Badge variant="outline" className="border-amber-200 bg-amber-50 text-amber-700">Caduca pronto</Badge>
                                             )}
-                                            {!inventory.is_low_stock && !inventory.is_near_expiry && !inventory.is_out_of_stock && (
+                                            {!inventory.is_expired && !inventory.is_low_stock && !inventory.is_near_expiry && !inventory.is_out_of_stock && (
                                                 <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-700">Saludable</Badge>
                                             )}
                                         </div>

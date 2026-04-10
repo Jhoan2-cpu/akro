@@ -66,6 +66,9 @@ class MedicineController extends Controller
 
                 return $days >= 0 && $days < 30;
             });
+            $expired = $medicine->inventories->contains(function (Inventory $inventory): bool {
+                return Carbon::today()->diffInDays($inventory->expiration_date, false) < 0;
+            });
 
             return [
                 'id' => $medicine->id,
@@ -77,6 +80,7 @@ class MedicineController extends Controller
                 'active_ingredients' => $medicine->activeIngredients->pluck('name')->values(),
                 'total_stock' => $totalStock,
                 'low_stock' => $medicine->inventories->contains(fn (Inventory $inventory) => $inventory->current_stock <= $inventory->minimum_stock),
+                'expired' => $expired,
                 'near_expiry' => $nearExpiry,
             ];
         });
@@ -337,6 +341,7 @@ class MedicineController extends Controller
                 $daysToExpire = $today->diffInDays($inventory->expiration_date, false);
                 $isLowStock = $inventory->current_stock <= $inventory->minimum_stock;
                 $isOutOfStock = $inventory->current_stock === 0;
+                $isExpired = $daysToExpire < 0;
                 $isNearExpiry = $daysToExpire >= 0 && $daysToExpire < 30;
 
                 return [
@@ -349,6 +354,7 @@ class MedicineController extends Controller
                     'minimum_stock' => $inventory->minimum_stock,
                     'expiration_date' => substr((string) $inventory->expiration_date, 0, 10),
                     'days_to_expire' => $daysToExpire,
+                    'is_expired' => $isExpired,
                     'is_low_stock' => $isLowStock,
                     'is_near_expiry' => $isNearExpiry,
                     'is_out_of_stock' => $isOutOfStock,

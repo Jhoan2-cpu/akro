@@ -13,14 +13,19 @@ class InventoryRiskAlertNotification extends Notification
     use Queueable;
 
     /**
-     * @param array<int, array{medicine_name: string, current_stock: int, minimum_stock: int}> $lowStockItems
-     * @param array<int, array{medicine_name: string, expiration_date: string, days_to_expire: int}> $nearExpiryItems
+     * @param array<int, array{
+     *   branch_name: string,
+     *   out_of_stock_items: array<int, array{medicine_name: string, current_stock: int, minimum_stock: int}>,
+     *   low_stock_items: array<int, array{medicine_name: string, current_stock: int, minimum_stock: int}>,
+     *   expired_items: array<int, array{medicine_name: string, expiration_date: string, days_to_expire: int}>,
+     *   near_expiry_items: array<int, array{medicine_name: string, expiration_date: string, days_to_expire: int}>
+     * }> $branchSummaries
+     * @param array{out_of_stock: int, low_stock: int, expired: int, near_expiry: int} $totals
      */
     public function __construct(
         private readonly string $recipientName,
-        private readonly string $branchName,
-        private readonly array $lowStockItems,
-        private readonly array $nearExpiryItems,
+        private readonly array $branchSummaries,
+        private readonly array $totals,
     ) {
     }
 
@@ -34,15 +39,22 @@ class InventoryRiskAlertNotification extends Notification
 
     public function toMail(object $notifiable): MailMessage
     {
+        $subject = sprintf(
+            'Alerta de inventario consolidada - %d agotados, %d bajo stock, %d vencidos, %d por vencer',
+            $this->totals['out_of_stock'],
+            $this->totals['low_stock'],
+            $this->totals['expired'],
+            $this->totals['near_expiry'],
+        );
+
         return (new MailMessage)
-            ->subject('Alerta de inventario - '.$this->branchName)
+            ->subject($subject)
             ->view('emails.inventory-risk-alert', [
                 'recipientName' => $this->recipientName,
-                'branchName' => $this->branchName,
-                'lowStockItems' => $this->lowStockItems,
-                'nearExpiryItems' => $this->nearExpiryItems,
+                'branchSummaries' => $this->branchSummaries,
+                'totals' => $this->totals,
                 'stockUrl' => url('/medicines/stock'),
-                'logoUrl' => asset('images/logo.png'),
+                'logoUrl' => asset('images/logo.svg'),
             ]);
     }
 }

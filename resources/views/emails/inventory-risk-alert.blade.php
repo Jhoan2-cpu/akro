@@ -129,31 +129,59 @@
             <div class="content">
                 <span class="badge">Alerta de inventario</span>
                 <h1>Hola {{ $recipientName }},</h1>
-                <p>Se detectaron alertas de inventario en la sucursal <strong>{{ $branchName }}</strong>.</p>
+                <p>Se detectaron alertas de inventario en tus sucursales asignadas.</p>
 
-                @if (! empty($lowStockItems))
-                    <div class="section">
-                        <h2>Stock bajo</h2>
-                        <p>{{ count($lowStockItems) }} producto(s) con stock bajo:</p>
-                        <ul class="list">
-                            @foreach (array_slice($lowStockItems, 0, 10) as $item)
-                                <li>{{ $item['medicine_name'] }}: stock {{ $item['current_stock'] }} (mínimo {{ $item['minimum_stock'] }})</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
+                <div class="section">
+                    <h2>Resumen general</h2>
+                    <ul class="list">
+                        <li>Stock agotado: {{ $totals['out_of_stock'] }}</li>
+                        <li>Stock bajo: {{ $totals['low_stock'] }}</li>
+                        <li>Productos vencidos: {{ $totals['expired'] }}</li>
+                        <li>Próximos a vencer (<=30 días): {{ $totals['near_expiry'] }}</li>
+                    </ul>
+                </div>
 
-                @if (! empty($nearExpiryItems))
+                @foreach ($branchSummaries as $branch)
                     <div class="section">
-                        <h2>Próximos a vencer o vencidos</h2>
-                        <p>{{ count($nearExpiryItems) }} producto(s) en riesgo:</p>
-                        <ul class="list">
-                            @foreach (array_slice($nearExpiryItems, 0, 10) as $item)
-                                <li>{{ $item['medicine_name'] }}: vence {{ $item['expiration_date'] }} (en {{ $item['days_to_expire'] }} día(s))</li>
-                            @endforeach
-                        </ul>
+                        <h2>Sucursal: {{ $branch['branch_name'] }}</h2>
+
+                        @if (! empty($branch['out_of_stock_items']))
+                            <p><strong>Stock agotado ({{ count($branch['out_of_stock_items']) }}):</strong></p>
+                            <ul class="list">
+                                @foreach (array_slice($branch['out_of_stock_items'], 0, 10) as $item)
+                                    <li>{{ $item['medicine_name'] }}: stock {{ $item['current_stock'] }} (mínimo {{ $item['minimum_stock'] }})</li>
+                                @endforeach
+                            </ul>
+                        @endif
+
+                        @if (! empty($branch['low_stock_items']))
+                            <p><strong>Stock bajo ({{ count($branch['low_stock_items']) }}):</strong></p>
+                            <ul class="list">
+                                @foreach (array_slice($branch['low_stock_items'], 0, 10) as $item)
+                                    <li>{{ $item['medicine_name'] }}: stock {{ $item['current_stock'] }} (mínimo {{ $item['minimum_stock'] }})</li>
+                                @endforeach
+                            </ul>
+                        @endif
+
+                        @if (! empty($branch['expired_items']))
+                            <p><strong>Vencidos ({{ count($branch['expired_items']) }}):</strong></p>
+                            <ul class="list">
+                                @foreach (array_slice($branch['expired_items'], 0, 10) as $item)
+                                    <li>{{ $item['medicine_name'] }}: venció {{ $item['expiration_date'] }} (hace {{ abs($item['days_to_expire']) }} día(s))</li>
+                                @endforeach
+                            </ul>
+                        @endif
+
+                        @if (! empty($branch['near_expiry_items']))
+                            <p><strong>Próximos a vencer ({{ count($branch['near_expiry_items']) }}):</strong></p>
+                            <ul class="list">
+                                @foreach (array_slice($branch['near_expiry_items'], 0, 10) as $item)
+                                    <li>{{ $item['medicine_name'] }}: vence {{ $item['expiration_date'] }} (en {{ $item['days_to_expire'] }} día(s))</li>
+                                @endforeach
+                            </ul>
+                        @endif
                     </div>
-                @endif
+                @endforeach
 
                 <a class="button" href="{{ $stockUrl }}">Ir a Stock</a>
             </div>

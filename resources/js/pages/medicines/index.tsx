@@ -33,6 +33,7 @@ type MedicineRow = {
     active_ingredients: string[];
     total_stock: number;
     low_stock: boolean;
+    expired: boolean;
     near_expiry: boolean;
 };
 
@@ -335,16 +336,28 @@ export default function MedicinesIndex({ medicines, categories, activeIngredient
                                         <p className="text-sm font-semibold text-foreground">{medicine.total_stock}</p>
 
                                         <div className="flex flex-wrap gap-2">
+                                            {medicine.expired && (
+                                                <Badge variant="outline" className="border-rose-200 bg-rose-50 text-rose-700">
+                                                    <AlertTriangle className="size-3" />
+                                                    Vencido
+                                                </Badge>
+                                            )}
                                             {medicine.low_stock && (
                                                 <Badge variant="outline" className="border-rose-200 bg-rose-50 text-rose-700">
                                                     <AlertTriangle className="size-3" />
                                                     Stock bajo
                                                 </Badge>
                                             )}
-                                            {medicine.near_expiry && (
+                                            {!medicine.expired && medicine.near_expiry && (
                                                 <Badge variant="outline" className="border-amber-200 bg-amber-50 text-amber-700">
                                                     <TriangleAlert className="size-3" />
                                                     Próximo a caducar
+                                                </Badge>
+                                            )}
+                                            {!medicine.expired && !medicine.low_stock && !medicine.near_expiry && (
+                                                <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-700">
+                                                    <Boxes className="size-3" />
+                                                    Saludable
                                                 </Badge>
                                             )}
                                         </div>
@@ -395,12 +408,18 @@ export default function MedicinesIndex({ medicines, categories, activeIngredient
                                     <p className="mt-2 text-sm text-muted-foreground">Stock: <span className="font-medium text-foreground">{medicine.total_stock}</span></p>
 
                                     <div className="mt-3 flex flex-wrap gap-2">
+                                            {medicine.expired && (
+                                                <Badge variant="outline" className="border-rose-200 bg-rose-50 text-rose-700">Vencido</Badge>
+                                            )}
                                         {medicine.low_stock && (
                                             <Badge variant="outline" className="border-rose-200 bg-rose-50 text-rose-700">Stock bajo</Badge>
                                         )}
-                                        {medicine.near_expiry && (
+                                            {!medicine.expired && medicine.near_expiry && (
                                             <Badge variant="outline" className="border-amber-200 bg-amber-50 text-amber-700">Próximo a caducar</Badge>
                                         )}
+                                            {!medicine.expired && !medicine.low_stock && !medicine.near_expiry && (
+                                                <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-700">Saludable</Badge>
+                                            )}
                                     </div>
 
                                     <div className="mt-4 flex flex-wrap gap-2">

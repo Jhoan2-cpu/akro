@@ -74,7 +74,7 @@ class HandleInertiaRequests extends Middleware
 
         $baseQuery = Inventory::query()
             ->with(['medicine:id,name,barcode', 'branch:id,name'])
-            ->when(($user->role ?? null) !== 'admin', function (Builder $builder) use ($user): void {
+            ->when(($user->role ?? null) !== 'superuser', function (Builder $builder) use ($user): void {
                 if ($user->branch_id === null) {
                     $builder->whereRaw('1 = 0');
 
@@ -117,6 +117,7 @@ class HandleInertiaRequests extends Middleware
                 $days = $today->diffInDays($inventory->expiration_date, false);
                 $isExpired = $days < 0;
                 $isLowStock = $inventory->current_stock <= $inventory->minimum_stock;
+                $isNearExpiry = $days >= 0 && $days < 30;
 
                 $status = $isExpired
                     ? 'expired'
@@ -141,6 +142,8 @@ class HandleInertiaRequests extends Middleware
                     'current_stock' => (int) $inventory->current_stock,
                     'minimum_stock' => (int) $inventory->minimum_stock,
                     'days_to_expire' => $days,
+                    'is_expired' => $isExpired,
+                    'is_near_expiry' => $isNearExpiry,
                     'message' => $message,
                 ];
             })
