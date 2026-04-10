@@ -27,6 +27,8 @@ docker compose -f docker-compose.dev.yml up -d
 - La selección de sucursal queda gobernada por rol: solo `superuser` puede elegir entre múltiples sucursales (venta rápida y formularios de medicamentos); `admin/employee` operan únicamente con su sucursal asignada y la UI bloquea cambios de sucursal fuera de ese alcance.
 - En creación de usuarios desde `/users`, el rol `admin` tiene la sucursal preasignada y bloqueada (sin selector editable); únicamente `superuser` puede seleccionar sucursal para el nuevo usuario.
 - La asignación del rol `superuser` está restringida: `admin` no puede crear usuarios con ese rol ni actualizar usuarios existentes para convertirlos en `superuser` (regla aplicada en formulario y backend).
+- El redirect post-login de Fortify ahora valida `url.intended` por rol: usuarios `employee` no son enviados a rutas administrativas (`/medicines`, `/users`, `/categories`, `/active-ingredients`, `/branches`) y se redirigen de forma segura a `/dashboard`.
+- El dashboard operativo se ajusta con `minmax(0, ...)` y contenedores `min-w-0` para evitar desbordes horizontales en producción (zoom 100%/pantallas intermedias), garantizando visibilidad del bloque "Alertas operativas".
 
 ## MER Fiscal (Resumen)
 ```mermaid
