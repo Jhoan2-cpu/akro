@@ -22,6 +22,7 @@ class StoreQuickSaleRequest extends FormRequest
             'items.*.medicine_id' => $this->itemMedicineRules(),
             'items.*.quantity' => $this->itemQuantityRules(),
             'items.*.unit_price' => $this->itemUnitPriceRules(),
+            'items.*.is_price_overridden' => $this->itemPriceOverriddenRules(),
         ];
     }
 
@@ -40,6 +41,7 @@ class StoreQuickSaleRequest extends FormRequest
             'items.*.quantity.min' => 'La cantidad debe ser al menos 1.',
             'items.*.unit_price.required' => 'El precio unitario es obligatorio.',
             'items.*.unit_price.min' => 'El precio unitario debe ser mayor que cero.',
+            'items.*.is_price_overridden.boolean' => 'El indicador de precio editado no es válido.',
         ];
     }
 }

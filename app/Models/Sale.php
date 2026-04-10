@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['user_id', 'branch_id', 'total'])]
+#[Fillable(['user_id', 'branch_id', 'subtotal', 'total_tax', 'total'])]
 class Sale extends Model
 {
     /** @use HasFactory<\Database\Factories\SaleFactory> */
@@ -21,6 +21,8 @@ class Sale extends Model
     protected function casts(): array
     {
         return [
+            'subtotal' => 'decimal:2',
+            'total_tax' => 'decimal:2',
             'total' => 'decimal:2',
             'created_at' => 'datetime',
         ];

@@ -10,3 +10,35 @@ docker compose -f docker-compose.dev.yml up -d
 - Se agrega la seccion de historial de ventas en `/sales/history`, consumiendo `sales` y `sale_details` con detalle de lineas por venta y filtros por texto/fecha.
 - El modulo `/medicines/stock` se rediseña como listado filtrable por busqueda, sucursal, categoria y estado de inventario, con tabla detallada paginada y metricas de riesgo (stock bajo, sin stock, proximo a caducar).
 - En el formulario de medicamentos, no es obligatorio registrar todas las sucursales: se seleccionan de forma explicita desde un desplegable y solo esas sucursales se guardan en `stocks`.
+- Se implementa soporte fiscal MX para IVA en ventas: `medicines.tax_rate`, `sales.subtotal`, `sales.total_tax`, `sale_details.subtotal`, `sale_details.tax_amount` y `sale_details.is_price_overridden`.
+- En venta rápida el empleado captura **precio bruto** (IVA incluido) y el backend calcula base e IVA por línea con la fórmula `base = bruto / (1 + tax_rate)`.
+
+## MER Fiscal (Resumen)
+```mermaid
+erDiagram
+	MEDICINES {
+		bigint id PK
+		decimal tax_rate
+	}
+
+	SALES {
+		bigint id PK
+		decimal subtotal
+		decimal total_tax
+		decimal total
+	}
+
+	SALE_DETAILS {
+		bigint id PK
+		bigint sale_id FK
+		bigint medicine_id FK
+		int quantity
+		decimal unit_price
+		decimal subtotal
+		decimal tax_amount
+		bool is_price_overridden
+	}
+
+	SALES ||--o{ SALE_DETAILS : contains
+	MEDICINES ||--o{ SALE_DETAILS : sold
+```

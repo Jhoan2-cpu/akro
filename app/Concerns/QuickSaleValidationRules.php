@@ -39,4 +39,12 @@ trait QuickSaleValidationRules
     {
         return ['required', 'numeric', 'min:0.01'];
     }
+
+    /**
+     * @return array<int, string>
+     */
+    protected function itemPriceOverriddenRules(): array
+    {
+        return ['nullable', 'boolean'];
+    }
 }

@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['sale_id', 'medicine_id', 'quantity', 'unit_price'])]
+#[Fillable(['sale_id', 'medicine_id', 'quantity', 'unit_price', 'subtotal', 'tax_amount', 'is_price_overridden'])]
 class SaleDetail extends Model
 {
     /** @use HasFactory<\Database\Factories\SaleDetailFactory> */
@@ -20,6 +20,9 @@ class SaleDetail extends Model
         return [
             'quantity' => 'integer',
             'unit_price' => 'decimal:2',
+            'subtotal' => 'decimal:2',
+            'tax_amount' => 'decimal:2',
+            'is_price_overridden' => 'boolean',
         ];
     }
 

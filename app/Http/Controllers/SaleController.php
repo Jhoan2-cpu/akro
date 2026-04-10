@@ -167,7 +167,9 @@ class SaleController extends Controller
                         'barcode' => $detail->medicine?->barcode,
                         'quantity' => $quantity,
                         'unit_price' => number_format($unitPrice, 2, '.', ''),
-                        'subtotal' => number_format($quantity * $unitPrice, 2, '.', ''),
+                        'subtotal' => number_format((float) $detail->subtotal, 2, '.', ''),
+                        'tax_amount' => number_format((float) $detail->tax_amount, 2, '.', ''),
+                        'is_price_overridden' => (bool) $detail->is_price_overridden,
                     ];
                 })->values();
 
@@ -176,6 +178,8 @@ class SaleController extends Controller
                     'created_at' => $sale->created_at?->format('Y-m-d H:i:s'),
                     'employee_name' => $sale->user?->name,
                     'branch_name' => $sale->branch?->name,
+                    'subtotal' => number_format((float) $sale->subtotal, 2, '.', ''),
+                    'total_tax' => number_format((float) $sale->total_tax, 2, '.', ''),
                     'total' => number_format((float) $sale->total, 2, '.', ''),
                     'items_count' => $sale->details->sum('quantity'),
                     'lines' => $lines,
@@ -206,11 +210,13 @@ class SaleController extends Controller
 
         $validated = $request->validated();
         $items = $validated['items'];
+        $subtotal = 0.0;
+        $totalTax = 0.0;
         $total = 0.0;
         $saleLines = [];
 
         try {
-            DB::transaction(function () use (&$total, &$saleLines, $items, $user, $branchId): void {
+            DB::transaction(function () use (&$subtotal, &$totalTax, &$total, &$saleLines, $items, $user, $branchId): void {
                 foreach ($items as $item) {
                     $medicine = Medicine::query()->findOrFail((int) $item['medicine_id']);
                     $inventory = Inventory::query()
@@ -224,7 +230,11 @@ class SaleController extends Controller
                     }
 
                     $quantity = (int) $item['quantity'];
-                    $unitPrice = (float) $item['unit_price'];
+                    $grossUnitPrice = (float) $item['unit_price'];
+                    $taxRate = (float) ($medicine->tax_rate ?? 0.00);
+                    $baseUnitPrice = $grossUnitPrice / (1 + $taxRate);
+                    $lineSubtotal = round($baseUnitPrice * $quantity, 2);
+                    $lineTaxAmount = round(($grossUnitPrice - $baseUnitPrice) * $quantity, 2);
 
                     if ($inventory->current_stock < $quantity) {
                         throw new RuntimeException("Stock insuficiente para {$medicine->name}.");
@@ -233,20 +243,30 @@ class SaleController extends Controller
                     $saleLines[] = [
                         'medicine_id' => $medicine->id,
                         'quantity' => $quantity,
-                        'unit_price' => $unitPrice,
+                        'unit_price' => round($grossUnitPrice, 2),
+                        'subtotal' => $lineSubtotal,
+                        'tax_amount' => $lineTaxAmount,
+                        'is_price_overridden' => (bool) ($item['is_price_overridden'] ?? false),
                     ];
 
-                    $total += round($quantity * $unitPrice, 2);
+                    $subtotal += $lineSubtotal;
+                    $totalTax += $lineTaxAmount;
 
                     $inventory->update([
                         'current_stock' => $inventory->current_stock - $quantity,
                     ]);
                 }
 
+                $subtotal = round($subtotal, 2);
+                $totalTax = round($totalTax, 2);
+                $total = round($subtotal + $totalTax, 2);
+
                 $sale = Sale::query()->create([
                     'user_id' => $user->id,
                     'branch_id' => $branchId,
-                    'total' => round($total, 2),
+                    'subtotal' => $subtotal,
+                    'total_tax' => $totalTax,
+                    'total' => $total,
                 ]);
 
                 foreach ($saleLines as $saleLine) {
@@ -281,6 +301,7 @@ class SaleController extends Controller
             'barcode' => $medicine->barcode,
             'category' => $medicine->category?->name,
             'description' => $medicine->description,
+            'tax_rate' => number_format((float) ($medicine->tax_rate ?? 0), 2, '.', ''),
             'sale_price' => number_format((float) ($salePrice ?? 0), 2, '.', ''),
             'image_path' => $medicine->image_path,
             'active_ingredients' => $medicine->activeIngredients->pluck('name')->values(),
