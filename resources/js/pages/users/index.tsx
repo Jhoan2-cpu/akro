@@ -171,7 +171,7 @@ export default function UsersIndex({ users, branches, filters, stats }: Props) {
                     </div>
                 </motion.section>
 
-                <section className="grid gap-4 md:grid-cols-3">
+                <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     {[
                         {
                             title: 'Personal Total',
@@ -200,16 +200,16 @@ export default function UsersIndex({ users, branches, filters, stats }: Props) {
                                 initial={{ opacity: 0, y: 12 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.2, delay: 0 }}
-                                className="flex items-center gap-4 rounded-3xl border border-sidebar-border/70 bg-background p-5 shadow-sm"
+                                className="flex min-w-0 items-center gap-3 rounded-3xl border border-sidebar-border/70 bg-background p-4 shadow-sm md:p-5"
                             >
-                                <div className={`rounded-2xl p-3 ${card.tone}`}>
-                                    <Icon className="size-6" />
+                                <div className={`rounded-2xl p-2.5 ${card.tone}`}>
+                                    <Icon className="size-5 md:size-6" />
                                 </div>
-                                <div>
-                                    <p className="text-sm font-medium text-muted-foreground">
+                                <div className="min-w-0">
+                                    <p className="truncate text-xs font-medium text-muted-foreground sm:text-sm">
                                         {card.title}
                                     </p>
-                                    <p className="text-4xl font-semibold tracking-tight text-foreground">
+                                    <p className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
                                         {String(card.value).padStart(2, '0')}
                                     </p>
                                 </div>
@@ -234,7 +234,7 @@ export default function UsersIndex({ users, branches, filters, stats }: Props) {
                         />
                     </div>
 
-                    <div className="grid gap-3 md:grid-cols-3 xl:flex-1">
+                    <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3 xl:flex-1">
                         <Select
                             value={filterForm.data.branch_id}
                             onValueChange={(value) =>
@@ -280,7 +280,7 @@ export default function UsersIndex({ users, branches, filters, stats }: Props) {
                             </SelectContent>
                         </Select>
 
-                        <div className="flex items-center justify-end gap-2">
+                        <div className="flex flex-wrap items-center justify-start gap-2 md:col-span-2 md:justify-end lg:col-span-1">
                             <Button type="submit" className="h-11 rounded-full px-5">
                                 Buscar
                             </Button>
