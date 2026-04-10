@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Actions\Alerts\SendInventoryAdminEmailAlertsAction;
 use App\Http\Requests\Sales\StoreQuickSaleRequest;
+use App\Models\Branch;
 use App\Models\BranchMedicinePrice;
 use App\Models\Inventory;
 use App\Models\Medicine;
@@ -28,6 +29,12 @@ class SaleController extends Controller
     {
         $user = $request->user();
         $branch = $user?->branch;
+        $isSuperuser = ($user?->role ?? null) === 'superuser';
+
+        // Get all branches for superuser, only current branch for others
+        $branches = $isSuperuser
+            ? Branch::query()->orderBy('name')->get()->map(fn($b) => ['id' => $b->id, 'name' => $b->name])->toArray()
+            : ($branch ? [['id' => $branch->id, 'name' => $branch->name]] : []);
 
         return Inertia::render('sales/index', [
             'branch' => $branch ? [
@@ -35,18 +42,30 @@ class SaleController extends Controller
                 'name' => $branch->name,
                 'address' => $branch->address,
             ] : null,
+            'branches' => $branches,
             'employee' => $user ? [
                 'id' => $user->id,
                 'name' => $user->name,
                 'role' => $user->role,
             ] : null,
             'canSell' => $branch !== null,
+            'is_superuser' => $isSuperuser,
         ]);
     }
 
     public function search(Request $request): JsonResponse
     {
-        $branchId = $request->user()?->branch_id;
+        $user = $request->user();
+        $isSuperuser = ($user?->role ?? null) === 'superuser';
+        
+        // If superuser, allow selecting branch_id from request; otherwise use user's branch
+        $requestedBranchId = $request->input('branch_id');
+        if ($isSuperuser && $requestedBranchId) {
+            $branchId = (int) $requestedBranchId;
+        } else {
+            $branchId = $user?->branch_id;
+        }
+
         $query = trim((string) $request->input('query', ''));
 
         if ($branchId === null) {
@@ -224,7 +243,16 @@ class SaleController extends Controller
     public function store(StoreQuickSaleRequest $request): RedirectResponse
     {
         $user = $request->user();
-        $branchId = $user?->branch_id;
+        $isSuperuser = ($user?->role ?? null) === 'superuser';
+        
+        // If superuser, allow selecting branch_id from request; otherwise use user's branch
+        $requestedBranchId = $request->input('branch_id');
+        if ($isSuperuser && $requestedBranchId) {
+            $branchId = (int) $requestedBranchId;
+        } else {
+            $branchId = $user?->branch_id;
+        }
+        
         $createdSaleId = null;
 
         if ($user === null || $branchId === null) {

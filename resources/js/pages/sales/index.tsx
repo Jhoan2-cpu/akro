@@ -15,6 +15,13 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 
 type Branch = {
     id: number;
@@ -68,8 +75,10 @@ type SaleFormItem = {
 
 type Props = {
     branch: Branch;
+    branches: Array<{ id: number; name: string }>;
     employee: Employee;
     canSell: boolean;
+    is_superuser: boolean;
 };
 
 type FlashTicket = {
@@ -85,9 +94,10 @@ type PageFlash = {
     };
 };
 
-export default function SalesIndex({ branch, employee, canSell }: Props) {
+export default function SalesIndex({ branch, branches, employee, canSell, is_superuser }: Props) {
     const page = usePage<PageFlash>();
     const flashTicket = page.props.flash?.ticket ?? null;
+    const [selectedBranchId, setSelectedBranchId] = useState<string>(String(branch?.id ?? (branches[0]?.id ?? '')));
     const [searchQuery, setSearchQuery] = useState('');
     const [searchError, setSearchError] = useState<string | null>(null);
     const [searching, setSearching] = useState(false);
@@ -104,13 +114,19 @@ export default function SalesIndex({ branch, employee, canSell }: Props) {
     } | null>(null);
     const [ticketPreview, setTicketPreview] = useState<FlashTicket | null>(null);
 
-    const saleForm = useForm<{ items: SaleFormItem[] }>({ items: [] });
+    const saleForm = useForm<{ items: SaleFormItem[]; branch_id?: number }>({ items: [], branch_id: branch?.id });
 
     useEffect(() => {
         if (flashTicket) {
             setTicketPreview(flashTicket);
         }
     }, [flashTicket]);
+
+    useEffect(() => {
+        if (is_superuser) {
+            saleForm.setData('branch_id', parseInt(selectedBranchId, 10));
+        }
+    }, [selectedBranchId, is_superuser]);
 
     const buildSaleItems = (items: CartItem[]): SaleFormItem[] => {
         return items.map((item) => ({
@@ -161,7 +177,11 @@ export default function SalesIndex({ branch, employee, canSell }: Props) {
         setSearchError(null);
 
         try {
-            const response = await fetch(`/sales/search?query=${encodeURIComponent(value)}`, {
+            const url = is_superuser 
+                ? `/sales/search?query=${encodeURIComponent(value)}&branch_id=${selectedBranchId}`
+                : `/sales/search?query=${encodeURIComponent(value)}`;
+            
+            const response = await fetch(url, {
                 headers: { Accept: 'application/json' },
                 credentials: 'same-origin',
             });
@@ -359,9 +379,27 @@ export default function SalesIndex({ branch, employee, canSell }: Props) {
                         </div>
 
                         <div className="flex flex-col items-start gap-2">
-                            <Badge variant="outline" className="rounded-full border-primary-foreground/20 bg-primary-foreground/10 text-primary-foreground backdrop-blur-sm">
-                                {branch ? branch.name : 'Sin sucursal asignada'}
-                            </Badge>
+                            {is_superuser ? (
+                                <div className="space-y-1">
+                                    <label className="text-xs font-medium uppercase tracking-[0.2em] text-primary-foreground/80">Sucursal</label>
+                                    <Select value={selectedBranchId} onValueChange={setSelectedBranchId}>
+                                        <SelectTrigger className="h-11 w-48 rounded-full border-primary-foreground/20 bg-primary-foreground/10 text-primary-foreground">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {branches.map((br) => (
+                                                <SelectItem key={br.id} value={String(br.id)}>
+                                                    {br.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            ) : (
+                                <Badge variant="outline" className="rounded-full border-primary-foreground/20 bg-primary-foreground/10 text-primary-foreground backdrop-blur-sm">
+                                    {branch ? branch.name : 'Sin sucursal asignada'}
+                                </Badge>
+                            )}
                             {employee && (
                                 <p className="text-sm text-primary-foreground/85">
                                     Empleado: <span className="font-semibold text-primary-foreground">{employee.name}</span>
