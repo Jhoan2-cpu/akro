@@ -1,11 +1,9 @@
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import { ArrowRight, HeartPulse, ShieldCheck, Truck } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
-import { dashboard, login } from '@/routes';
+import { login } from '@/routes';
 
 export default function Welcome() {
-    const { auth } = usePage().props;
-
     return (
         <>
             <Head title="Farmacia San Lucas">
@@ -17,37 +15,19 @@ export default function Welcome() {
             </Head>
 
             <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,rgba(15,122,91,0.12),transparent_35%),linear-gradient(180deg,#f8fcfa_0%,#eef5f1_100%)] text-[#143126]">
-                <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 py-4 sm:px-6 lg:px-8">
-                    <header className="flex items-center justify-between gap-4 rounded-2xl border border-emerald-100/80 bg-white/85 px-4 py-3 shadow-sm backdrop-blur md:px-6">
-                        <Link href={dashboard()} className="flex items-center gap-2">
-                            <AppLogo />
-                        </Link>
-
-                        <nav className="flex items-center gap-3">
-                            {auth.user ? (
-                                <Link
-                                    href={dashboard()}
-                                    className="inline-flex min-h-11 items-center rounded-xl bg-[#0f7a5b] px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0c664c]"
-                                >
-                                    Ir al dashboard
-                                </Link>
-                            ) : (
-                                <Link
-                                    href={login()}
-                                    className="inline-flex min-h-11 items-center rounded-xl bg-[#0f7a5b] px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0c664c]"
-                                >
-                                    Iniciar sesión
-                                </Link>
-                            )}
-                        </nav>
-                    </header>
-
-                    <main className="grid flex-1 items-center gap-6 py-6 lg:grid-cols-[0.88fr_1.12fr] lg:gap-8 lg:py-10">
-                        <section className="relative overflow-hidden rounded-4xl border border-emerald-100/80 bg-white/85 p-6 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur sm:p-8 lg:p-10">
+                <div className="mx-auto flex min-h-screen w-full max-w-7xl items-center px-4 py-6 sm:px-6 lg:px-8">
+                    <main className="grid w-full items-stretch gap-6 lg:grid-cols-[0.88fr_1.12fr] lg:gap-8">
+                        <section className="relative flex h-full min-h-180 flex-col overflow-hidden rounded-4xl border border-emerald-100/80 bg-white/85 p-6 shadow-[0_20px_60px_rgba(15,23,42,0.08)] backdrop-blur sm:p-8 lg:min-h-190 lg:p-10">
                             <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(15,122,91,0.14),transparent_34%),radial-gradient(circle_at_bottom_left,rgba(16,185,129,0.08),transparent_28%)]" />
 
-                            <div className="relative flex h-full flex-col justify-between gap-7">
+                            <div className="relative flex h-full flex-col justify-center gap-8">
                                 <div className="space-y-5">
+                                    <div className="flex items-center gap-2">
+                                        <Link href={login()} className="flex items-center gap-2">
+                                            <AppLogo />
+                                        </Link>
+                                    </div>
+
                                     <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-emerald-800">
                                         Atención farmacéutica integral
                                     </div>
@@ -70,7 +50,7 @@ export default function Welcome() {
                                             <ArrowRight className="size-4" />
                                         </Link>
                                         <div className="inline-flex min-h-12 items-center rounded-xl border border-emerald-200 bg-white px-5 text-sm font-medium text-slate-600 shadow-sm">
-                                            Inventario, ventas y trazabilidad fiscal en un solo lugar
+                                            Inventario, ventas y trazabilidad en un solo lugar
                                         </div>
                                     </div>
 
@@ -103,7 +83,7 @@ export default function Welcome() {
                             </div>
                         </section>
 
-                        <section className="relative overflow-hidden rounded-4xl border border-emerald-100/80 bg-[#0f7a5b] shadow-[0_20px_60px_rgba(15,23,42,0.18)]">
+                        <section className="relative flex h-full min-h-180 overflow-hidden rounded-4xl border border-emerald-100/80 bg-[#0f7a5b] shadow-[0_20px_60px_rgba(15,23,42,0.18)] lg:min-h-190">
                             <div className="absolute inset-0 bg-linear-to-t from-black/35 via-black/10 to-transparent" />
                             <img
                                 src="/images/bg.webp"
@@ -111,7 +91,7 @@ export default function Welcome() {
                                 className="absolute inset-0 h-full w-full object-cover object-center"
                             />
 
-                            <div className="relative flex h-full min-h-180 flex-col justify-between p-6 sm:p-8 lg:min-h-190 lg:p-10">
+                            <div className="relative flex h-full w-full flex-col justify-between p-6 sm:p-8 lg:p-10">
                                 <div className="flex items-start justify-between gap-4">
                                     <div className="max-w-sm rounded-2xl border border-white/30 bg-white/90 px-4 py-3 text-sm font-semibold text-[#103327] shadow-lg backdrop-blur">
                                         <p className="text-xs font-bold uppercase tracking-[0.16em] text-emerald-700">
