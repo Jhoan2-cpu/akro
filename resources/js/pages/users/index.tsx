@@ -306,13 +306,13 @@ export default function UsersIndex({ users, branches, filters, stats }: Props) {
                 </form>
 
                 <div className="relative z-10 rounded-3xl border border-sidebar-border/70 bg-background shadow-sm">
-                    <div className="hidden overflow-hidden rounded-3xl xl:block">
-                        <div className="table-header-highlight grid grid-cols-[1.4fr_1.2fr_0.8fr_0.9fr_0.8fr_0.9fr] border-b border-sidebar-border/70 px-6 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                    <div className="hidden overflow-hidden rounded-3xl lg:block">
+                        <div className="table-header-highlight grid grid-cols-[1.45fr_1.2fr_0.75fr_0.9fr_0.75fr_0.95fr] border-b border-sidebar-border/70 px-6 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
                             <span>Nombre y perfil</span>
                             <span>Correo electrónico</span>
-                            <span>Rol</span>
+                            <span className="text-center">Rol</span>
                             <span>Sucursal</span>
-                            <span>Estado</span>
+                            <span className="text-center">Estado</span>
                             <span className="text-right">Acciones</span>
                         </div>
 
@@ -324,7 +324,7 @@ export default function UsersIndex({ users, branches, filters, stats }: Props) {
                                     return (
                                     <div
                                         key={user.id}
-                                        className="grid grid-cols-[1.4fr_1.2fr_0.8fr_0.9fr_0.8fr_0.9fr] items-center gap-4 px-6 py-5"
+                                        className="grid grid-cols-[1.45fr_1.2fr_0.75fr_0.9fr_0.75fr_0.95fr] items-center gap-4 px-6 py-5"
                                     >
                                         <div className="flex items-center gap-3">
                                             <Avatar className="size-12 border border-sidebar-border/70">
@@ -351,30 +351,34 @@ export default function UsersIndex({ users, branches, filters, stats }: Props) {
                                             {user.email}
                                         </p>
 
-                                        <Badge
-                                            variant="outline"
-                                            className="w-fit rounded-full px-3 py-1"
-                                        >
-                                            {getRoleLabel(user.role)}
-                                        </Badge>
+                                        <div className="flex justify-center">
+                                            <Badge
+                                                variant="outline"
+                                                className="w-fit rounded-full px-3 py-1"
+                                            >
+                                                {getRoleLabel(user.role)}
+                                            </Badge>
+                                        </div>
 
                                         <p className="text-sm text-foreground">
                                             {user.branch?.name ?? 'Sin sucursal'}
                                         </p>
 
-                                        <Badge
-                                            variant="outline"
-                                            className={`w-fit rounded-full px-3 py-1 ${statusMeta[user.status].className}`}
-                                        >
-                                            {statusMeta[user.status].label}
-                                        </Badge>
+                                        <div className="flex justify-center">
+                                            <Badge
+                                                variant="outline"
+                                                className={`w-fit rounded-full px-3 py-1 ${statusMeta[user.status].className}`}
+                                            >
+                                                {statusMeta[user.status].label}
+                                            </Badge>
+                                        </div>
 
-                                        <div className="flex justify-end gap-2">
+                                        <div className="flex flex-col items-end gap-2 2xl:flex-row 2xl:justify-end">
                                             <Button
                                                 asChild
                                                 variant="outline"
                                                 size="sm"
-                                                className="rounded-full"
+                                                className="min-w-34.5 justify-center rounded-full"
                                             >
                                                 <Link href={isSelf ? '/settings/profile' : `/users/${user.id}/edit`}>
                                                     <PencilLine className="size-4" />
@@ -385,7 +389,7 @@ export default function UsersIndex({ users, branches, filters, stats }: Props) {
                                             <Button
                                                 size="sm"
                                                 variant="destructive"
-                                                className="rounded-full"
+                                                className="min-w-34.5 justify-center rounded-full"
                                                 onClick={() => suspendUser(user.id)}
                                                 disabled={
                                                     user.status === 'suspended' ||
@@ -411,7 +415,7 @@ export default function UsersIndex({ users, branches, filters, stats }: Props) {
                         </div>
                     </div>
 
-                    <div className="space-y-3 p-4 xl:hidden">
+                    <div className="space-y-3 p-4 lg:hidden">
                         {users.data.length > 0 ? (
                             users.data.map((user) => {
                                 const isSelf = user.id === auth.user.id;
