@@ -150,7 +150,7 @@ export default function ShiftsIndex({ currentShift, recentShifts, stats }: Props
                     )}
                 </motion.section>
 
-                <section className="grid gap-4 md:grid-cols-4">
+                <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                     {[
                         {
                             label: 'Turno actual',
@@ -189,14 +189,14 @@ export default function ShiftsIndex({ currentShift, recentShifts, stats }: Props
                                 initial={{ opacity: 0, y: 12 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.2, delay: 0 }}
-                                className="rounded-3xl border border-sidebar-border/70 bg-background p-5 shadow-sm"
+                                className="h-full rounded-3xl border border-sidebar-border/70 bg-background p-5 shadow-sm"
                             >
                                 <div className={`mb-4 inline-flex rounded-2xl p-3 ${card.tone}`}>
                                     <Icon className="size-6" />
                                 </div>
                                 <p className="text-sm font-medium text-muted-foreground">{card.label}</p>
                                 <p className="mt-1 text-2xl font-semibold tracking-tight text-foreground">{card.value}</p>
-                                <p className="mt-2 text-sm text-muted-foreground">{card.hint}</p>
+                                <p className="mt-2 hidden text-sm text-muted-foreground xl:block">{card.hint}</p>
                             </motion.article>
                         );
                     })}
