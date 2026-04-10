@@ -1,6 +1,5 @@
 import { Link } from '@inertiajs/react';
 import { ArrowRight, ShieldCheck, Sparkles } from 'lucide-react';
-import AppLogo from '@/components/app-logo';
 import AppLogoIcon from '@/components/app-logo-icon';
 import { home } from '@/routes';
 import type { AuthLayoutProps } from '@/types';
