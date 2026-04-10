@@ -18,7 +18,7 @@ Artisan::command('alerts:inventory-admin-email', function (SendInventoryAdminEma
         $result['recipients'],
         $result['skipped_duplicates'],
     ));
-})->purpose('Send low-stock and near-expiry email alerts to verified admin profile emails by branch');
+})->purpose('Send low-stock and near-expiry email alerts to active verified users by branch, including superuser across all branches');
 
 Schedule::command('alerts:inventory-admin-email')
     ->dailyAt('08:00')

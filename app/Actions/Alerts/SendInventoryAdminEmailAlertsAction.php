@@ -93,22 +93,30 @@ class SendInventoryAdminEmailAlertsAction
 
             $branchName = (string) ($branchInventories->first()?->branch?->name ?? 'Sucursal');
 
-            $admins = User::query()
-                ->where('role', 'admin')
-                ->where('branch_id', (int) $branchId)
-                ->whereNotNull('verification_email')
-                ->whereNotNull('verification_email_verified_at')
+            $recipients = User::query()
+                ->where(function ($query) use ($branchId): void {
+                    $query
+                        ->where('role', 'superuser')
+                        ->orWhere(function ($branchQuery) use ($branchId): void {
+                            $branchQuery
+                                ->whereIn('role', ['admin', 'employee'])
+                                ->where('branch_id', (int) $branchId);
+                        });
+                })
                 ->where(function ($query): void {
                     $query
                         ->whereNull('status')
                         ->orWhere('status', 'active');
                 })
-                ->get(['id', 'name', 'verification_email']);
+                ->whereNotNull('email')
+                ->whereNotNull('email_verified_at')
+                ->get(['id', 'name', 'email', 'role', 'branch_id']);
 
-            foreach ($admins as $admin) {
+            foreach ($recipients as $recipient) {
                 $cacheKey = sprintf(
-                    'alerts:inventory-admin-email:%d:%s',
-                    $admin->id,
+                    'alerts:inventory-email:%d:%d:%s',
+                    $recipient->id,
+                    (int) $branchId,
                     $today->toDateString(),
                 );
 
@@ -118,15 +126,12 @@ class SendInventoryAdminEmailAlertsAction
                     continue;
                 }
 
-                $verificationEmail = (string) $admin->verification_email;
-
-                Notification::route('mail', $verificationEmail)
-                    ->notify(new InventoryRiskAlertNotification(
-                        adminName: $admin->name,
-                        branchName: $branchName,
-                        lowStockItems: $lowStockItems,
-                        nearExpiryItems: $nearExpiryItems,
-                    ));
+                Notification::send($recipient, new InventoryRiskAlertNotification(
+                    recipientName: $recipient->name,
+                    branchName: $branchName,
+                    lowStockItems: $lowStockItems,
+                    nearExpiryItems: $nearExpiryItems,
+                ));
 
                 Cache::put($cacheKey, true, $today->copy()->endOfDay());
                 $sentRecipients++;

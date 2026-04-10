@@ -17,7 +17,7 @@ class InventoryRiskAlertNotification extends Notification
      * @param array<int, array{medicine_name: string, expiration_date: string, days_to_expire: int}> $nearExpiryItems
      */
     public function __construct(
-        private readonly string $adminName,
+        private readonly string $recipientName,
         private readonly string $branchName,
         private readonly array $lowStockItems,
         private readonly array $nearExpiryItems,
@@ -36,8 +36,8 @@ class InventoryRiskAlertNotification extends Notification
     {
         $mail = (new MailMessage)
             ->subject('Alerta de inventario - '.$this->branchName)
-            ->greeting('Hola '.$this->adminName.',')
-            ->line('Detectamos alertas de inventario en tu sucursal: '.$this->branchName.'.');
+            ->greeting('Hola '.$this->recipientName.',')
+            ->line('Detectamos alertas de inventario en la sucursal: '.$this->branchName.'.');
 
         if ($this->lowStockItems !== []) {
             $mail->line('Productos con stock bajo: '.count($this->lowStockItems));
