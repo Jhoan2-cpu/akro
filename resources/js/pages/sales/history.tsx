@@ -79,16 +79,18 @@ export default function SalesHistory({ sales, filters }: Props) {
             <Head title="Historial de ventas" />
 
             <div className="space-y-6 p-4 md:p-6">
-                <section className="rounded-3xl border border-sidebar-border/70 bg-background p-5 shadow-sm md:p-6">
-                    <div className="flex items-start gap-3">
-                        <div className="rounded-2xl bg-emerald-100 p-3 text-emerald-700">
-                            <FileClock className="size-6" />
-                        </div>
-                        <div>
-                            <h1 className="text-2xl font-semibold tracking-tight text-foreground md:text-3xl">Historial de ventas</h1>
-                            <p className="mt-1 text-sm text-muted-foreground md:text-base">
-                                Consulta ventas registradas, incluyendo sucursal, colaborador y detalle de productos vendidos.
-                            </p>
+                <section className="overflow-hidden rounded-3xl border border-sidebar-border/70 bg-background shadow-sm">
+                    <div className="bg-primary px-5 py-4 text-primary-foreground md:px-6 md:py-5">
+                        <div className="flex items-start gap-3">
+                            <div className="rounded-2xl bg-primary-foreground/10 p-3 text-primary-foreground">
+                                <FileClock className="size-6" />
+                            </div>
+                            <div>
+                                <h1 className="text-2xl font-semibold tracking-tight text-primary-foreground md:text-3xl">Historial de ventas</h1>
+                                <p className="mt-1 text-sm text-primary-foreground/85 md:text-base">
+                                    Consulta ventas registradas, incluyendo sucursal, colaborador y detalle de productos vendidos.
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </section>

@@ -1,8 +1,8 @@
 import { Head, Link, router, useForm } from '@inertiajs/react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Trash2, Edit2, Plus, Search } from 'lucide-react';
 import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 type Branch = {
     id: number;
@@ -31,13 +31,6 @@ type Props = {
         search: string;
     };
 };
-
-function decodePaginationLabel(label: string): string {
-    return label
-        .replace(/&laquo;\s?/g, '‹ ')
-        .replace(/\s?&raquo;/g, ' ›')
-        .replace(/<[^>]*>/g, '');
-}
 
 export default function BranchesIndex({ branches, filters }: Props) {
     const [searchQuery, setSearchQuery] = useState(filters.search || '');
@@ -73,26 +66,33 @@ export default function BranchesIndex({ branches, filters }: Props) {
             <Head title="Sucursales" />
 
             <div className="space-y-6 p-4 md:p-6">
-                {/* Header */}
-                <section className="flex flex-col gap-4 rounded-3xl border border-sidebar-border/70 bg-background p-5 shadow-sm md:flex-row md:items-end md:justify-between md:p-6">
-                    <div>
-                        <h1 className="text-3xl font-semibold tracking-tight">
-                            Sucursales
-                        </h1>
-                        <p className="mt-1 text-sm text-muted-foreground md:text-base">
-                            Gestiona todas las sucursales del sistema
-                        </p>
+                <section className="overflow-hidden rounded-3xl border border-sidebar-border/70 bg-background shadow-sm">
+                    <div className="bg-primary px-5 py-4 text-primary-foreground md:px-6 md:py-5">
+                        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+                            <div>
+                                <h1 className="text-3xl font-semibold tracking-tight">Sucursales</h1>
+                                <p className="mt-1 text-sm text-primary-foreground/85 md:text-base">
+                                    Gestiona todas las sucursales del sistema
+                                </p>
+                            </div>
+                            <Button className="rounded-full border border-primary-foreground/20 bg-primary-foreground text-primary hover:bg-primary-foreground/90" asChild>
+                                <Link href="/branches/create">
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    Nueva Sucursal
+                                </Link>
+                            </Button>
+                        </div>
                     </div>
-                    <Button className="rounded-full" asChild>
-                        <Link href="/branches/create">
-                            <Plus className="mr-2 h-4 w-4" />
-                            Nueva Sucursal
-                        </Link>
-                    </Button>
+
                 </section>
 
                 {/* Search */}
-                <form onSubmit={(e) => { e.preventDefault(); }} className="flex gap-2">
+                <form
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                    }}
+                    className="flex gap-2"
+                >
                     <div className="relative flex-1 max-w-sm">
                         <Search className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted-foreground" />
                         <Input

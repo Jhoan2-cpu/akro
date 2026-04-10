@@ -99,13 +99,15 @@ export default function MedicinesStock({ inventories, branches, categories, filt
             <Head title="Stock por sucursal" />
 
             <div className="space-y-6 p-4 md:p-6">
-                <section className="rounded-3xl border border-sidebar-border/70 bg-background p-5 shadow-sm md:p-6">
-                    <h1 className="text-3xl font-semibold tracking-tight">Stock por sucursal</h1>
-                    <p className="mt-1 text-sm text-muted-foreground md:text-base">
-                        Filtra por medicamento, sucursal, categoría y estado para localizar inventario crítico rápidamente.
-                    </p>
+                <section className="overflow-hidden rounded-3xl border border-sidebar-border/70 bg-background shadow-sm">
+                    <div className="bg-primary px-5 py-4 text-primary-foreground md:px-6 md:py-5">
+                        <h1 className="text-3xl font-semibold tracking-tight">Stock por sucursal</h1>
+                        <p className="mt-1 text-sm text-primary-foreground/85 md:text-base">
+                            Filtra por medicamento, sucursal, categoría y estado para localizar inventario crítico rápidamente.
+                        </p>
+                    </div>
 
-                    <form onSubmit={submit} className="mt-5 grid gap-4 lg:grid-cols-4">
+                    <form onSubmit={submit} className="grid gap-4 p-5 pt-0 lg:grid-cols-4 md:p-6 md:pt-0">
                         <div className="space-y-2 lg:col-span-2">
                             <Label htmlFor="stock_search">Medicamento o código</Label>
                             <div className="flex flex-col gap-2 sm:flex-row">
@@ -215,12 +217,14 @@ export default function MedicinesStock({ inventories, branches, categories, filt
                     </article>
                 </section>
 
-                <section className="rounded-3xl border border-sidebar-border/70 bg-background p-5 shadow-sm md:p-6">
-                    <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                        <h2 className="text-lg font-semibold text-foreground">Detalle de inventario</h2>
-                        <p className="text-sm text-muted-foreground">
-                            Mostrando {inventories.from ?? 0} a {inventories.to ?? 0} de {inventories.total} registros
-                        </p>
+                <section className="overflow-hidden rounded-3xl border border-sidebar-border/70 bg-background shadow-sm">
+                    <div className="bg-primary px-5 py-4 text-primary-foreground md:px-6 md:py-5">
+                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                            <h2 className="text-lg font-semibold text-primary-foreground">Detalle de inventario</h2>
+                            <p className="text-sm text-primary-foreground/85">
+                                Mostrando {inventories.from ?? 0} a {inventories.to ?? 0} de {inventories.total} registros
+                            </p>
+                        </div>
                     </div>
 
                     {inventories.data.length === 0 ? (

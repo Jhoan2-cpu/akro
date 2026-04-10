@@ -152,19 +152,23 @@ export default function UsersIndex({ users, branches, filters, stats }: Props) {
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.2, delay: 0 }}
-                    className="flex flex-col gap-4 rounded-3xl border border-sidebar-border/70 bg-background p-5 shadow-sm md:flex-row md:items-end md:justify-between md:p-6"
+                    className="overflow-hidden rounded-3xl border border-sidebar-border/70 bg-background shadow-sm"
                 >
-                    <div className="space-y-1">
-                        <p className="text-3xl font-semibold tracking-tight text-foreground">
-                            Gestión de Usuarios
-                        </p>
-                        <p className="max-w-2xl text-sm text-muted-foreground md:text-base">
-                            Administra el acceso y los permisos del personal de
-                            Farmacia San Lucas.
-                        </p>
-                    </div>
+                    <div className="bg-primary px-5 py-4 text-primary-foreground md:px-6 md:py-5">
+                        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+                            <div className="space-y-1">
+                                <p className="text-3xl font-semibold tracking-tight text-primary-foreground">
+                                    Gestión de Usuarios
+                                </p>
+                                <p className="max-w-2xl text-sm text-primary-foreground/85 md:text-base">
+                                    Administra el acceso y los permisos del personal de
+                                    Farmacia San Lucas.
+                                </p>
+                            </div>
 
-                    <CreateUserDialog branches={branches} />
+                            <CreateUserDialog branches={branches} />
+                        </div>
+                    </div>
                 </motion.section>
 
                 <section className="grid gap-4 md:grid-cols-3">

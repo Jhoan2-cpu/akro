@@ -237,14 +237,14 @@ export default function MedicineForm({
         <>
             <form onSubmit={onSubmit} className="space-y-6">
                 <div className="rounded-3xl border border-sidebar-border/70 bg-background shadow-sm">
-                    <div className="border-b border-sidebar-border/70 px-5 py-5 md:px-6">
+                    <div className="border-b border-primary/20 bg-primary px-5 py-5 text-primary-foreground md:px-6">
                         <div className="flex items-start gap-3">
-                            <div className="rounded-2xl bg-emerald-100 p-3 text-emerald-700">
+                            <div className="rounded-2xl bg-primary-foreground/10 p-3 text-primary-foreground">
                                 <Pill className="size-6" />
                             </div>
                             <div>
-                                <h1 className="text-2xl font-semibold tracking-tight text-foreground md:text-3xl">{title}</h1>
-                                <p className="mt-1 text-sm text-muted-foreground md:text-base">{description}</p>
+                                <h1 className="text-2xl font-semibold tracking-tight text-primary-foreground md:text-3xl">{title}</h1>
+                                <p className="mt-1 text-sm text-primary-foreground/85 md:text-base">{description}</p>
                             </div>
                         </div>
                     </div>

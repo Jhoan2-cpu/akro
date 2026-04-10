@@ -140,27 +140,31 @@ export default function CategoriesIndex({ categories, filters }: Props) {
             <Head title="Categorías" />
 
             <div className="space-y-6 p-4 md:p-6">
-                <section className="rounded-3xl border border-sidebar-border/70 bg-background p-5 shadow-sm md:p-6">
-                    <div className="flex items-start gap-3">
-                        <div className="rounded-2xl bg-emerald-100 p-3 text-emerald-700">
-                            <Tags className="size-6" />
-                        </div>
-                        <div>
-                            <h1 className="text-2xl font-semibold tracking-tight text-foreground md:text-3xl">Gestión de categorías</h1>
-                            <p className="mt-1 text-sm text-muted-foreground md:text-base">
-                                Registra, edita y elimina categorías para organizar medicamentos.
-                            </p>
+                <section className="overflow-hidden rounded-3xl border border-sidebar-border/70 bg-background shadow-sm">
+                    <div className="bg-primary px-5 py-4 text-primary-foreground md:px-6 md:py-5">
+                        <div className="flex items-start gap-3">
+                            <div className="rounded-2xl bg-primary-foreground/10 p-3 text-primary-foreground">
+                                <Tags className="size-6" />
+                            </div>
+                            <div>
+                                <h1 className="text-2xl font-semibold tracking-tight text-primary-foreground md:text-3xl">Gestión de categorías</h1>
+                                <p className="mt-1 text-sm text-primary-foreground/85 md:text-base">
+                                    Registra, edita y elimina categorías para organizar medicamentos.
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </section>
 
-                <section className="rounded-3xl border border-sidebar-border/70 bg-background p-5 shadow-sm md:p-6">
-                    <div className="mb-4 flex items-center gap-2">
-                        <FolderPlus className="size-5 text-emerald-700" />
-                        <h2 className="text-lg font-semibold text-foreground">Registrar categoría</h2>
+                <section className="overflow-hidden rounded-3xl border border-sidebar-border/70 bg-background shadow-sm">
+                    <div className="bg-primary px-5 py-4 text-primary-foreground md:px-6 md:py-5">
+                        <div className="flex items-center gap-2">
+                            <FolderPlus className="size-5 text-primary-foreground" />
+                            <h2 className="text-lg font-semibold text-primary-foreground">Registrar categoría</h2>
+                        </div>
                     </div>
 
-                    <form onSubmit={createCategory} className="grid gap-4 md:grid-cols-2">
+                    <form onSubmit={createCategory} className="grid gap-4 p-5 pt-0 md:grid-cols-2 md:p-6 md:pt-0">
                         <div className="space-y-2">
                             <Label htmlFor="category_name">Nombre</Label>
                             <Input

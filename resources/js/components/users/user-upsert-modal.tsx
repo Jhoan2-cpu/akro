@@ -92,11 +92,11 @@ export default function UserUpsertModal({
 
     return (
         <form onSubmit={onSubmit} className="p-5 sm:p-8">
-            <header className="mb-6 space-y-1 pr-10">
-                <h1 className="text-2xl font-semibold text-emerald-900 sm:text-3xl">
+            <header className="mb-6 space-y-1 rounded-3xl bg-primary px-5 py-5 pr-10 text-primary-foreground sm:px-6">
+                <h1 className="text-2xl font-semibold text-primary-foreground sm:text-3xl">
                     {title}
                 </h1>
-                <p className="text-sm text-neutral-500 sm:text-base">
+                <p className="text-sm text-primary-foreground/85 sm:text-base">
                     {description}
                 </p>
             </header>

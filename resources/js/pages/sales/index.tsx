@@ -318,23 +318,23 @@ export default function SalesIndex({ branch, employee, canSell }: Props) {
             <Head title="Venta rápida" />
 
             <div className="flex w-full justify-start">
-                <div className="flex w-full max-w-none flex-col gap-6 p-4 md:p-6 xl:px-8 xl:py-6 2xl:px-10">
-                    <section className="flex flex-col gap-4 rounded-3xl border border-sidebar-border/70 bg-background p-5 shadow-sm md:flex-row md:items-start md:justify-between md:p-6">
+                <div className="flex w-full max-w-none flex-col gap-5 px-4 pb-4 pt-2 md:px-6 md:pb-6 md:pt-3 xl:px-8 xl:pb-6 xl:pt-3 2xl:px-10">
+                    <section className="flex w-full flex-col gap-4 rounded-3xl border border-primary/20 bg-primary px-5 py-5 text-primary-foreground shadow-xs md:flex-row md:items-start md:justify-between md:px-6 md:py-6">
                         <div>
-                            <p className="text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">VE-01</p>
-                            <h1 className="mt-2 text-3xl font-semibold tracking-tight">Venta rápida</h1>
-                            <p className="mt-1 max-w-3xl text-sm text-muted-foreground md:text-base">
+                            <p className="text-xs font-medium uppercase tracking-[0.2em] text-primary-foreground/80">VE-01</p>
+                            <h1 className="mt-2 text-3xl font-semibold tracking-tight text-primary-foreground">Venta rápida</h1>
+                            <p className="mt-1 max-w-3xl text-sm text-primary-foreground/85 md:text-base">
                                 Escanea o busca medicamentos, define cantidad y precio bruto, y confirma la venta sin salir de la pantalla.
                             </p>
                         </div>
 
                         <div className="flex flex-col items-start gap-2">
-                            <Badge variant="outline" className="rounded-full border-emerald-200 bg-emerald-50 text-emerald-700">
+                            <Badge variant="outline" className="rounded-full border-primary-foreground/20 bg-primary-foreground/10 text-primary-foreground backdrop-blur-sm">
                                 {branch ? branch.name : 'Sin sucursal asignada'}
                             </Badge>
                             {employee && (
-                                <p className="text-sm text-muted-foreground">
-                                    Empleado: <span className="font-medium text-foreground">{employee.name}</span>
+                                <p className="text-sm text-primary-foreground/85">
+                                    Empleado: <span className="font-semibold text-primary-foreground">{employee.name}</span>
                                 </p>
                             )}
                         </div>
@@ -352,11 +352,15 @@ export default function SalesIndex({ branch, employee, canSell }: Props) {
 
                     <div className="flex w-full flex-col items-stretch gap-4 2xl:flex-row 2xl:items-start">
                         <section className="flex min-w-0 flex-1 flex-col gap-4">
-                            <div className="rounded-3xl border border-sidebar-border/70 bg-background p-5 shadow-sm md:p-6">
-                                <h2 className="text-lg font-semibold">Buscar medicamento</h2>
-                                <p className="mt-1 text-sm text-muted-foreground">
-                                    Busca por nombre o código de barras. También puedes escanear con cámara.
-                                </p>
+                            <div className="overflow-hidden rounded-3xl border border-sidebar-border/70 bg-background shadow-sm">
+                                <div className="bg-primary px-5 py-4 text-primary-foreground md:px-6">
+                                    <h2 className="text-lg font-semibold">Buscar medicamento</h2>
+                                    <p className="mt-1 text-sm text-primary-foreground/85">
+                                        Busca por nombre o código de barras. También puedes escanear con cámara.
+                                    </p>
+                                </div>
+
+                                <div className="p-5 md:p-6">
 
                                 <form onSubmit={handleSubmitSearch} className="mt-5 flex flex-col gap-3 lg:flex-row lg:items-center">
                                     <div className="relative flex-1">
@@ -383,6 +387,7 @@ export default function SalesIndex({ branch, employee, canSell }: Props) {
                                         </Button>
                                     </div>
                                 </form>
+                                </div>
                             </div>
 
                             {searchError && (
@@ -394,7 +399,15 @@ export default function SalesIndex({ branch, employee, canSell }: Props) {
                             )}
 
                             {selectedMedicine && (
-                                <section className="rounded-3xl border border-sidebar-border/70 bg-background p-5 shadow-sm md:p-6">
+                                <section className="overflow-hidden rounded-3xl border border-sidebar-border/70 bg-background shadow-sm">
+                                    <div className="bg-primary px-5 py-4 text-primary-foreground md:px-6">
+                                        <h2 className="text-lg font-semibold">Medicamento seleccionado</h2>
+                                        <p className="mt-1 text-sm text-primary-foreground/85">
+                                            Revisa el producto, ajusta la cantidad y confirma el precio bruto antes de agregarlo.
+                                        </p>
+                                    </div>
+
+                                    <div className="p-5 md:p-6">
                                     <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                                         <div className="flex gap-4">
                                             <div className="flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-sidebar-border/70 bg-muted/40">
@@ -511,25 +524,28 @@ export default function SalesIndex({ branch, employee, canSell }: Props) {
                                             Agregar al carrito
                                         </Button>
                                     </div>
+                                    </div>
                                 </section>
                             )}
                         </section>
 
-                        <section className="w-full shrink-0 space-y-6 rounded-3xl border border-sidebar-border/70 bg-background p-5 shadow-sm md:p-6 2xl:w-120">
-                            <div className="flex items-center justify-between gap-3">
-                                <div>
-                                    <h2 className="text-lg font-semibold">Carrito de venta</h2>
-                                    <p className="text-sm text-muted-foreground">
-                                        {cart.length} medicamento{cart.length === 1 ? '' : 's'} seleccionado
-                                        {cart.length === 1 ? '' : 's'}
-                                    </p>
+                        <section className="w-full shrink-0 overflow-hidden rounded-3xl border border-sidebar-border/70 bg-background shadow-sm 2xl:w-120">
+                            <div className="bg-primary px-5 py-4 text-primary-foreground md:px-6">
+                                <div className="flex items-center justify-between gap-3">
+                                    <div>
+                                        <h2 className="text-lg font-semibold">Carrito de venta</h2>
+                                        <p className="text-sm text-primary-foreground/85">
+                                            {cart.length} medicamento{cart.length === 1 ? '' : 's'} seleccionado
+                                            {cart.length === 1 ? '' : 's'}
+                                        </p>
+                                    </div>
+                                    <Badge variant="outline" className="rounded-full border-primary-foreground/20 bg-primary-foreground/10 text-primary-foreground">
+                                        Total: ${total.toFixed(2)}
+                                    </Badge>
                                 </div>
-                                <Badge variant="outline" className="rounded-full">
-                                    Total: ${total.toFixed(2)}
-                                </Badge>
                             </div>
 
-                            <form onSubmit={submitSale} className="space-y-5">
+                            <form onSubmit={submitSale} className="space-y-5 p-5 md:p-6">
                                 <div className="space-y-3">
                                     {cart.length === 0 ? (
                                         <div className="rounded-2xl border border-dashed border-sidebar-border/70 px-4 py-10 text-center text-sm text-muted-foreground">

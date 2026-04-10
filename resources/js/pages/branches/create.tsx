@@ -1,7 +1,7 @@
 import { Head, Link, useForm } from '@inertiajs/react';
+import { ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ChevronLeft } from 'lucide-react';
 
 export default function BranchesCreate() {
     const { data, setData, post, processing, errors } = useForm({
@@ -19,21 +19,26 @@ export default function BranchesCreate() {
             <Head title="Nueva Sucursal" />
 
             <div className="space-y-6 p-4 md:p-6">
-                <div className="flex items-center gap-3">
-                    <Button variant="ghost" size="icon" asChild>
-                        <Link href="/branches">
-                            <ChevronLeft className="h-5 w-5" />
-                        </Link>
-                    </Button>
-                    <div>
-                        <h1 className="text-3xl font-semibold tracking-tight">
-                            Nueva Sucursal
-                        </h1>
-                        <p className="text-sm text-muted-foreground mt-1">
-                            Crea una nueva sucursal en el sistema
-                        </p>
+                <section className="overflow-hidden rounded-3xl border border-sidebar-border/70 bg-background shadow-sm">
+                    <div className="bg-primary px-5 py-4 text-primary-foreground md:px-6 md:py-5">
+                        <div className="flex items-center gap-3">
+                            <Button variant="ghost" size="icon" asChild className="border border-primary-foreground/20 bg-primary-foreground/10 text-primary-foreground hover:bg-primary-foreground/20 hover:text-primary-foreground">
+                                <Link href="/branches">
+                                    <ChevronLeft className="h-5 w-5" />
+                                </Link>
+                            </Button>
+                            <div>
+                                <h1 className="text-3xl font-semibold tracking-tight text-primary-foreground">
+                                    Nueva Sucursal
+                                </h1>
+                                <p className="mt-1 text-sm text-primary-foreground/85">
+                                    Crea una nueva sucursal en el sistema
+                                </p>
+                            </div>
+                        </div>
                     </div>
-                </div>
+
+                </section>
 
                 <div className="max-w-2xl rounded-3xl border border-sidebar-border/70 bg-background p-6 shadow-sm">
                     <form

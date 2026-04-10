@@ -1,4 +1,4 @@
-import { Head, Link, router, useForm } from '@inertiajs/react';
+﻿import { Head, Link, router, useForm } from '@inertiajs/react';
 import { AlertTriangle, Boxes, PencilLine, Pill, Plus, Search, Trash2, TriangleAlert } from 'lucide-react';
 import { useState } from 'react';
 import BarcodeScannerDialog from '@/components/barcode-scanner-dialog';
@@ -60,8 +60,8 @@ type Props = {
 
 function decodePaginationLabel(label: string): string {
     return label
-        .replace(/&laquo;\s?/g, '‹ ')
-        .replace(/\s?&raquo;/g, ' ›')
+        .replace(/&laquo;\s?/g, 'ÔÇ╣ ')
+        .replace(/\s?&raquo;/g, ' ÔÇ║')
         .replace(/<[^>]*>/g, '');
 }
 
@@ -127,7 +127,7 @@ export default function MedicinesIndex({ medicines, categories, activeIngredient
         });
 
         if (!response.ok) {
-            throw new Error(await parseErrorMessage(response, 'No se pudo crear la categoría.'));
+            throw new Error(await parseErrorMessage(response, 'No se pudo crear la categor├¡a.'));
         }
 
         const payload = await response.json() as { item: Option };
@@ -207,8 +207,8 @@ export default function MedicinesIndex({ medicines, categories, activeIngredient
 
     const deleteMedicine = (medicine: MedicineRow): void => {
         const warning = medicine.total_stock > 0
-            ? `Este medicamento tiene stock activo (${medicine.total_stock}).\n¿Deseas darlo de baja igualmente?`
-            : '¿Deseas dar de baja este medicamento?';
+            ? `Este medicamento tiene stock activo (${medicine.total_stock}).\n┬┐Deseas darlo de baja igualmente?`
+            : '┬┐Deseas dar de baja este medicamento?';
 
         if (!window.confirm(warning)) {
             return;
@@ -224,25 +224,29 @@ export default function MedicinesIndex({ medicines, categories, activeIngredient
             <Head title="Medicamentos" />
 
             <div className="space-y-6 p-4 md:p-6">
-                <section className="flex flex-col gap-4 rounded-3xl border border-sidebar-border/70 bg-background p-5 shadow-sm md:flex-row md:items-end md:justify-between md:p-6">
-                    <div>
-                        <h1 className="text-3xl font-semibold tracking-tight">Catálogo de medicamentos</h1>
-                        <p className="mt-1 text-sm text-muted-foreground md:text-base">
-                            Registra, edita y da de baja medicamentos del catálogo.
-                        </p>
-                    </div>
+                <section className="overflow-hidden rounded-3xl border border-sidebar-border/70 bg-background shadow-sm">
+                    <div className="bg-primary px-5 py-4 text-primary-foreground md:px-6 md:py-5">
+                        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+                            <div>
+                                <h1 className="text-3xl font-semibold tracking-tight">Cat├ílogo de medicamentos</h1>
+                                <p className="mt-1 text-sm text-primary-foreground/85 md:text-base">
+                                    Registra, edita y da de baja medicamentos del cat├ílogo.
+                                </p>
+                            </div>
 
-                    <div className="flex flex-col gap-2 sm:flex-row">
-                        <Button asChild variant="outline" className="rounded-full">
-                            <Link href="/medicines/stock">
-                                <Boxes className="size-4" />
-                                Ver stock
-                            </Link>
-                        </Button>
-                        <Button className="rounded-full" onClick={() => setIsCreateModalOpen(true)}>
-                            <Plus className="size-4" />
-                            Registrar medicamento
-                        </Button>
+                            <div className="flex flex-col gap-2 sm:flex-row">
+                                <Button asChild variant="outline" className="rounded-full border-primary-foreground/20 bg-primary-foreground/10 text-primary-foreground hover:bg-primary-foreground/20 hover:text-primary-foreground">
+                                    <Link href="/medicines/stock">
+                                        <Boxes className="size-4" />
+                                        Ver stock
+                                    </Link>
+                                </Button>
+                                <Button onClick={() => setIsCreateModalOpen(true)} className="rounded-full border border-primary-foreground/20 bg-primary-foreground text-primary hover:bg-primary-foreground/90">
+                                    <Plus className="size-4" />
+                                    Registrar medicamento
+                                </Button>
+                            </div>
+                        </div>
                     </div>
                 </section>
 
@@ -252,7 +256,7 @@ export default function MedicinesIndex({ medicines, categories, activeIngredient
                         <Input
                             value={filterForm.data.search}
                             onChange={(event) => filterForm.setData('search', event.target.value)}
-                            placeholder="Buscar por nombre o código de barras..."
+                            placeholder="Buscar por nombre o c├│digo de barras..."
                             className="h-11 rounded-full pl-11"
                         />
                     </div>
@@ -263,10 +267,10 @@ export default function MedicinesIndex({ medicines, categories, activeIngredient
                             onValueChange={(value) => filterForm.setData('category_id', value)}
                         >
                             <SelectTrigger className="h-11 rounded-full border-input bg-background px-4 text-sm shadow-xs">
-                                <SelectValue placeholder="Todas las categorías" />
+                                <SelectValue placeholder="Todas las categor├¡as" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="all">Todas las categorías</SelectItem>
+                                <SelectItem value="all">Todas las categor├¡as</SelectItem>
                                 {categories.map((category) => (
                                     <SelectItem key={category.id} value={String(category.id)}>
                                         {category.name}
@@ -290,7 +294,7 @@ export default function MedicinesIndex({ medicines, categories, activeIngredient
                     <div className="hidden overflow-hidden rounded-3xl xl:block">
                         <div className="grid grid-cols-[1.3fr_1fr_0.9fr_0.8fr_0.9fr_0.8fr] border-b border-sidebar-border/70 px-6 py-4 text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
                             <span>Medicamento</span>
-                            <span>Categoría / Código</span>
+                            <span>Categor├¡a / C├│digo</span>
                             <span>Principios activos</span>
                             <span>Stock total</span>
                             <span>Alertas</span>
@@ -315,12 +319,12 @@ export default function MedicinesIndex({ medicines, categories, activeIngredient
                                             </div>
                                             <div className="min-w-0">
                                                 <p className="truncate font-semibold text-foreground">{medicine.name}</p>
-                                                <p className="truncate text-xs text-muted-foreground">{medicine.description || 'Sin descripción'}</p>
+                                                <p className="truncate text-xs text-muted-foreground">{medicine.description || 'Sin descripci├│n'}</p>
                                             </div>
                                         </div>
 
                                         <div>
-                                            <p className="text-sm text-foreground">{medicine.category ?? 'Sin categoría'}</p>
+                                            <p className="text-sm text-foreground">{medicine.category ?? 'Sin categor├¡a'}</p>
                                             <p className="text-xs text-muted-foreground">{medicine.barcode}</p>
                                         </div>
 
@@ -340,7 +344,7 @@ export default function MedicinesIndex({ medicines, categories, activeIngredient
                                             {medicine.near_expiry && (
                                                 <Badge variant="outline" className="border-amber-200 bg-amber-50 text-amber-700">
                                                     <TriangleAlert className="size-3" />
-                                                    Próximo a caducar
+                                                    Pr├│ximo a caducar
                                                 </Badge>
                                             )}
                                         </div>
@@ -385,7 +389,7 @@ export default function MedicinesIndex({ medicines, categories, activeIngredient
                                         </div>
                                         <div className="min-w-0">
                                             <p className="truncate font-semibold text-foreground">{medicine.name}</p>
-                                            <p className="truncate text-sm text-muted-foreground">{medicine.category ?? 'Sin categoría'} · {medicine.barcode}</p>
+                                            <p className="truncate text-sm text-muted-foreground">{medicine.category ?? 'Sin categor├¡a'} ┬À {medicine.barcode}</p>
                                         </div>
                                     </div>
                                     <p className="mt-2 text-sm text-muted-foreground">Stock: <span className="font-medium text-foreground">{medicine.total_stock}</span></p>
@@ -395,7 +399,7 @@ export default function MedicinesIndex({ medicines, categories, activeIngredient
                                             <Badge variant="outline" className="border-rose-200 bg-rose-50 text-rose-700">Stock bajo</Badge>
                                         )}
                                         {medicine.near_expiry && (
-                                            <Badge variant="outline" className="border-amber-200 bg-amber-50 text-amber-700">Próximo a caducar</Badge>
+                                            <Badge variant="outline" className="border-amber-200 bg-amber-50 text-amber-700">Pr├│ximo a caducar</Badge>
                                         )}
                                     </div>
 
@@ -462,7 +466,7 @@ export default function MedicinesIndex({ medicines, categories, activeIngredient
 
                     <MedicineForm
                         title="Registrar medicamento"
-                        description="Alta de medicamentos con categoría, imagen, descripción, principios activos y stock por sucursal."
+                        description="Alta de medicamentos con categor├¡a, imagen, descripci├│n, principios activos y stock por sucursal."
                         submitLabel="Registrar medicamento"
                         data={createForm.data}
                         errors={createForm.errors}
