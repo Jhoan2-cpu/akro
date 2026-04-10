@@ -1,9 +1,53 @@
 import { Head, Link } from '@inertiajs/react';
-import { ArrowRight, HeartPulse, ShieldCheck, Truck } from 'lucide-react';
+import { ArrowDownToLine, ArrowRight, HeartPulse, ShieldCheck, Truck } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import AppLogo from '@/components/app-logo';
 import { login } from '@/routes';
 
+interface BeforeInstallPromptEvent extends Event {
+    prompt: () => Promise<void>;
+    userChoice: Promise<{
+        outcome: 'accepted' | 'dismissed';
+        platform: string;
+    }>;
+}
+
 export default function Welcome() {
+    const [installPromptEvent, setInstallPromptEvent] = useState<BeforeInstallPromptEvent | null>(null);
+    const [showInstallHint, setShowInstallHint] = useState(false);
+
+    useEffect(() => {
+        const onBeforeInstallPrompt = (event: Event) => {
+            event.preventDefault();
+            setInstallPromptEvent(event as BeforeInstallPromptEvent);
+        };
+
+        const onInstalled = () => {
+            setInstallPromptEvent(null);
+        };
+
+        window.addEventListener('beforeinstallprompt', onBeforeInstallPrompt);
+        window.addEventListener('appinstalled', onInstalled);
+
+        return () => {
+            window.removeEventListener('beforeinstallprompt', onBeforeInstallPrompt);
+            window.removeEventListener('appinstalled', onInstalled);
+        };
+    }, []);
+
+    const handleInstallClick = async () => {
+        if (installPromptEvent === null) {
+            setShowInstallHint(true);
+
+            return;
+        }
+
+        setShowInstallHint(false);
+        await installPromptEvent.prompt();
+        await installPromptEvent.userChoice;
+        setInstallPromptEvent(null);
+    };
+
     return (
         <>
             <Head title="Farmacia San Lucas">
@@ -41,7 +85,7 @@ export default function Welcome() {
                                         </p>
                                     </div>
 
-                                    <div className="flex flex-col gap-3 sm:flex-row">
+                                    <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                                         <Link
                                             href={login()}
                                             className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[#0f7a5b] px-6 text-sm font-semibold text-white shadow-lg shadow-emerald-900/10 transition hover:-translate-y-0.5 hover:bg-[#0c664c]"
@@ -49,10 +93,24 @@ export default function Welcome() {
                                             Entrar al sistema
                                             <ArrowRight className="size-4" />
                                         </Link>
-                                        <div className="inline-flex min-h-12 items-center rounded-xl border border-emerald-200 bg-white px-5 text-sm font-medium text-slate-600 shadow-sm">
-                                            Inventario, ventas y trazabilidad en un solo lugar
-                                        </div>
+
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                void handleInstallClick();
+                                            }}
+                                            className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-emerald-300 bg-emerald-50 px-5 text-sm font-semibold text-emerald-900 shadow-sm transition hover:-translate-y-0.5 hover:bg-emerald-100"
+                                        >
+                                            <ArrowDownToLine className="size-4" />
+                                            Instalar app en Android
+                                        </button>
                                     </div>
+
+                                    {showInstallHint ? (
+                                        <p className="text-sm font-medium text-slate-600">
+                                            Si no aparece la ventana de instalación, abre el menú de Chrome (⋮) y toca "Instalar app" o "Agregar a pantalla principal".
+                                        </p>
+                                    ) : null}
 
                                     <div className="grid gap-3 sm:grid-cols-3">
                                         {[
