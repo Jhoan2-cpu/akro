@@ -112,14 +112,15 @@ class SaleController extends Controller
     public function history(Request $request): InertiaResponse
     {
         $user = $request->user();
+        $isSuperuser = ($user?->role ?? null) === 'superuser';
         $search = trim((string) $request->input('search', ''));
         $from = trim((string) $request->input('from', ''));
         $to = trim((string) $request->input('to', ''));
 
-        $baseHistoryQuery = function () use ($user, $search, $from, $to): Builder {
+        $baseHistoryQuery = function () use ($user, $isSuperuser, $search, $from, $to): Builder {
             $query = Sale::query();
 
-            if (($user?->role ?? null) !== 'admin') {
+            if (! $isSuperuser) {
                 if ($user?->branch_id === null) {
                     $query->whereRaw('1 = 0');
                 } else {
@@ -332,12 +333,13 @@ class SaleController extends Controller
     public function ticket(Request $request, Sale $sale): Response
     {
         $user = $request->user();
+        $isSuperuser = ($user?->role ?? null) === 'superuser';
 
         if ($user === null) {
             abort(403);
         }
 
-        if (($user->role ?? null) !== 'admin' && $user->branch_id !== $sale->branch_id) {
+        if (! $isSuperuser && $user->branch_id !== $sale->branch_id) {
             abort(403);
         }
 
