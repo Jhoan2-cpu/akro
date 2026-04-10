@@ -16,7 +16,7 @@ docker compose -f docker-compose.dev.yml up -d
 - El módulo de sucursales centraliza altas y ediciones en modales dentro de `/branches`; no se usan páginas separadas para crear o editar sucursales.
 - Al confirmar una venta en `/sales/quick`, el sistema genera un **Ticket de venta PDF temporal** (no fiscal) para previsualizar, imprimir y descargar desde un modal inmediato.
 - Las tablas del sistema deben usar cabecera destacada con mayor peso tipográfico y filas intercaladas en blanco/verde claro para mejorar legibilidad.
-- El sidebar incluye una sección inferior de **Notificaciones** con conteo de productos vencidos, alertas de caducidad menor a 30 días y mensajes resumidos por producto.
+- Las **Notificaciones** y el acceso de **Perfil** se muestran en la esquina superior derecha del header principal (misma linea del breadcrumb), incluyendo icono de campana con dropdown de alertas.
 - Cuando existan productos vencidos o por caducar, la app muestra un aviso temporal flotante en la esquina inferior derecha para solicitar acciones correctivas/preventivas.
 - Se incorpora el módulo de **Reporte PDF de ventas por sucursal/rango de fecha** en `/reports/sales`, generando el PDF al momento de hacer clic en descargar.
 
