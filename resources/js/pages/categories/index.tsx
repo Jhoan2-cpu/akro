@@ -221,7 +221,7 @@ export default function CategoriesIndex({ categories, filters }: Props) {
                         <div className="table-header-highlight grid grid-cols-[1.1fr_1.6fr_0.7fr_1fr] border-b border-sidebar-border/70 px-6 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
                             <span>Nombre</span>
                             <span>Descripción</span>
-                            <span>Medicamentos</span>
+                            <span className="text-center">Medicamentos</span>
                             <span className="text-right">Acciones</span>
                         </div>
 
@@ -231,9 +231,11 @@ export default function CategoriesIndex({ categories, filters }: Props) {
                                     <article key={category.id} className="grid grid-cols-[1.1fr_1.6fr_0.7fr_1fr] items-center gap-4 px-6 py-5">
                                         <p className="font-semibold text-foreground">{category.name}</p>
                                         <p className="text-sm text-muted-foreground">{category.description ?? 'Sin descripción'}</p>
-                                        <Badge variant="outline" className="w-fit rounded-full px-3 py-1">
-                                            {category.medicines_count}
-                                        </Badge>
+                                        <div className="flex justify-center">
+                                            <Badge variant="outline" className="w-fit rounded-full px-3 py-1">
+                                                {category.medicines_count}
+                                            </Badge>
+                                        </div>
                                         <div className="flex justify-end gap-2">
                                             <Button type="button" variant="outline" size="sm" className="rounded-full" onClick={() => openEditDialog(category)}>
                                                 <Edit3 className="size-4" />

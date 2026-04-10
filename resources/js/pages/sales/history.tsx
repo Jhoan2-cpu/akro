@@ -186,8 +186,8 @@ export default function SalesHistory({ sales, dailySales, filters }: Props) {
                             <span>ID</span>
                             <span>Fecha</span>
                             <span>Sucursal</span>
-                            <span>Items</span>
-                            <span>Total</span>
+                            <span className="text-center">Items</span>
+                            <span className="text-right">Total</span>
                             <span>Detalle</span>
                             <span className="text-right">Acción</span>
                         </div>
@@ -202,10 +202,12 @@ export default function SalesHistory({ sales, dailySales, filters }: Props) {
                                             <p className="text-xs text-muted-foreground">{sale.employee_name ?? 'Sin empleado'}</p>
                                         </div>
                                         <p className="text-emerald-800">{sale.branch_name ?? 'Sin sucursal'}</p>
-                                        <Badge variant="outline" className="w-fit rounded-full border-emerald-200 bg-emerald-50 px-3 py-1 font-semibold text-emerald-700">
-                                            {sale.items_count}
-                                        </Badge>
-                                        <p className="font-bold text-emerald-900">${sale.total}</p>
+                                        <div className="flex justify-center">
+                                            <Badge variant="outline" className="w-fit rounded-full border-emerald-200 bg-emerald-50 px-3 py-1 font-semibold text-emerald-700">
+                                                {sale.items_count}
+                                            </Badge>
+                                        </div>
+                                        <p className="text-right font-bold text-emerald-900">${sale.total}</p>
                                         <div className="space-y-2">
                                             {sale.lines.map((line, index) => (
                                                 <div key={`${sale.id}-${line.medicine}-${index}`} className="rounded-xl border border-emerald-100 bg-emerald-50/25 px-3 py-2">

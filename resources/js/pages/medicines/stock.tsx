@@ -257,8 +257,8 @@ export default function MedicinesStock({ inventories, branches, categories, filt
                                             <th className="px-4 py-3">Sucursal</th>
                                             <th className="px-4 py-3">Medicamento</th>
                                             <th className="px-4 py-3">Categoría</th>
-                                            <th className="px-4 py-3">Stock actual</th>
-                                            <th className="px-4 py-3">Stock mínimo</th>
+                                            <th className="px-4 py-3 text-center">Stock actual</th>
+                                            <th className="px-4 py-3 text-center">Stock mínimo</th>
                                             <th className="px-4 py-3">Caducidad</th>
                                             <th className="px-4 py-3">Estado</th>
                                         </tr>
@@ -272,8 +272,8 @@ export default function MedicinesStock({ inventories, branches, categories, filt
                                                     <p className="text-xs text-muted-foreground">{inventory.barcode ?? 'Sin código'}</p>
                                                 </td>
                                                 <td className="px-4 py-3 text-foreground">{inventory.category ?? 'Sin categoría'}</td>
-                                                <td className="px-4 py-3 text-foreground">{inventory.current_stock}</td>
-                                                <td className="px-4 py-3 text-foreground">{inventory.minimum_stock}</td>
+                                                <td className="px-4 py-3 text-center text-foreground">{inventory.current_stock}</td>
+                                                <td className="px-4 py-3 text-center text-foreground">{inventory.minimum_stock}</td>
                                                 <td className="px-4 py-3">
                                                     <p className="text-foreground">{inventory.expiration_date}</p>
                                                     <p className={`text-xs ${inventory.is_expired ? 'text-rose-700' : 'text-muted-foreground'}`}>
