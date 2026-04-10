@@ -5,6 +5,13 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 
 type Option = {
     id: number;
@@ -107,7 +114,7 @@ export default function MedicinesStock({ inventories, branches, categories, filt
                         </p>
                     </div>
 
-                    <form onSubmit={submit} className="grid gap-4 p-5 pt-0 lg:grid-cols-4 md:p-6 md:pt-0">
+                    <form onSubmit={submit} className="mt-3 grid gap-4 p-5 pt-1 lg:grid-cols-4 md:p-6 md:pt-2">
                         <div className="space-y-2 lg:col-span-2">
                             <Label htmlFor="stock_search">Medicamento o código</Label>
                             <div className="flex flex-col gap-2 sm:flex-row">
@@ -137,53 +144,62 @@ export default function MedicinesStock({ inventories, branches, categories, filt
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="branch_id">Sucursal</Label>
-                            <select
-                                id="branch_id"
+                            <Label>Sucursal</Label>
+                            <Select
                                 value={form.data.branch_id}
-                                onChange={(event) => form.setData('branch_id', event.target.value)}
-                                className="h-11 w-full rounded-full border border-input bg-background px-4 text-sm"
+                                onValueChange={(value) => form.setData('branch_id', value)}
                             >
-                                <option value="all">Todas las sucursales</option>
-                                {branches.map((branch) => (
-                                    <option key={branch.id} value={String(branch.id)}>
+                                <SelectTrigger className="h-11 w-full rounded-full border-input bg-background px-4 text-sm shadow-xs">
+                                    <SelectValue placeholder="Todas las sucursales" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">Todas las sucursales</SelectItem>
+                                    {branches.map((branch) => (
+                                    <SelectItem key={branch.id} value={String(branch.id)}>
                                         {branch.name}
-                                    </option>
+                                    </SelectItem>
                                 ))}
-                            </select>
+                                </SelectContent>
+                            </Select>
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="category_id">Categoría</Label>
-                            <select
-                                id="category_id"
+                            <Label>Categoría</Label>
+                            <Select
                                 value={form.data.category_id}
-                                onChange={(event) => form.setData('category_id', event.target.value)}
-                                className="h-11 w-full rounded-full border border-input bg-background px-4 text-sm"
+                                onValueChange={(value) => form.setData('category_id', value)}
                             >
-                                <option value="all">Todas las categorías</option>
+                                <SelectTrigger className="h-11 w-full rounded-full border-input bg-background px-4 text-sm shadow-xs">
+                                    <SelectValue placeholder="Todas las categorías" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                <SelectItem value="all">Todas las categorías</SelectItem>
                                 {categories.map((category) => (
-                                    <option key={category.id} value={String(category.id)}>
+                                    <SelectItem key={category.id} value={String(category.id)}>
                                         {category.name}
-                                    </option>
+                                    </SelectItem>
                                 ))}
-                            </select>
+                                </SelectContent>
+                            </Select>
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="status">Estado</Label>
-                            <select
-                                id="status"
+                            <Label>Estado</Label>
+                            <Select
                                 value={form.data.status}
-                                onChange={(event) => form.setData('status', event.target.value)}
-                                className="h-11 w-full rounded-full border border-input bg-background px-4 text-sm"
+                                onValueChange={(value) => form.setData('status', value)}
                             >
-                                <option value="all">Todos</option>
-                                <option value="out">Sin stock</option>
-                                <option value="low">Stock bajo</option>
-                                <option value="near-expiry">Próximo a caducar (&lt;30 días)</option>
-                                <option value="healthy">Saludable</option>
-                            </select>
+                                <SelectTrigger className="h-11 w-full rounded-full border-input bg-background px-4 text-sm shadow-xs">
+                                    <SelectValue placeholder="Todos" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">Todos</SelectItem>
+                                    <SelectItem value="out">Sin stock</SelectItem>
+                                    <SelectItem value="low">Stock bajo</SelectItem>
+                                    <SelectItem value="near-expiry">Próximo a caducar (&lt;30 días)</SelectItem>
+                                    <SelectItem value="healthy">Saludable</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
 
                         <div className="flex items-end justify-end gap-2 lg:col-span-3">
