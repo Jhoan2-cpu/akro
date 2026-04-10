@@ -30,6 +30,8 @@ docker compose -f docker-compose.dev.yml up -d
 - El redirect post-login de Fortify ahora valida `url.intended` por rol: usuarios `employee` no son enviados a rutas administrativas (`/medicines`, `/users`, `/categories`, `/active-ingredients`, `/branches`) y se redirigen de forma segura a `/dashboard`.
 - El dashboard operativo se ajusta con `minmax(0, ...)` y contenedores `min-w-0` para evitar desbordes horizontales en producción (zoom 100%/pantallas intermedias), garantizando visibilidad del bloque "Alertas operativas".
 - El envío de alertas de inventario tras registrar ventas prioriza Brevo API (`BREVO_API_KEY`) y admite destinatario de respaldo (`email` verificado) cuando no exista `verification_email` verificado, con logging de diagnóstico y sin bloquear el cierre de la venta ante fallos de transporte.
+- La navegación lateral móvil se optimiza reduciendo duraciones de transición, eliminando `prefetch` agresivo de enlaces del sidebar y aplicando `motion-reduce` para mejorar fluidez en dispositivos de gama media/baja.
+- Los assets de identidad visual con transparencia (logo e íconos PWA) adoptan fondo/paleta verde mucho más clara para mantener contraste suave y coherencia visual en Android/home screen.
 
 ## MER Fiscal (Resumen)
 ```mermaid
