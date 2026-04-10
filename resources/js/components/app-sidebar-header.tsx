@@ -2,8 +2,9 @@ import { Breadcrumbs } from '@/components/breadcrumbs';
 import { TopbarActions } from '@/components/topbar-actions';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import type { BreadcrumbItem as BreadcrumbItemType } from '@/types';
+import { memo } from 'react';
 
-export function AppSidebarHeader({
+export const AppSidebarHeader = memo(function AppSidebarHeader({
     breadcrumbs = [],
 }: {
     breadcrumbs?: BreadcrumbItemType[];
@@ -18,4 +19,4 @@ export function AppSidebarHeader({
             <TopbarActions />
         </header>
     );
-}
+});

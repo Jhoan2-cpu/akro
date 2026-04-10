@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { cn, toUrl } from '@/lib/utils';
-import { edit as editAppearance } from '@/routes/appearance';
 import { edit } from '@/routes/profile';
 import { edit as editSecurity } from '@/routes/security';
 import type { NavItem } from '@/types';
@@ -21,11 +20,6 @@ const sidebarNavItems: NavItem[] = [
         href: editSecurity(),
         icon: null,
     },
-    {
-        title: 'Appearance',
-        href: editAppearance(),
-        icon: null,
-    },
 ];
 
 export default function SettingsLayout({ children }: PropsWithChildren) {
@@ -33,7 +27,7 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
 
     return (
         <div className="px-4 py-6">
-            <div className="rounded-3xl border border-sidebar-border/70 bg-gradient-to-br from-white via-emerald-50/35 to-slate-100/70 p-4 shadow-sm md:p-6">
+            <div className="rounded-3xl border border-sidebar-border/70 bg-linear-to-br from-white via-emerald-50/35 to-slate-100/70 p-4 shadow-sm md:p-6">
                 <Heading
                     title="Settings"
                     description="Manage your profile and account settings"
