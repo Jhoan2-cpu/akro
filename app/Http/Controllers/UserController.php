@@ -85,8 +85,19 @@ class UserController extends Controller
         return to_route('users.index');
     }
 
-    public function edit(User $user): Response
+    public function edit(User $user): Response|RedirectResponse
     {
+        $authUser = request()->user();
+
+        if ($authUser !== null && $authUser->role === 'admin' && $authUser->is($user)) {
+            Inertia::flash('toast', [
+                'type' => 'warning',
+                'message' => 'No puedes editar tu propio usuario desde Gestión de usuarios. Usa tu Perfil.',
+            ]);
+
+            return to_route('users.index');
+        }
+
         $user->load('branch');
 
         return Inertia::render('users/edit', [
@@ -97,6 +108,17 @@ class UserController extends Controller
 
     public function update(UpdateUserRequest $request, User $user): RedirectResponse
     {
+        $authUser = $request->user();
+
+        if ($authUser !== null && $authUser->role === 'admin' && $authUser->is($user)) {
+            Inertia::flash('toast', [
+                'type' => 'warning',
+                'message' => 'No puedes editar tu propio usuario desde Gestión de usuarios. Usa tu Perfil.',
+            ]);
+
+            return to_route('users.index');
+        }
+
         $validated = $request->validated();
 
         $user->fill([
@@ -118,6 +140,10 @@ class UserController extends Controller
             'type' => 'success',
             'message' => 'Usuario actualizado correctamente.',
         ]);
+
+        if ($authUser !== null && $authUser->is($user) && $user->role !== 'admin') {
+            return to_route('dashboard');
+        }
 
         return to_route('users.index');
     }

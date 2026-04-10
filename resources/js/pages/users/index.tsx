@@ -1,4 +1,4 @@
-import { Head, Link, router, useForm } from '@inertiajs/react';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import { motion } from 'framer-motion';
 import {
     PencilLine,
@@ -101,6 +101,7 @@ function decodePaginationLabel(label: string): string {
 }
 
 export default function UsersIndex({ users, branches, filters, stats }: Props) {
+    const { auth } = usePage<{ auth: { user: { id: number } } }>().props;
     const initials = useInitials();
     const [pendingSuspendId, setPendingSuspendId] = useState<number | null>(null);
     const filterForm = useForm({
@@ -304,7 +305,10 @@ export default function UsersIndex({ users, branches, filters, stats }: Props) {
 
                         <div className="divide-y divide-sidebar-border/70">
                             {users.data.length > 0 ? (
-                                users.data.map((user) => (
+                                users.data.map((user) => {
+                                    const isSelf = user.id === auth.user.id;
+
+                                    return (
                                     <div
                                         key={user.id}
                                         className="grid grid-cols-[1.4fr_1.2fr_0.8fr_0.9fr_0.8fr_0.9fr] items-center gap-4 px-6 py-5"
@@ -358,9 +362,9 @@ export default function UsersIndex({ users, branches, filters, stats }: Props) {
                                                 size="sm"
                                                 className="rounded-full"
                                             >
-                                                <Link href={`/users/${user.id}/edit`}>
+                                                <Link href={isSelf ? '/settings/profile' : `/users/${user.id}/edit`}>
                                                     <PencilLine className="size-4" />
-                                                    Editar
+                                                    {isSelf ? 'Editar en perfil' : 'Editar'}
                                                 </Link>
                                             </Button>
 
@@ -383,7 +387,8 @@ export default function UsersIndex({ users, branches, filters, stats }: Props) {
                                             </Button>
                                         </div>
                                     </div>
-                                ))
+                                    );
+                                })
                             ) : (
                                 <div className="px-6 py-12 text-center text-sm text-muted-foreground">
                                     No hay usuarios con estos filtros.
@@ -394,7 +399,10 @@ export default function UsersIndex({ users, branches, filters, stats }: Props) {
 
                     <div className="space-y-3 p-4 xl:hidden">
                         {users.data.length > 0 ? (
-                            users.data.map((user) => (
+                            users.data.map((user) => {
+                                const isSelf = user.id === auth.user.id;
+
+                                return (
                                 <article
                                     key={user.id}
                                     className="rounded-2xl border border-sidebar-border/70 p-4"
@@ -451,9 +459,9 @@ export default function UsersIndex({ users, branches, filters, stats }: Props) {
                                                     size="sm"
                                                     className="rounded-full"
                                                 >
-                                                    <Link href={`/users/${user.id}/edit`}>
+                                                    <Link href={isSelf ? '/settings/profile' : `/users/${user.id}/edit`}>
                                                         <PencilLine className="size-4" />
-                                                        Editar
+                                                        {isSelf ? 'Editar en perfil' : 'Editar'}
                                                     </Link>
                                                 </Button>
 
@@ -478,7 +486,8 @@ export default function UsersIndex({ users, branches, filters, stats }: Props) {
                                         </div>
                                     </div>
                                 </article>
-                            ))
+                                );
+                            })
                         ) : (
                             <div className="rounded-2xl border border-dashed p-8 text-center text-sm text-muted-foreground">
                                 No hay usuarios con estos filtros.
@@ -531,14 +540,6 @@ export default function UsersIndex({ users, branches, filters, stats }: Props) {
     );
 }
 
-UsersIndex.layout = {
-    breadcrumbs: [
-        {
-            title: 'Usuarios',
-            href: '/users',
-        },
-    ],
-};
 UsersIndex.layout = {
     breadcrumbs: [
         {
