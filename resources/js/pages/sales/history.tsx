@@ -140,7 +140,7 @@ export default function SalesHistory({ sales, filters }: Props) {
                     </form>
 
                     <div className="hidden overflow-hidden rounded-3xl border border-sidebar-border/70 xl:block">
-                        <div className="grid grid-cols-[0.45fr_0.8fr_0.8fr_0.45fr_0.55fr_1.5fr_0.6fr] border-b border-sidebar-border/70 bg-muted/35 px-6 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-emerald-800">
+                        <div className="table-header-highlight grid grid-cols-[0.45fr_0.8fr_0.8fr_0.45fr_0.55fr_1.5fr_0.6fr] border-b border-sidebar-border/70 px-6 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-emerald-800">
                             <span>ID</span>
                             <span>Fecha</span>
                             <span>Sucursal</span>
@@ -150,10 +150,10 @@ export default function SalesHistory({ sales, filters }: Props) {
                             <span className="text-right">Acción</span>
                         </div>
 
-                        <div className="divide-y divide-sidebar-border/70">
+                        <div className="table-zebra divide-y divide-sidebar-border/70">
                             {sales.data.length > 0 ? (
-                                sales.data.map((sale, index) => (
-                                    <article key={sale.id} className={`grid grid-cols-[0.45fr_0.8fr_0.8fr_0.45fr_0.55fr_1.5fr_0.6fr] gap-4 px-6 py-5 text-sm ${index % 2 === 0 ? 'bg-background' : 'bg-emerald-50/20'}`}>
+                                sales.data.map((sale) => (
+                                    <article key={sale.id} className="grid grid-cols-[0.45fr_0.8fr_0.8fr_0.45fr_0.55fr_1.5fr_0.6fr] gap-4 px-6 py-5 text-sm">
                                         <p className="font-bold text-foreground">#{sale.id}</p>
                                         <div>
                                             <p className="font-medium text-foreground">{sale.created_at}</p>

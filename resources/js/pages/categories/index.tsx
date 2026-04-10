@@ -218,14 +218,14 @@ export default function CategoriesIndex({ categories, filters }: Props) {
                     </form>
 
                     <div className="hidden overflow-hidden rounded-3xl border border-sidebar-border/70 xl:block">
-                        <div className="grid grid-cols-[1.1fr_1.6fr_0.7fr_1fr] border-b border-sidebar-border/70 px-6 py-4 text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                        <div className="table-header-highlight grid grid-cols-[1.1fr_1.6fr_0.7fr_1fr] border-b border-sidebar-border/70 px-6 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
                             <span>Nombre</span>
                             <span>Descripción</span>
                             <span>Medicamentos</span>
                             <span className="text-right">Acciones</span>
                         </div>
 
-                        <div className="divide-y divide-sidebar-border/70">
+                        <div className="table-zebra divide-y divide-sidebar-border/70">
                             {categories.data.length > 0 ? (
                                 categories.data.map((category) => (
                                     <article key={category.id} className="grid grid-cols-[1.1fr_1.6fr_0.7fr_1fr] items-center gap-4 px-6 py-5">

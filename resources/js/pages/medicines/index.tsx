@@ -292,7 +292,7 @@ export default function MedicinesIndex({ medicines, categories, activeIngredient
 
                 <div className="rounded-3xl border border-sidebar-border/70 bg-background shadow-sm">
                     <div className="hidden overflow-hidden rounded-3xl xl:block">
-                        <div className="grid grid-cols-[1.3fr_1fr_0.9fr_0.8fr_0.9fr_0.8fr] border-b border-sidebar-border/70 px-6 py-4 text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                        <div className="table-header-highlight grid grid-cols-[1.3fr_1fr_0.9fr_0.8fr_0.9fr_0.8fr] border-b border-sidebar-border/70 px-6 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
                             <span>Medicamento</span>
                             <span>Categoría / Código</span>
                             <span>Principios activos</span>
@@ -301,7 +301,7 @@ export default function MedicinesIndex({ medicines, categories, activeIngredient
                             <span className="text-right">Acciones</span>
                         </div>
 
-                        <div className="divide-y divide-sidebar-border/70">
+                        <div className="table-zebra divide-y divide-sidebar-border/70">
                             {medicines.data.length > 0 ? (
                                 medicines.data.map((medicine) => (
                                     <div key={medicine.id} className="grid grid-cols-[1.3fr_1fr_0.9fr_0.8fr_0.9fr_0.8fr] items-center gap-4 px-6 py-5">

@@ -250,8 +250,8 @@ export default function MedicinesStock({ inventories, branches, categories, filt
                     ) : (
                         <>
                             <div className="hidden overflow-x-auto rounded-2xl border border-sidebar-border/70 xl:block">
-                                <table className="min-w-full text-sm">
-                                    <thead className="bg-muted/50 text-left text-xs uppercase tracking-[0.12em] text-muted-foreground">
+                                <table className="table-zebra-native min-w-full text-sm">
+                                    <thead className="text-left text-xs uppercase tracking-[0.12em] text-muted-foreground">
                                         <tr>
                                             <th className="px-4 py-3">Sucursal</th>
                                             <th className="px-4 py-3">Medicamento</th>

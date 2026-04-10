@@ -194,14 +194,14 @@ export default function BranchesIndex({ branches, filters }: Props) {
                 {/* Table */}
                 <div className="rounded-3xl border border-sidebar-border/70 bg-background shadow-sm overflow-hidden">
                     <div className="hidden xl:block">
-                        <div className="grid grid-cols-[1.5fr_2fr_1fr_0.8fr] border-b border-sidebar-border/70 px-6 py-4 text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground gap-4">
+                        <div className="table-header-highlight grid grid-cols-[1.5fr_2fr_1fr_0.8fr] border-b border-sidebar-border/70 px-6 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground gap-4">
                             <span>Nombre</span>
                             <span>Dirección</span>
                             <span>Fecha de Creación</span>
                             <span className="text-right">Acciones</span>
                         </div>
 
-                        <div className="divide-y divide-sidebar-border/70">
+                        <div className="table-zebra divide-y divide-sidebar-border/70">
                             {branches.data.length === 0 ? (
                                 <div className="px-6 py-8 text-center text-muted-foreground">
                                     No hay sucursales registradas

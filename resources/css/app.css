@@ -293,6 +293,37 @@
     section.overflow-hidden > .bg-primary:first-child span {
         font-family: var(--font-sans);
     }
+
+    .table-header-highlight {
+        background: rgba(15, 110, 86, 0.14);
+        color: #065f46;
+        font-weight: 800;
+    }
+
+    .table-zebra > *:nth-child(odd) {
+        background: #ffffff;
+    }
+
+    .table-zebra > *:nth-child(even) {
+        background: #ecfdf5;
+    }
+
+    .table-zebra-native thead {
+        background: rgba(15, 110, 86, 0.14);
+    }
+
+    .table-zebra-native thead th {
+        color: #065f46;
+        font-weight: 800;
+    }
+
+    .table-zebra-native tbody tr:nth-child(odd) {
+        background: #ffffff;
+    }
+
+    .table-zebra-native tbody tr:nth-child(even) {
+        background: #ecfdf5;
+    }
 }
 
 @layer utilities {

@@ -298,7 +298,7 @@ export default function UsersIndex({ users, branches, filters, stats }: Props) {
 
                 <div className="relative z-10 rounded-3xl border border-sidebar-border/70 bg-background shadow-sm">
                     <div className="hidden overflow-hidden rounded-3xl xl:block">
-                        <div className="grid grid-cols-[1.4fr_1.2fr_0.8fr_0.9fr_0.8fr_0.9fr] border-b border-sidebar-border/70 px-6 py-4 text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                        <div className="table-header-highlight grid grid-cols-[1.4fr_1.2fr_0.8fr_0.9fr_0.8fr_0.9fr] border-b border-sidebar-border/70 px-6 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
                             <span>Nombre y perfil</span>
                             <span>Correo electrónico</span>
                             <span>Rol</span>
@@ -307,7 +307,7 @@ export default function UsersIndex({ users, branches, filters, stats }: Props) {
                             <span className="text-right">Acciones</span>
                         </div>
 
-                        <div className="divide-y divide-sidebar-border/70">
+                        <div className="table-zebra divide-y divide-sidebar-border/70">
                             {users.data.length > 0 ? (
                                 users.data.map((user) => {
                                     const isSelf = user.id === auth.user.id;
