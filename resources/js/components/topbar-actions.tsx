@@ -1,5 +1,6 @@
 import { Link, usePage } from '@inertiajs/react';
 import { AlertTriangle, BellRing, CalendarClock, ChevronsUpDown, PackageMinus } from 'lucide-react';
+import { memo } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
     DropdownMenu,
@@ -36,7 +37,14 @@ type HeaderAuthUser = {
     avatar?: string;
 };
 
-export function TopbarActions() {
+const emptyNotifications = {
+    low_stock_count: 0,
+    expired_count: 0,
+    near_expiry_count: 0,
+    items: [],
+} satisfies HeaderNotifications;
+
+export const TopbarActions = memo(function TopbarActions() {
     const getInitials = useInitials();
     const { auth, notifications } = usePage<{
         auth: { user?: HeaderAuthUser };
@@ -47,12 +55,7 @@ export function TopbarActions() {
         return null;
     }
 
-    const expiryNotifications = notifications ?? {
-        low_stock_count: 0,
-        expired_count: 0,
-        near_expiry_count: 0,
-        items: [],
-    };
+    const expiryNotifications = notifications ?? emptyNotifications;
 
     return (
         <div className="flex items-center gap-2">
@@ -165,4 +168,4 @@ export function TopbarActions() {
             </DropdownMenu>
         </div>
     );
-}
+});
