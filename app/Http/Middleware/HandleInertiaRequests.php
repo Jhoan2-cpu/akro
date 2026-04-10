@@ -62,6 +62,7 @@ class HandleInertiaRequests extends Middleware
 
         if ($user === null) {
             return [
+                'low_stock_count' => 0,
                 'expired_count' => 0,
                 'near_expiry_count' => 0,
                 'items' => [],
@@ -87,6 +88,10 @@ class HandleInertiaRequests extends Middleware
             ->whereDate('expiration_date', '<', $today)
             ->count();
 
+        $lowStockCount = (clone $baseQuery)
+            ->whereColumn('current_stock', '<=', 'minimum_stock')
+            ->count();
+
         $nearExpiryCount = (clone $baseQuery)
             ->whereDate('expiration_date', '>=', $today)
             ->whereDate('expiration_date', '<', $nearLimit)
@@ -95,34 +100,54 @@ class HandleInertiaRequests extends Middleware
         $items = (clone $baseQuery)
             ->where(function (Builder $builder) use ($today, $nearLimit): void {
                 $builder
-                    ->whereDate('expiration_date', '<', $today)
+                    ->whereColumn('current_stock', '<=', 'minimum_stock')
+                    ->orWhereDate('expiration_date', '<', $today)
                     ->orWhere(function (Builder $nearBuilder) use ($today, $nearLimit): void {
                         $nearBuilder
                             ->whereDate('expiration_date', '>=', $today)
                             ->whereDate('expiration_date', '<', $nearLimit);
                     });
             })
+            ->orderByRaw('CASE WHEN current_stock <= minimum_stock THEN 0 ELSE 1 END')
+            ->orderBy('current_stock')
             ->orderBy('expiration_date')
             ->limit(6)
             ->get()
             ->map(function (Inventory $inventory) use ($today): array {
                 $days = $today->diffInDays($inventory->expiration_date, false);
                 $isExpired = $days < 0;
+                $isLowStock = $inventory->current_stock <= $inventory->minimum_stock;
+
+                $status = $isExpired
+                    ? 'expired'
+                    : ($isLowStock ? 'low-stock' : 'near-expiry');
+
+                $message = match ($status) {
+                    'expired' => sprintf('%s está vencido.', $inventory->medicine?->name ?? 'Este producto'),
+                    'low-stock' => sprintf(
+                        '%s tiene stock bajo (%d/%d).',
+                        $inventory->medicine?->name ?? 'Este producto',
+                        (int) $inventory->current_stock,
+                        (int) $inventory->minimum_stock,
+                    ),
+                    default => sprintf('%s caduca en %d día(s).', $inventory->medicine?->name ?? 'Este producto', $days),
+                };
 
                 return [
                     'id' => $inventory->id,
                     'medicine_name' => $inventory->medicine?->name ?? 'Medicamento',
                     'branch_name' => $inventory->branch?->name ?? 'Sin sucursal',
-                    'status' => $isExpired ? 'expired' : 'near-expiry',
+                    'status' => $status,
+                    'current_stock' => (int) $inventory->current_stock,
+                    'minimum_stock' => (int) $inventory->minimum_stock,
                     'days_to_expire' => $days,
-                    'message' => $isExpired
-                        ? sprintf('%s está vencido.', $inventory->medicine?->name ?? 'Este producto')
-                        : sprintf('%s caduca en %d día(s).', $inventory->medicine?->name ?? 'Este producto', $days),
+                    'message' => $message,
                 ];
             })
             ->values();
 
         return [
+            'low_stock_count' => $lowStockCount,
             'expired_count' => $expiredCount,
             'near_expiry_count' => $nearExpiryCount,
             'items' => $items,

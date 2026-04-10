@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { AlertTriangle, BellRing, CalendarClock, ChevronsUpDown } from 'lucide-react';
+import { AlertTriangle, BellRing, CalendarClock, ChevronsUpDown, PackageMinus } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
     DropdownMenu,
@@ -16,12 +16,15 @@ type HeaderNotificationItem = {
     id: number;
     medicine_name: string;
     branch_name: string;
-    status: 'expired' | 'near-expiry';
+    status: 'expired' | 'near-expiry' | 'low-stock';
+    current_stock: number;
+    minimum_stock: number;
     days_to_expire: number;
     message: string;
 };
 
 type HeaderNotifications = {
+    low_stock_count: number;
     expired_count: number;
     near_expiry_count: number;
     items: HeaderNotificationItem[];
@@ -45,6 +48,7 @@ export function TopbarActions() {
     }
 
     const expiryNotifications = notifications ?? {
+        low_stock_count: 0,
         expired_count: 0,
         near_expiry_count: 0,
         items: [],
@@ -73,14 +77,30 @@ export function TopbarActions() {
                         <span className="text-sm font-semibold text-foreground">
                             Centro de Notificaciones ({expiryNotifications.items.length})
                         </span>
-                        <span className="text-xs text-muted-foreground">Alertas de caducidad</span>
+                        <span className="text-xs text-muted-foreground">Caducidad y bajo stock</span>
                     </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+
+                    <div className="grid grid-cols-3 gap-1.5 px-2 py-2">
+                        <div className="rounded-md border border-rose-200/70 bg-rose-50 px-2 py-1 text-center text-[11px] text-rose-700">
+                            <p className="font-semibold">Vencidos</p>
+                            <p className="text-sm font-bold leading-4">{expiryNotifications.expired_count}</p>
+                        </div>
+                        <div className="rounded-md border border-amber-200/70 bg-amber-50 px-2 py-1 text-center text-[11px] text-amber-700">
+                            <p className="font-semibold">Caducan</p>
+                            <p className="text-sm font-bold leading-4">{expiryNotifications.near_expiry_count}</p>
+                        </div>
+                        <div className="rounded-md border border-orange-200/70 bg-orange-50 px-2 py-1 text-center text-[11px] text-orange-700">
+                            <p className="font-semibold">Bajo stock</p>
+                            <p className="text-sm font-bold leading-4">{expiryNotifications.low_stock_count}</p>
+                        </div>
+                    </div>
                     <DropdownMenuSeparator />
 
                     <div className="max-h-80 overflow-y-auto px-2 py-2">
                         {expiryNotifications.items.length === 0 && (
                             <div className="rounded-lg border border-emerald-200/70 bg-emerald-50/70 px-3 py-2 text-sm text-emerald-700">
-                                Sin alertas de caducidad por ahora.
+                                Sin alertas activas por ahora.
                             </div>
                         )}
 
@@ -90,12 +110,16 @@ export function TopbarActions() {
                                 className={`mb-2 rounded-lg border px-3 py-2 text-xs leading-4 last:mb-0 ${
                                     item.status === 'expired'
                                         ? 'border-rose-200/70 bg-rose-50/70 text-rose-800'
+                                        : item.status === 'low-stock'
+                                          ? 'border-orange-200/70 bg-orange-50/70 text-orange-800'
                                         : 'border-amber-200/70 bg-amber-50/70 text-amber-800'
                                 }`}
                             >
                                 <div className="flex items-center gap-2">
                                     {item.status === 'expired' ? (
                                         <AlertTriangle className="size-4" />
+                                    ) : item.status === 'low-stock' ? (
+                                        <PackageMinus className="size-4" />
                                     ) : (
                                         <CalendarClock className="size-4" />
                                     )}
