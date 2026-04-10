@@ -164,6 +164,14 @@ class ProfileController extends Controller
         if ($brevoApiKey !== '') {
             $fromAddress = (string) config('mail.from.address');
             $fromName = (string) config('mail.from.name');
+            $emailHtml = view('emails.profile-verification', [
+                'appName' => (string) config('app.name'),
+                'supportEmail' => $fromAddress,
+                'expiresInMinutes' => 60,
+                'logoUrl' => asset('images/logo.png'),
+                'verificationEmail' => $verificationEmail,
+                'verificationUrl' => $verificationUrl,
+            ])->render();
 
             $response = Http::timeout(max(1, $smtpTimeout))
                 ->withHeaders([
@@ -180,11 +188,7 @@ class ProfileController extends Controller
                         'email' => $verificationEmail,
                     ]],
                     'subject' => 'Verifica tu correo de perfil',
-                    'htmlContent' => sprintf(
-                        '<p>Hola</p><p>Solicitaste verificar este correo para tu perfil: <strong>%s</strong></p><p>Este correo puede ser el mismo de inicio de sesión o uno distinto, según tu preferencia.</p><p><a href="%s">Verificar correo de perfil</a></p><p>El enlace expira en 60 minutos.</p><p>Si no solicitaste esta acción, puedes ignorar este mensaje.</p>',
-                        e($verificationEmail),
-                        e($verificationUrl),
-                    ),
+                    'htmlContent' => $emailHtml,
                 ]);
 
             if ($response->failed()) {

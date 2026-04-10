@@ -28,14 +28,17 @@ class ProfileVerificationEmailNotification extends Notification
 
     public function toMail(object $notifiable): MailMessage
     {
+        $appName = (string) config('app.name');
+
         return (new MailMessage)
-            ->mailer('smtp')
             ->subject('Verifica tu correo de perfil')
-            ->greeting('Hola')
-            ->line("Solicitaste verificar este correo para tu perfil: {$this->verificationEmail}")
-            ->line('Este correo puede ser el mismo de inicio de sesión o uno distinto, según tu preferencia.')
-            ->action('Verificar correo de perfil', $this->verificationUrl)
-            ->line('El enlace expira en 60 minutos.')
-            ->line('Si no solicitaste esta acción, puedes ignorar este mensaje.');
+            ->view('emails.profile-verification', [
+                'appName' => $appName,
+                'supportEmail' => (string) config('mail.from.address'),
+                'expiresInMinutes' => 60,
+                'logoUrl' => asset('images/logo.png'),
+                'verificationEmail' => $this->verificationEmail,
+                'verificationUrl' => $this->verificationUrl,
+            ]);
     }
 }
