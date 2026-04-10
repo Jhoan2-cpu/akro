@@ -297,10 +297,10 @@ export default function MedicinesIndex({ medicines, categories, activeIngredient
                     <div className="hidden overflow-hidden rounded-3xl lg:block">
                         <div className="table-header-highlight grid grid-cols-[1.2fr_0.95fr_1.1fr_0.7fr_0.95fr_0.8fr] border-b border-sidebar-border/70 px-6 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
                             <span className="leading-tight">Medicamento</span>
-                            <span className="leading-tight">Categoría /<br />Código</span>
-                            <span className="leading-tight">Principios<br />activos</span>
+                            <span className="text-center leading-tight">Categoría /<br />Código</span>
+                            <span className="text-center leading-tight">Principios<br />activos</span>
                             <span className="text-center leading-tight">Stock<br />total</span>
-                            <span className="leading-tight">Alertas</span>
+                            <span className="text-center leading-tight">Alertas</span>
                             <span className="text-right leading-tight">Acciones</span>
                         </div>
 
@@ -326,18 +326,18 @@ export default function MedicinesIndex({ medicines, categories, activeIngredient
                                             </div>
                                         </div>
 
-                                        <div>
+                                        <div className="text-center">
                                             <p className="text-sm text-foreground">{medicine.category ?? 'Sin categoría'}</p>
                                             <p className="text-xs text-muted-foreground">{medicine.barcode}</p>
                                         </div>
 
-                                        <p className="text-sm text-muted-foreground">
+                                        <p className="text-center text-sm text-muted-foreground">
                                             {medicine.active_ingredients.length > 0 ? medicine.active_ingredients.join(', ') : 'Sin principios activos'}
                                         </p>
 
                                         <p className="text-center text-sm font-semibold text-foreground">{medicine.total_stock}</p>
 
-                                        <div className="flex flex-wrap gap-2">
+                                        <div className="flex flex-wrap justify-center gap-2">
                                             {medicine.expired && (
                                                 <Badge variant="outline" className="border-rose-200 bg-rose-50 text-rose-700">
                                                     <AlertTriangle className="size-3" />
