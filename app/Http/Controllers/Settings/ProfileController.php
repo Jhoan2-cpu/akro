@@ -15,6 +15,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Notification;
@@ -99,21 +100,18 @@ class ProfileController extends Controller
         );
 
         try {
-            if ($smtpTimeout > 0) {
-                config(['mail.mailers.smtp.timeout' => $smtpTimeout]);
-
-                if ($previousSocketTimeout !== false) {
-                    @ini_set('default_socket_timeout', (string) $smtpTimeout);
-                }
-            }
-
-            Notification::route('mail', $verificationEmail)
-                ->notify(new ProfileVerificationEmailNotification($verificationUrl, $verificationEmail));
+            $this->dispatchProfileVerificationEmail(
+                verificationEmail: $verificationEmail,
+                verificationUrl: $verificationUrl,
+                userId: (int) $user->id,
+                smtpTimeout: $smtpTimeout,
+                previousSocketTimeout: $previousSocketTimeout,
+            );
 
             Log::info('profile_verification_email_sent', [
                 'user_id' => $user->id,
                 'target_verification_email' => $verificationEmail,
-                'mailer' => 'smtp',
+                'mailer' => (string) (config('services.brevo.key') ? 'brevo_api' : 'smtp'),
                 'smtp_host' => config('mail.mailers.smtp.host'),
                 'smtp_port' => config('mail.mailers.smtp.port'),
                 'smtp_scheme' => config('mail.mailers.smtp.scheme'),
@@ -152,6 +150,66 @@ class ProfileController extends Controller
         ]);
 
         return to_route('profile.edit');
+    }
+
+    protected function dispatchProfileVerificationEmail(
+        string $verificationEmail,
+        string $verificationUrl,
+        int $userId,
+        int $smtpTimeout,
+        string|false $previousSocketTimeout,
+    ): void {
+        $brevoApiKey = (string) config('services.brevo.key', '');
+
+        if ($brevoApiKey !== '') {
+            $fromAddress = (string) config('mail.from.address');
+            $fromName = (string) config('mail.from.name');
+
+            $response = Http::timeout(max(1, $smtpTimeout))
+                ->withHeaders([
+                    'accept' => 'application/json',
+                    'api-key' => $brevoApiKey,
+                    'content-type' => 'application/json',
+                ])
+                ->post('https://api.brevo.com/v3/smtp/email', [
+                    'sender' => [
+                        'name' => $fromName,
+                        'email' => $fromAddress,
+                    ],
+                    'to' => [[
+                        'email' => $verificationEmail,
+                    ]],
+                    'subject' => 'Verifica tu correo de perfil',
+                    'htmlContent' => sprintf(
+                        '<p>Hola</p><p>Solicitaste verificar este correo para tu perfil: <strong>%s</strong></p><p>Este correo puede ser el mismo de inicio de sesión o uno distinto, según tu preferencia.</p><p><a href="%s">Verificar correo de perfil</a></p><p>El enlace expira en 60 minutos.</p><p>Si no solicitaste esta acción, puedes ignorar este mensaje.</p>',
+                        e($verificationEmail),
+                        e($verificationUrl),
+                    ),
+                ]);
+
+            if ($response->failed()) {
+                Log::error('profile_verification_email_brevo_failed', [
+                    'user_id' => $userId,
+                    'status' => $response->status(),
+                    'response' => mb_substr($response->body(), 0, 1200),
+                ]);
+
+                $response->throw();
+            }
+
+            return;
+        }
+
+        if ($smtpTimeout > 0) {
+            config(['mail.mailers.smtp.timeout' => $smtpTimeout]);
+
+            if ($previousSocketTimeout !== false) {
+                @ini_set('default_socket_timeout', (string) $smtpTimeout);
+            }
+        }
+
+        Notification::route('mail', $verificationEmail)
+            ->notify(new ProfileVerificationEmailNotification($verificationUrl, $verificationEmail));
     }
 
     /**
