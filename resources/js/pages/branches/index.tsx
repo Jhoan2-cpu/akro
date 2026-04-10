@@ -91,19 +91,19 @@ export default function BranchesIndex({ branches, filters }: Props) {
                     onSubmit={(e) => {
                         e.preventDefault();
                     }}
-                    className="flex gap-2"
+                    className="flex flex-col gap-3 rounded-3xl border border-sidebar-border/70 bg-background p-4 shadow-sm md:flex-row md:items-center"
                 >
-                    <div className="relative flex-1 max-w-sm">
-                        <Search className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted-foreground" />
+                    <div className="relative flex-1 md:max-w-sm">
+                        <Search className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-primary/80" />
                         <Input
                             placeholder="Buscar por nombre o dirección..."
                             value={searchQuery}
                             onChange={(e) => handleSearch(e.target.value)}
-                            className="h-11 rounded-full pl-11"
+                            className="h-11 rounded-full border-sidebar-border bg-background pl-11 text-foreground placeholder:text-muted-foreground/90 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20"
                         />
                     </div>
                     {searchQuery && (
-                        <Button type="button" variant="ghost" className="h-11 rounded-full px-5" onClick={clearFilters}>
+                        <Button type="button" variant="outline" className="h-11 rounded-full border-sidebar-border bg-background px-5 text-foreground hover:bg-muted" onClick={clearFilters}>
                             Limpiar
                         </Button>
                     )}
@@ -144,14 +144,15 @@ export default function BranchesIndex({ branches, filters }: Props) {
                                             ).toLocaleDateString('es-ES')}
                                         </p>
                                         <div className="flex justify-end gap-2">
-                                            <Button variant="ghost" size="sm" asChild>
+                                            <Button variant="outline" size="sm" className="border-sidebar-border bg-background text-foreground hover:bg-muted" asChild>
                                                 <Link href={`/branches/${branch.id}/edit`}>
                                                     <Edit2 className="h-4 w-4" />
                                                 </Link>
                                             </Button>
                                             <Button
-                                                variant="ghost"
+                                                variant="outline"
                                                 size="sm"
+                                                className="border-sidebar-border bg-background text-foreground hover:bg-muted"
                                                 onClick={() =>
                                                     setDeletingId(branch.id)
                                                 }
@@ -186,14 +187,15 @@ export default function BranchesIndex({ branches, filters }: Props) {
                                             </p>
                                         </div>
                                         <div className="flex gap-2">
-                                            <Button variant="ghost" size="sm" asChild>
+                                            <Button variant="outline" size="sm" className="border-sidebar-border bg-background text-foreground hover:bg-muted" asChild>
                                                 <Link href={`/branches/${branch.id}/edit`}>
                                                     <Edit2 className="h-4 w-4" />
                                                 </Link>
                                             </Button>
                                             <Button
-                                                variant="ghost"
+                                                variant="outline"
                                                 size="sm"
+                                                className="border-sidebar-border bg-background text-foreground hover:bg-muted"
                                                 onClick={() =>
                                                     setDeletingId(branch.id)
                                                 }
@@ -245,3 +247,12 @@ export default function BranchesIndex({ branches, filters }: Props) {
         </>
     );
 }
+
+BranchesIndex.layout = {
+    breadcrumbs: [
+        {
+            title: 'Sucursales',
+            href: '/branches',
+        },
+    ],
+};

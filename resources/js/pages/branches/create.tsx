@@ -102,3 +102,16 @@ export default function BranchesCreate() {
         </>
     );
 }
+
+BranchesCreate.layout = {
+    breadcrumbs: [
+        {
+            title: 'Sucursales',
+            href: '/branches',
+        },
+        {
+            title: 'Nueva sucursal',
+            href: '/branches/create',
+        },
+    ],
+};

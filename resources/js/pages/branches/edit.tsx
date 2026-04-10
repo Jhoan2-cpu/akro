@@ -112,3 +112,16 @@ export default function BranchesEdit({ branch }: Props) {
         </>
     );
 }
+
+BranchesEdit.layout = {
+    breadcrumbs: [
+        {
+            title: 'Sucursales',
+            href: '/branches',
+        },
+        {
+            title: 'Editar sucursal',
+            href: '#',
+        },
+    ],
+};
