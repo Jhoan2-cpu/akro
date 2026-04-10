@@ -64,6 +64,7 @@ type Props = {
         out_of_stock_records: number;
         near_expiry_records: number;
     };
+    is_superuser: boolean;
 };
 
 function decodePaginationLabel(label: string): string {
@@ -73,7 +74,7 @@ function decodePaginationLabel(label: string): string {
         .replace(/<[^>]*>/g, '');
 }
 
-export default function MedicinesStock({ inventories, branches, categories, filters, summary }: Props) {
+export default function MedicinesStock({ inventories, branches, categories, filters, summary, is_superuser }: Props) {
     const form = useForm({
         search: filters.search ?? '',
         branch_id: filters.branch_id ?? 'all',
@@ -149,8 +150,9 @@ export default function MedicinesStock({ inventories, branches, categories, filt
                             <Select
                                 value={form.data.branch_id}
                                 onValueChange={(value) => form.setData('branch_id', value)}
+                                disabled={!is_superuser}
                             >
-                                <SelectTrigger className="h-11 w-full rounded-full border-input bg-background px-4 text-sm shadow-xs">
+                                <SelectTrigger className="h-11 w-full rounded-full border-input bg-background px-4 text-sm shadow-xs disabled:opacity-50 disabled:cursor-not-allowed">
                                     <SelectValue placeholder="Todas las sucursales" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -162,6 +164,11 @@ export default function MedicinesStock({ inventories, branches, categories, filt
                                 ))}
                                 </SelectContent>
                             </Select>
+                            {!is_superuser && (
+                                <p className="text-xs text-muted-foreground">
+                                    Solo superusuarios pueden seleccionar sucursal
+                                </p>
+                            )}
                         </div>
 
                         <div className="space-y-2">

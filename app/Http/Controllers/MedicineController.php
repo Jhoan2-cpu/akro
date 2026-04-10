@@ -284,8 +284,18 @@ class MedicineController extends Controller
 
     public function stock(Request $request): Response
     {
+        $user = $request->user();
+        $isSuperuser = ($user?->role ?? null) === 'superuser';
+        
+        // If not superuser, restrict to own branch
+        $requestedBranchId = (string) $request->input('branch_id', 'all');
+        if (!$isSuperuser && $user?->branch_id !== null) {
+            $branchId = (string) $user->branch_id;
+        } else {
+            $branchId = $requestedBranchId;
+        }
+
         $search = trim((string) $request->input('search', ''));
-        $branchId = (string) $request->input('branch_id', 'all');
         $categoryId = (string) $request->input('category_id', 'all');
         $status = (string) $request->input('status', 'all');
 
@@ -372,6 +382,7 @@ class MedicineController extends Controller
                 'status' => $status,
             ],
             'summary' => $summary,
+            'is_superuser' => $isSuperuser,
         ]);
     }
 
