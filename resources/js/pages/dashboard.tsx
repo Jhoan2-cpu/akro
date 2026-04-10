@@ -209,15 +209,15 @@ export default function Dashboard({ scope, kpis, operations, analytics, inventor
                         </div>
 
                         <div className="flex flex-wrap gap-2">
-                            <Link href="/sales/quick" className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-800">
-                                <ShoppingCart className="size-4" />
+                            <Link href="/sales/quick" className="inline-flex min-h-12 items-center gap-2 rounded-xl bg-white px-5 py-2.5 text-sm font-bold text-emerald-900 shadow-md hover:bg-emerald-50">
+                                <ShoppingCart className="size-5" />
                                 Nueva venta
                             </Link>
-                            <Link href="/shifts" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-sidebar-border/70 bg-white px-4 py-2 text-sm font-semibold text-foreground hover:bg-emerald-50">
+                            <Link href="/shifts" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-white/40 bg-white/10 px-4 py-2 text-sm font-semibold text-white hover:bg-white/20">
                                 <Clock3 className="size-4" />
                                 Turnos
                             </Link>
-                            <Link href="/medicines/stock" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-sidebar-border/70 bg-white px-4 py-2 text-sm font-semibold text-foreground hover:bg-emerald-50">
+                            <Link href="/medicines/stock" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-white/40 bg-white/10 px-4 py-2 text-sm font-semibold text-white hover:bg-white/20">
                                 <PackageSearch className="size-4" />
                                 Stock
                             </Link>
