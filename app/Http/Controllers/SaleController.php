@@ -18,6 +18,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 use RuntimeException;
@@ -343,7 +344,15 @@ class SaleController extends Controller
             ]);
         }
 
-        app(SendInventoryAdminEmailAlertsAction::class)->execute();
+        try {
+            app(SendInventoryAdminEmailAlertsAction::class)->execute();
+        } catch (Throwable $exception) {
+            Log::error('inventory_alert_dispatch_after_sale_failed', [
+                'sale_id' => $createdSaleId,
+                'exception_class' => $exception::class,
+                'exception_message' => $exception->getMessage(),
+            ]);
+        }
 
         return to_route('sales.quick')
             ->with('toast', [

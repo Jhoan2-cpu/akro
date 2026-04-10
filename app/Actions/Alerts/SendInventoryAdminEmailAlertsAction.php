@@ -147,9 +147,26 @@ class SendInventoryAdminEmailAlertsAction
                     ->whereNull('status')
                     ->orWhere('status', 'active');
             })
-            ->whereNotNull('verification_email')
-            ->whereNotNull('verification_email_verified_at')
-            ->get(['id', 'name', 'verification_email', 'role', 'branch_id']);
+            ->where(function ($query): void {
+                $query
+                    ->where(function ($verificationEmailQuery): void {
+                        $verificationEmailQuery
+                            ->whereNotNull('verification_email')
+                            ->whereNotNull('verification_email_verified_at');
+                    })
+                    ->orWhere(function ($loginEmailQuery): void {
+                        $loginEmailQuery
+                            ->whereNotNull('email')
+                            ->whereNotNull('email_verified_at');
+                    });
+            })
+            ->get(['id', 'name', 'email', 'email_verified_at', 'verification_email', 'verification_email_verified_at', 'role', 'branch_id']);
+
+        if ($recipients->isEmpty()) {
+            Log::warning('inventory_alert_recipients_empty', [
+                'reason' => 'No active admin/superuser with verified profile email or verified login email.',
+            ]);
+        }
 
         foreach ($recipients as $recipient) {
             $recipientBranchAlerts = collect();
@@ -191,30 +208,62 @@ class SendInventoryAdminEmailAlertsAction
                 continue;
             }
 
-            $verificationEmail = (string) $recipient->verification_email;
+            $verificationEmail = $this->resolveRecipientEmail($recipient);
 
-            if ($this->sendViaBrevoApi(
-                email: $verificationEmail,
-                recipientName: (string) $recipient->name,
-                branchSummaries: $branchSummaries,
-                totals: $totals,
-            )) {
-                $sentRecipients++;
-
-                Cache::put($cacheKey, true, $today->copy()->endOfDay());
+            if ($verificationEmail === null) {
+                Log::warning('inventory_alert_recipient_without_verified_email', [
+                    'recipient_id' => (int) $recipient->id,
+                    'recipient_name' => (string) $recipient->name,
+                    'recipient_role' => (string) $recipient->role,
+                ]);
 
                 continue;
             }
 
-            Notification::route('mail', $verificationEmail)->notify(new InventoryRiskAlertNotification(
-                recipientName: $recipient->name,
-                branchSummaries: $branchSummaries,
-                totals: $totals,
-            ));
+            try {
+                if ($this->sendViaBrevoApi(
+                    email: $verificationEmail,
+                    recipientName: (string) $recipient->name,
+                    branchSummaries: $branchSummaries,
+                    totals: $totals,
+                )) {
+                    $sentRecipients++;
 
-            Cache::put($cacheKey, true, $today->copy()->endOfDay());
-            $sentRecipients++;
+                    Cache::put($cacheKey, true, $today->copy()->endOfDay());
+
+                    continue;
+                }
+
+                Notification::route('mail', $verificationEmail)->notify(new InventoryRiskAlertNotification(
+                    recipientName: $recipient->name,
+                    branchSummaries: $branchSummaries,
+                    totals: $totals,
+                ));
+
+                Cache::put($cacheKey, true, $today->copy()->endOfDay());
+                $sentRecipients++;
+            } catch (Throwable $exception) {
+                Log::error('inventory_alert_email_send_failed', [
+                    'recipient_id' => (int) $recipient->id,
+                    'recipient_email' => $verificationEmail,
+                    'recipient_role' => (string) $recipient->role,
+                    'exception_class' => $exception::class,
+                    'exception_message' => $exception->getMessage(),
+                ]);
+            }
         }
+
+        Log::info('inventory_alert_dispatch_summary', [
+            'alerts' => (int) $alertsByBranch->sum(fn (array $summary): int =>
+                count($summary['out_of_stock_items'])
+                + count($summary['low_stock_items'])
+                + count($summary['expired_items'])
+                + count($summary['near_expiry_items'])
+            ),
+            'recipients_total' => $recipients->count(),
+            'recipients_sent' => $sentRecipients,
+            'recipients_skipped_duplicates' => $skippedDuplicates,
+        ]);
 
         return [
             'alerts' => (int) $alertsByBranch->sum(fn (array $summary): int =>
@@ -318,5 +367,21 @@ class SendInventoryAdminEmailAlertsAction
 
             return false;
         }
+    }
+
+    protected function resolveRecipientEmail(User $recipient): ?string
+    {
+        $verificationEmail = trim((string) ($recipient->verification_email ?? ''));
+        $loginEmail = trim((string) ($recipient->email ?? ''));
+
+        if ($verificationEmail !== '' && $recipient->verification_email_verified_at !== null) {
+            return $verificationEmail;
+        }
+
+        if ($loginEmail !== '' && $recipient->email_verified_at !== null) {
+            return $loginEmail;
+        }
+
+        return null;
     }
 }
