@@ -41,18 +41,14 @@ export default function EditMedicine({ medicine, categories, activeIngredients, 
         return value.slice(0, 10);
     };
 
-    const stocks = branches.map((branch) => {
-        const existingStock = medicine.stocks.find((stock) => stock.branch_id === branch.id);
-
-        return {
-            branch_id: branch.id,
-            branch_name: branch.name,
-            current_stock: String(existingStock?.current_stock ?? 0),
-            minimum_stock: String(existingStock?.minimum_stock ?? 0),
-            expiration_date: normalizeDateForInput(existingStock?.expiration_date),
-            sale_price: existingStock?.sale_price ?? '0.00',
-        };
-    });
+    const stocks = medicine.stocks.map((stock) => ({
+        branch_id: stock.branch_id,
+        branch_name: stock.branch_name,
+        current_stock: String(stock.current_stock),
+        minimum_stock: String(stock.minimum_stock),
+        expiration_date: normalizeDateForInput(stock.expiration_date),
+        sale_price: stock.sale_price ?? '0.00',
+    }));
 
     const form = useForm<MedicineFormValues>({
         category_id: String(medicine.category_id),
@@ -178,6 +174,7 @@ export default function EditMedicine({ medicine, categories, activeIngredients, 
                     data={form.data}
                     errors={form.errors}
                     processing={form.processing}
+                    branches={branches}
                     categories={categoryOptions}
                     activeIngredients={activeIngredientOptions}
                     currentImagePath={medicine.image_path}

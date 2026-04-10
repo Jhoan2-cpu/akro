@@ -21,14 +21,7 @@ export default function CreateMedicine({ categories, activeIngredients, branches
         description: '',
         image: null,
         active_ingredient_ids: [],
-        stocks: branches.map((branch) => ({
-            branch_id: branch.id,
-            branch_name: branch.name,
-            current_stock: '0',
-            minimum_stock: '0',
-            expiration_date: '',
-            sale_price: '0.00',
-        })),
+        stocks: [],
     });
 
     const submit = (event: FormEvent<HTMLFormElement>): void => {
@@ -137,6 +130,7 @@ export default function CreateMedicine({ categories, activeIngredients, branches
                     data={form.data}
                     errors={form.errors}
                     processing={form.processing}
+                    branches={branches}
                     categories={categoryOptions}
                     activeIngredients={activeIngredientOptions}
                     onSubmit={submit}

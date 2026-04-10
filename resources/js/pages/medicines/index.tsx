@@ -82,14 +82,7 @@ export default function MedicinesIndex({ medicines, categories, activeIngredient
         description: '',
         image: null,
         active_ingredient_ids: [],
-        stocks: branches.map((branch) => ({
-            branch_id: branch.id,
-            branch_name: branch.name,
-            current_stock: '0',
-            minimum_stock: '0',
-            expiration_date: '',
-            sale_price: '0.00',
-        })),
+        stocks: [],
     });
 
     const submitFilters = (event: React.FormEvent<HTMLFormElement>): void => {
@@ -199,14 +192,7 @@ export default function MedicinesIndex({ medicines, categories, activeIngredient
             preserveScroll: true,
             onSuccess: () => {
                 createForm.reset();
-                createForm.setData('stocks', branches.map((branch) => ({
-                    branch_id: branch.id,
-                    branch_name: branch.name,
-                    current_stock: '0',
-                    minimum_stock: '0',
-                    expiration_date: '',
-                    sale_price: '0.00',
-                })));
+                createForm.setData('stocks', []);
                 setIsCreateModalOpen(false);
 
                 if (ui.openCreateModal) {
@@ -481,6 +467,7 @@ export default function MedicinesIndex({ medicines, categories, activeIngredient
                         data={createForm.data}
                         errors={createForm.errors}
                         processing={createForm.processing}
+                        branches={branches}
                         categories={categoryOptions}
                         activeIngredients={activeIngredientOptions}
                         onSubmit={submitCreateMedicine}
