@@ -296,12 +296,12 @@ export default function MedicinesIndex({ medicines, categories, activeIngredient
                 <div className="rounded-3xl border border-sidebar-border/70 bg-background shadow-sm">
                     <div className="hidden overflow-hidden rounded-3xl lg:block">
                         <div className="table-header-highlight grid grid-cols-[1.2fr_0.95fr_1.1fr_0.7fr_0.95fr_0.8fr] border-b border-sidebar-border/70 px-6 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
-                            <span>Medicamento</span>
-                            <span>Categoría / Código</span>
-                            <span>Principios activos</span>
-                            <span className="text-center">Stock total</span>
-                            <span>Alertas</span>
-                            <span className="text-right">Acciones</span>
+                            <span className="leading-tight">Medicamento</span>
+                            <span className="leading-tight">Categoría /<br />Código</span>
+                            <span className="leading-tight">Principios<br />activos</span>
+                            <span className="text-center leading-tight">Stock<br />total</span>
+                            <span className="leading-tight">Alertas</span>
+                            <span className="text-right leading-tight">Acciones</span>
                         </div>
 
                         <div className="table-zebra divide-y divide-sidebar-border/70">
