@@ -93,7 +93,7 @@ export default function ShiftsIndex({ currentShift, recentShifts, stats }: Props
         <>
             <Head title="Turnos" />
 
-            <div className="space-y-6 p-4 md:p-6">
+            <div className="space-y-4 bg-transparent p-4 md:p-6">
                 <motion.section
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}

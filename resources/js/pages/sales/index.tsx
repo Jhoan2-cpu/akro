@@ -318,7 +318,7 @@ export default function SalesIndex({ branch, employee, canSell }: Props) {
             <Head title="Venta rápida" />
 
             <div className="flex w-full justify-start">
-                <div className="flex w-full max-w-none flex-col gap-5 px-4 pb-4 pt-2 md:px-6 md:pb-6 md:pt-3 xl:px-8 xl:pb-6 xl:pt-3 2xl:px-10">
+                <div className="flex w-full max-w-none flex-col gap-4 bg-transparent px-4 pb-4 pt-2 md:px-6 md:pb-6 md:pt-3 xl:px-8 xl:pb-6 xl:pt-3 2xl:px-10">
                     <section className="flex w-full flex-col gap-4 rounded-3xl border border-primary/20 bg-primary px-5 py-5 text-primary-foreground shadow-xs md:flex-row md:items-start md:justify-between md:px-6 md:py-6">
                         <div>
                             <p className="text-xs font-medium uppercase tracking-[0.2em] text-primary-foreground/80">VE-01</p>

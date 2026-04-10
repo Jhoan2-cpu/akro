@@ -147,7 +147,7 @@ export default function UsersIndex({ users, branches, filters, stats }: Props) {
         <>
             <Head title="Gestión de Usuarios" />
 
-            <div className="flex min-h-full flex-1 flex-col gap-6 rounded-3xl p-4 md:p-6">
+            <div className="flex min-h-full flex-1 flex-col gap-4 rounded-3xl bg-transparent p-4 md:p-6">
                 <motion.section
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
