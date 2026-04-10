@@ -286,9 +286,18 @@ class DashboardController extends Controller
 
         $employeesByBranch = User::query()
             ->join('branches', 'branches.id', '=', 'users.branch_id')
-            ->where('users.role', 'employee')
+            ->whereIn('users.role', ['superuser', 'admin', 'employee'])
             ->where(function (Builder $builder): void {
                 $builder->whereNull('users.status')->orWhere('users.status', 'active');
+            })
+            ->when(! $isAdmin, function (Builder $builder) use ($branchId): void {
+                if ($branchId === null) {
+                    $builder->whereRaw('1 = 0');
+
+                    return;
+                }
+
+                $builder->where('users.branch_id', $branchId);
             })
             ->selectRaw('branches.id as branch_id')
             ->selectRaw('branches.name as branch_name')
