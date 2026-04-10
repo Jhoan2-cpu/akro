@@ -1,5 +1,5 @@
 import { Head, Link, router, useForm } from '@inertiajs/react';
-import { FileClock, Search } from 'lucide-react';
+import { CloudDownload, FileClock, Search } from 'lucide-react';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -173,15 +173,28 @@ export default function SalesHistory({ sales, filters }: Props) {
                                             ))}
                                         </div>
                                         <div className="flex justify-end">
-                                            <Button
-                                                type="button"
-                                                variant="outline"
-                                                size="sm"
-                                                className="border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100"
-                                                onClick={() => setSelectedSale(sale)}
-                                            >
-                                                Ver detalle
-                                            </Button>
+                                            <div className="flex gap-2">
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    size="sm"
+                                                    className="border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100"
+                                                    onClick={() => setSelectedSale(sale)}
+                                                >
+                                                    Ver detalle
+                                                </Button>
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    size="sm"
+                                                    className="h-9 w-9 border-cyan-200 bg-cyan-50 p-0 text-cyan-800 hover:bg-cyan-100"
+                                                    aria-label="Descargar comprobante"
+                                                    title="Descargar comprobante"
+                                                    onClick={() => window.open(`/sales/${sale.id}/ticket?download=1`, '_blank', 'noopener,noreferrer')}
+                                                >
+                                                    <CloudDownload className="size-4" />
+                                                </Button>
+                                            </div>
                                         </div>
                                     </article>
                                 ))
@@ -222,7 +235,7 @@ export default function SalesHistory({ sales, filters }: Props) {
                                         <span className="text-base font-bold text-emerald-900">${sale.total}</span>
                                     </div>
 
-                                    <div className="mt-3 flex justify-end">
+                                    <div className="mt-3 flex flex-wrap justify-end gap-2">
                                         <Button
                                             type="button"
                                             variant="outline"
@@ -231,6 +244,17 @@ export default function SalesHistory({ sales, filters }: Props) {
                                             onClick={() => setSelectedSale(sale)}
                                         >
                                             Ver detalle
+                                        </Button>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            className="h-9 w-9 border-cyan-200 bg-cyan-50 p-0 text-cyan-800 hover:bg-cyan-100"
+                                            aria-label="Descargar comprobante"
+                                            title="Descargar comprobante"
+                                            onClick={() => window.open(`/sales/${sale.id}/ticket?download=1`, '_blank', 'noopener,noreferrer')}
+                                        >
+                                            <CloudDownload className="size-4" />
                                         </Button>
                                     </div>
                                 </article>
