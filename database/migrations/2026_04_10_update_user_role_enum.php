@@ -11,19 +11,16 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (Schema::hasColumn('users', 'role')) {
-            Schema::table('users', function (Blueprint $table): void {
-                $table->enum('role', ['employee', 'admin', 'superuser'])->change();
-            });
+        // Add 'superuser' to the role enum type in PostgreSQL
+        try {
+            DB::statement("ALTER TYPE role ADD VALUE 'superuser'");
+        } catch (\Exception $e) {
+            // Value might already exist, continue
         }
     }
 
     public function down(): void
     {
-        if (Schema::hasColumn('users', 'role')) {
-            Schema::table('users', function (Blueprint $table): void {
-                $table->enum('role', ['admin', 'employee'])->change();
-            });
-        }
+        // PostgreSQL does not allow removing values from enums, so we leave this empty
     }
 };
