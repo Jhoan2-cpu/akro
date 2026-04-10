@@ -32,7 +32,9 @@
 
         <link rel="icon" href="/images/logo.png" sizes="any">
         <link rel="icon" href="/images/logo.png" type="image/svg+xml">
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+        <link rel="apple-touch-icon" href="/images/logo.png">
+        <link rel="manifest" href="/manifest.webmanifest">
+        <meta name="theme-color" content="#0f7a5b">
 
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
