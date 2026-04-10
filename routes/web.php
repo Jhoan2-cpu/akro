@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CloudinaryTestController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ActiveIngredientController;
 use App\Http\Controllers\BranchController;
 use App\Http\Controllers\CategoryController;
@@ -23,7 +24,7 @@ Route::post('/cloudinary-test', [CloudinaryTestController::class, 'store'])
     ->name('cloudinary.test.store');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::inertia('dashboard', 'dashboard')->name('dashboard');
+    Route::get('dashboard', DashboardController::class)->name('dashboard');
     Route::inertia('library-check', 'library-check')->name('library-check');
     Route::get('shifts', [ShiftController::class, 'index'])->name('shifts.index');
     Route::post('shifts/clock-in', [ShiftController::class, 'clockIn'])->name('shifts.clock-in');
