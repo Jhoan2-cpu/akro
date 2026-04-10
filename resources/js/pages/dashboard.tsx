@@ -1,6 +1,7 @@
 import { Head, Link } from '@inertiajs/react';
 import { useMemo, useState } from 'react';
 import { Activity, AlertTriangle, BarChart3, ClipboardList, Clock3, PackageSearch, ReceiptText, ShoppingCart, TrendingUp, Users } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { dashboard } from '@/routes';
 
 type DashboardProps = {
@@ -199,12 +200,12 @@ export default function Dashboard({ scope, kpis, operations, analytics, inventor
         <>
             <Head title="Dashboard" />
 
-            <div className="space-y-6 px-4 py-4 md:px-6">
-                <section className="rounded-3xl border border-sidebar-border/70 bg-linear-to-br from-white via-emerald-50/40 to-slate-100/80 p-5 shadow-sm md:p-6">
+            <div className="space-y-6 px-4 pb-4 pt-0 md:px-6 md:pb-6 xl:px-8 xl:pb-6 2xl:px-10">
+                <section className="-mx-4 w-[calc(100%+2rem)] rounded-none border border-primary/25 bg-primary px-5 py-5 text-primary-foreground shadow-none md:-mx-6 md:w-[calc(100%+3rem)] md:px-6 md:py-6 xl:-mx-8 xl:w-[calc(100%+4rem)] 2xl:-mx-10 2xl:w-[calc(100%+5rem)]">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                         <div>
-                            <h1 className="text-2xl font-extrabold tracking-tight text-foreground">Panel Operativo</h1>
-                            <p className="text-sm text-muted-foreground">{scope.branch_label}</p>
+                            <h1 className="text-2xl font-extrabold tracking-tight text-primary-foreground">Panel Operativo</h1>
+                            <p className="text-sm text-primary-foreground/80">{scope.branch_label}</p>
                         </div>
 
                         <div className="flex flex-wrap gap-2">
@@ -255,37 +256,39 @@ export default function Dashboard({ scope, kpis, operations, analytics, inventor
                 <section className="grid gap-4 xl:grid-cols-[1.4fr_1fr]">
                     <div className="space-y-4">
                         <div className="grid gap-3 md:grid-cols-2">
-                            <label className="rounded-xl border border-sidebar-border/70 bg-white p-3 text-xs font-semibold text-foreground">
-                                Ventas por hora
-                                <select
-                                    className="mt-2 min-h-11 w-full rounded-lg border border-sidebar-border/70 bg-white px-3 py-2 text-sm font-medium outline-none focus:border-emerald-500"
-                                    value={hourlyView}
-                                    onChange={(event) => setHourlyView(event.target.value)}
-                                >
-                                    <option value="total">Total (todas)</option>
-                                    {analytics.branch_options.map((branch) => (
-                                        <option key={branch.id} value={String(branch.id)}>
-                                            {branch.name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </label>
+                            <div className="rounded-xl border border-sidebar-border/70 bg-white p-3 text-xs font-semibold text-foreground">
+                                <p>Ventas por hora</p>
+                                <Select value={hourlyView} onValueChange={setHourlyView}>
+                                    <SelectTrigger className="mt-2 h-11 w-full rounded-lg">
+                                        <SelectValue placeholder="Selecciona una opción" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="total">Total (todas)</SelectItem>
+                                        {analytics.branch_options.map((branch) => (
+                                            <SelectItem key={branch.id} value={String(branch.id)}>
+                                                {branch.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
 
-                            <label className="rounded-xl border border-sidebar-border/70 bg-white p-3 text-xs font-semibold text-foreground">
-                                Ventas diarias
-                                <select
-                                    className="mt-2 min-h-11 w-full rounded-lg border border-sidebar-border/70 bg-white px-3 py-2 text-sm font-medium outline-none focus:border-emerald-500"
-                                    value={dailyView}
-                                    onChange={(event) => setDailyView(event.target.value)}
-                                >
-                                    <option value="total">Total (todas)</option>
-                                    {analytics.branch_options.map((branch) => (
-                                        <option key={branch.id} value={String(branch.id)}>
-                                            {branch.name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </label>
+                            <div className="rounded-xl border border-sidebar-border/70 bg-white p-3 text-xs font-semibold text-foreground">
+                                <p>Ventas diarias</p>
+                                <Select value={dailyView} onValueChange={setDailyView}>
+                                    <SelectTrigger className="mt-2 h-11 w-full rounded-lg">
+                                        <SelectValue placeholder="Selecciona una opción" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="total">Total (todas)</SelectItem>
+                                        {analytics.branch_options.map((branch) => (
+                                            <SelectItem key={branch.id} value={String(branch.id)}>
+                                                {branch.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
 
                         <CompactBarChart
