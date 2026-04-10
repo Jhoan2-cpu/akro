@@ -7,7 +7,6 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import AppSidebarLayout from '@/layouts/app/app-sidebar-layout';
 
 type Branch = {
     id: number;
@@ -286,16 +285,12 @@ export default function SalesIndex({ branch, employee, canSell }: Props) {
     const hasWarning = selectedInventory ? (selectedInventory.is_low_stock || selectedInventory.is_out_of_stock) : false;
 
     return (
-        <AppSidebarLayout
-            breadcrumbs={[
-                { title: 'Operación', href: '#' },
-                { title: 'Venta rápida', href: '/sales/quick' },
-            ]}
-        >
+        <>
             <Head title="Venta rápida" />
 
-            <div className="space-y-6 p-4 md:p-6">
-                <section className="flex flex-col gap-4 rounded-3xl border border-sidebar-border/70 bg-background p-5 shadow-sm md:flex-row md:items-start md:justify-between md:p-6">
+            <div className="flex w-full justify-start">
+                <div className="flex w-full max-w-none flex-col gap-6 p-4 md:p-6 xl:px-8 xl:py-6 2xl:px-10">
+                    <section className="flex flex-col gap-4 rounded-3xl border border-sidebar-border/70 bg-background p-5 shadow-sm md:flex-row md:items-start md:justify-between md:p-6">
                     <div>
                         <p className="text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
                             VE-01
@@ -303,7 +298,7 @@ export default function SalesIndex({ branch, employee, canSell }: Props) {
                         <h1 className="mt-2 text-3xl font-semibold tracking-tight">
                             Venta rápida
                         </h1>
-                        <p className="mt-1 max-w-2xl text-sm text-muted-foreground md:text-base">
+                        <p className="mt-1 max-w-3xl text-sm text-muted-foreground md:text-base">
                             Escanea o busca medicamentos, define cantidad y precio unitario, y confirma la venta sin salir de la pantalla.
                         </p>
                     </div>
@@ -320,18 +315,18 @@ export default function SalesIndex({ branch, employee, canSell }: Props) {
                     </div>
                 </section>
 
-                {!canSell && (
-                    <Alert variant="destructive">
-                        <AlertTriangle className="size-4" />
-                        <AlertTitle>No puedes registrar ventas</AlertTitle>
-                        <AlertDescription>
-                            El usuario no tiene una sucursal asignada. Asigna branch_id al empleado antes de usar el módulo.
-                        </AlertDescription>
-                    </Alert>
-                )}
+                    {!canSell && (
+                        <Alert variant="destructive">
+                            <AlertTriangle className="size-4" />
+                            <AlertTitle>No puedes registrar ventas</AlertTitle>
+                            <AlertDescription>
+                                El usuario no tiene una sucursal asignada. Asigna branch_id al empleado antes de usar el módulo.
+                            </AlertDescription>
+                        </Alert>
+                    )}
 
-                <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
-                    <section className="space-y-6">
+                    <div className="flex w-full flex-col items-stretch gap-4 2xl:flex-row 2xl:items-start">
+                        <section className="flex min-w-0 flex-1 flex-col gap-4">
                         <div className="rounded-3xl border border-sidebar-border/70 bg-background p-5 shadow-sm md:p-6">
                             <h2 className="text-lg font-semibold">Buscar medicamento</h2>
                             <p className="mt-1 text-sm text-muted-foreground">
@@ -492,7 +487,7 @@ export default function SalesIndex({ branch, employee, canSell }: Props) {
                         )}
                     </section>
 
-                    <section className="space-y-6 rounded-3xl border border-sidebar-border/70 bg-background p-5 shadow-sm md:p-6">
+                        <section className="w-full shrink-0 space-y-6 rounded-3xl border border-sidebar-border/70 bg-background p-5 shadow-sm md:p-6 2xl:w-120">
                         <div className="flex items-center justify-between gap-3">
                             <div>
                                 <h2 className="text-lg font-semibold">Carrito de venta</h2>
@@ -602,7 +597,8 @@ export default function SalesIndex({ branch, employee, canSell }: Props) {
                                 </Button>
                             </div>
                         </form>
-                    </section>
+                        </section>
+                    </div>
                 </div>
             </div>
 
@@ -624,6 +620,13 @@ export default function SalesIndex({ branch, employee, canSell }: Props) {
                 }}
                 onCancel={() => setPriceEditModal(null)}
             />
-        </AppSidebarLayout>
+        </>
     );
 }
+
+SalesIndex.layout = {
+    breadcrumbs: [
+        { title: 'Operación', href: '#' },
+        { title: 'Venta rápida', href: '/sales/quick' },
+    ],
+};

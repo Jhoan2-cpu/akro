@@ -3,7 +3,6 @@ import { FileClock, Search } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import AppSidebarLayout from '@/layouts/app/app-sidebar-layout';
 
 type SaleLine = {
     medicine: string;
@@ -76,12 +75,7 @@ export default function SalesHistory({ sales, filters }: Props) {
     };
 
     return (
-        <AppSidebarLayout
-            breadcrumbs={[
-                { title: 'Operación', href: '#' },
-                { title: 'Historial ventas', href: '/sales/history' },
-            ]}
-        >
+        <>
             <Head title="Historial de ventas" />
 
             <div className="space-y-6 p-4 md:p-6">
@@ -243,6 +237,13 @@ export default function SalesHistory({ sales, filters }: Props) {
                     </div>
                 </section>
             </div>
-        </AppSidebarLayout>
+        </>
     );
 }
+
+SalesHistory.layout = {
+    breadcrumbs: [
+        { title: 'Operación', href: '#' },
+        { title: 'Historial ventas', href: '/sales/history' },
+    ],
+};
