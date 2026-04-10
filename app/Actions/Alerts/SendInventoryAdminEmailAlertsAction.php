@@ -9,7 +9,6 @@ use App\Models\User;
 use App\Notifications\InventoryRiskAlertNotification;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
@@ -140,7 +139,7 @@ class SendInventoryAdminEmailAlertsAction
         $skippedDuplicates = 0;
 
         $recipients = User::query()
-            ->where('role', 'admin')
+            ->whereIn('role', ['superuser', 'admin', 'employee'])
             ->where(function ($query): void {
                 $query
                     ->whereNull('status')
@@ -157,7 +156,7 @@ class SendInventoryAdminEmailAlertsAction
 
         if ($recipients->isEmpty()) {
             Log::warning('inventory_alert_recipients_empty', [
-                'reason' => 'No active admin with verified profile email.',
+                'reason' => 'No active users with verified profile email.',
             ]);
         }
 
@@ -165,18 +164,26 @@ class SendInventoryAdminEmailAlertsAction
             return (string) $recipient->branch_id;
         });
 
-        foreach ($alertsByBranch as $branchId => $branchSummary) {
-            $branchRecipients = $recipientsByBranch->get((string) $branchId, collect());
+        $superuserRecipients = $recipients->filter(
+            fn (User $recipient): bool => $recipient->role === 'superuser'
+        );
 
-            if ($branchRecipients->isEmpty()) {
+        foreach ($alertsByBranch as $branchId => $branchSummary) {
+            $hasLowStockRisk = count($branchSummary['out_of_stock_items']) > 0
+                || count($branchSummary['low_stock_items']) > 0;
+
+            if (! $hasLowStockRisk) {
                 continue;
             }
 
-            $cacheKey = sprintf('alerts:inventory-email:branch:%d:%s', (int) $branchId, $today->toDateString());
+            $branchRecipients = $recipientsByBranch
+                ->get((string) $branchId, collect())
+                ->filter(fn (User $recipient): bool => $recipient->role !== 'superuser')
+                ->merge($superuserRecipients)
+                ->unique('id')
+                ->values();
 
-            if (! Cache::add($cacheKey, true, $today->copy()->endOfDay())) {
-                $skippedDuplicates++;
-
+            if ($branchRecipients->isEmpty()) {
                 continue;
             }
 
@@ -190,6 +197,7 @@ class SendInventoryAdminEmailAlertsAction
             ];
 
             foreach ($branchRecipients as $recipient) {
+                /** @var User $recipient */
                 $verificationEmail = $this->resolveRecipientEmail($recipient);
 
                 if ($verificationEmail === null) {
