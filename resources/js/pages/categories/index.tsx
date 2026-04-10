@@ -357,3 +357,10 @@ export default function CategoriesIndex({ categories, filters }: Props) {
         </>
     );
 }
+
+CategoriesIndex.layout = {
+    breadcrumbs: [
+        { title: 'Operación', href: '#' },
+        { title: 'Categorías', href: '/categories' },
+    ],
+};
