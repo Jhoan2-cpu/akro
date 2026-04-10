@@ -37,14 +37,6 @@ class BranchController extends Controller
     }
 
     /**
-     * Show the form for creating a new branch.
-     */
-    public function create(): Response
-    {
-        return Inertia::render('branches/create');
-    }
-
-    /**
      * Store a newly created branch in storage.
      */
     public function store(StoreBranchRequest $request): RedirectResponse
@@ -59,16 +51,6 @@ class BranchController extends Controller
         return to_route('branches.index')->with('toast', [
             'type' => 'success',
             'message' => 'Sucursal registrada correctamente.',
-        ]);
-    }
-
-    /**
-     * Show the form for editing the specified branch.
-     */
-    public function edit(Branch $branch): Response
-    {
-        return Inertia::render('branches/edit', [
-            'branch' => $branch,
         ]);
     }
 

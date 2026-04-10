@@ -1,8 +1,17 @@
-import { Head, Link, router, useForm } from '@inertiajs/react';
+import { Head, router, useForm } from '@inertiajs/react';
 import { Trash2, Edit2, Plus, Search } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 type Branch = {
     id: number;
@@ -34,10 +43,22 @@ type Props = {
 
 export default function BranchesIndex({ branches, filters }: Props) {
     const [searchQuery, setSearchQuery] = useState(filters.search || '');
-    const [deletingId, setDeletingId] = useState<number | null>(null);
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [editingBranch, setEditingBranch] = useState<Branch | null>(null);
+    const [deletingBranch, setDeletingBranch] = useState<Branch | null>(null);
 
     const filterForm = useForm({
         search: filters.search ?? '',
+    });
+
+    const createForm = useForm({
+        name: '',
+        address: '',
+    });
+
+    const editForm = useForm({
+        name: '',
+        address: '',
     });
 
     const handleSearch = (value: string): void => {
@@ -55,9 +76,69 @@ export default function BranchesIndex({ branches, filters }: Props) {
         router.get('/branches', {}, { preserveScroll: true, replace: true });
     };
 
-    const handleDelete = (id: number): void => {
-        router.delete(`/branches/${id}`, {
-            onSuccess: () => setDeletingId(null),
+    const openCreateModal = (): void => {
+        createForm.reset();
+        createForm.clearErrors();
+        setIsCreateModalOpen(true);
+    };
+
+    const openEditModal = (branch: Branch): void => {
+        editForm.clearErrors();
+        editForm.setData({
+            name: branch.name,
+            address: branch.address,
+        });
+        setEditingBranch(branch);
+    };
+
+    const closeEditModal = (): void => {
+        setEditingBranch(null);
+        editForm.reset();
+        editForm.clearErrors();
+    };
+
+    const submitCreate = (event: React.FormEvent<HTMLFormElement>): void => {
+        event.preventDefault();
+
+        createForm.post('/branches', {
+            preserveScroll: true,
+            onSuccess: () => {
+                setIsCreateModalOpen(false);
+                createForm.reset();
+                createForm.clearErrors();
+            },
+            onError: () => {
+                setIsCreateModalOpen(true);
+            },
+        });
+    };
+
+    const submitEdit = (event: React.FormEvent<HTMLFormElement>): void => {
+        event.preventDefault();
+
+        if (!editingBranch) {
+            return;
+        }
+
+        editForm.patch(`/branches/${editingBranch.id}`, {
+            preserveScroll: true,
+            onSuccess: () => {
+                closeEditModal();
+            },
+            onError: () => {
+                setEditingBranch(editingBranch);
+            },
+        });
+    };
+
+    const submitDelete = (): void => {
+        if (!deletingBranch) {
+            return;
+        }
+
+        router.delete(`/branches/${deletingBranch.id}`, {
+            preserveScroll: true,
+            onSuccess: () => setDeletingBranch(null),
         });
     };
 
@@ -75,11 +156,12 @@ export default function BranchesIndex({ branches, filters }: Props) {
                                     Gestiona todas las sucursales del sistema
                                 </p>
                             </div>
-                            <Button className="rounded-full border border-primary-foreground/20 bg-primary-foreground text-primary hover:bg-primary-foreground/90" asChild>
-                                <Link href="/branches/create">
+                            <Button
+                                className="rounded-full border border-primary-foreground/20 bg-primary-foreground text-primary hover:bg-primary-foreground/90"
+                                onClick={openCreateModal}
+                            >
                                     <Plus className="mr-2 h-4 w-4" />
                                     Nueva Sucursal
-                                </Link>
                             </Button>
                         </div>
                     </div>
@@ -144,18 +226,19 @@ export default function BranchesIndex({ branches, filters }: Props) {
                                             ).toLocaleDateString('es-ES')}
                                         </p>
                                         <div className="flex justify-end gap-2">
-                                            <Button variant="outline" size="sm" className="border-sidebar-border bg-background text-foreground hover:bg-muted" asChild>
-                                                <Link href={`/branches/${branch.id}/edit`}>
-                                                    <Edit2 className="h-4 w-4" />
-                                                </Link>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                className="border-sidebar-border bg-background text-foreground hover:bg-muted"
+                                                onClick={() => openEditModal(branch)}
+                                            >
+                                                <Edit2 className="h-4 w-4" />
                                             </Button>
                                             <Button
                                                 variant="outline"
                                                 size="sm"
                                                 className="border-sidebar-border bg-background text-foreground hover:bg-muted"
-                                                onClick={() =>
-                                                    setDeletingId(branch.id)
-                                                }
+                                                onClick={() => setDeletingBranch(branch)}
                                             >
                                                 <Trash2 className="h-4 w-4 text-destructive" />
                                             </Button>
@@ -187,18 +270,19 @@ export default function BranchesIndex({ branches, filters }: Props) {
                                             </p>
                                         </div>
                                         <div className="flex gap-2">
-                                            <Button variant="outline" size="sm" className="border-sidebar-border bg-background text-foreground hover:bg-muted" asChild>
-                                                <Link href={`/branches/${branch.id}/edit`}>
-                                                    <Edit2 className="h-4 w-4" />
-                                                </Link>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                className="border-sidebar-border bg-background text-foreground hover:bg-muted"
+                                                onClick={() => openEditModal(branch)}
+                                            >
+                                                <Edit2 className="h-4 w-4" />
                                             </Button>
                                             <Button
                                                 variant="outline"
                                                 size="sm"
                                                 className="border-sidebar-border bg-background text-foreground hover:bg-muted"
-                                                onClick={() =>
-                                                    setDeletingId(branch.id)
-                                                }
+                                                onClick={() => setDeletingBranch(branch)}
                                             >
                                                 <Trash2 className="h-4 w-4 text-destructive" />
                                             </Button>
@@ -214,36 +298,125 @@ export default function BranchesIndex({ branches, filters }: Props) {
                 </div>
             </div>
 
-            {/* Delete Confirmation Modal */}
-            {deletingId !== null && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-                    <div className="rounded-lg bg-white p-6 shadow-lg max-w-sm mx-4">
-                        <h2 className="text-lg font-semibold mb-2">
-                            Eliminar Sucursal
-                        </h2>
-                        <p className="text-sm text-muted-foreground mb-6">
-                            ¿Está seguro que desea eliminar esta sucursal? Esta
-                            acción no se puede deshacer.
-                        </p>
-                        <div className="flex justify-end gap-2">
-                            <Button
-                                variant="outline"
-                                onClick={() => setDeletingId(null)}
-                            >
+            <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
+                <DialogContent className="sm:max-w-xl">
+                    <DialogHeader>
+                        <DialogTitle>Nueva sucursal</DialogTitle>
+                        <DialogDescription>
+                            Registra una sucursal con su nombre y dirección para habilitar operación y asignación de personal.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <form onSubmit={submitCreate} className="space-y-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="branch-create-name">Nombre</Label>
+                            <Input
+                                id="branch-create-name"
+                                placeholder="Ej. Sucursal Centro"
+                                value={createForm.data.name}
+                                onChange={(event) => createForm.setData('name', event.target.value)}
+                                className={createForm.errors.name ? 'border-destructive' : ''}
+                            />
+                            {createForm.errors.name && (
+                                <p className="text-xs text-destructive">{createForm.errors.name}</p>
+                            )}
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="branch-create-address">Dirección</Label>
+                            <Input
+                                id="branch-create-address"
+                                placeholder="Ej. Calle Principal 123, Puebla"
+                                value={createForm.data.address}
+                                onChange={(event) => createForm.setData('address', event.target.value)}
+                                className={createForm.errors.address ? 'border-destructive' : ''}
+                            />
+                            {createForm.errors.address && (
+                                <p className="text-xs text-destructive">{createForm.errors.address}</p>
+                            )}
+                        </div>
+
+                        <DialogFooter>
+                            <Button type="button" variant="outline" onClick={() => setIsCreateModalOpen(false)}>
                                 Cancelar
                             </Button>
-                            <Button
-                                variant="destructive"
-                                onClick={() =>
-                                    deletingId && handleDelete(deletingId)
-                                }
-                            >
-                                Eliminar
+                            <Button type="submit" disabled={createForm.processing}>
+                                {createForm.processing ? 'Registrando...' : 'Registrar sucursal'}
                             </Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={editingBranch !== null} onOpenChange={(open) => !open && closeEditModal()}>
+                <DialogContent className="sm:max-w-xl">
+                    <DialogHeader>
+                        <DialogTitle>Editar sucursal</DialogTitle>
+                        <DialogDescription>
+                            Actualiza la información de la sucursal seleccionada sin salir del listado.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <form onSubmit={submitEdit} className="space-y-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="branch-edit-name">Nombre</Label>
+                            <Input
+                                id="branch-edit-name"
+                                placeholder="Ej. Sucursal Centro"
+                                value={editForm.data.name}
+                                onChange={(event) => editForm.setData('name', event.target.value)}
+                                className={editForm.errors.name ? 'border-destructive' : ''}
+                            />
+                            {editForm.errors.name && (
+                                <p className="text-xs text-destructive">{editForm.errors.name}</p>
+                            )}
                         </div>
-                    </div>
-                </div>
-            )}
+
+                        <div className="space-y-2">
+                            <Label htmlFor="branch-edit-address">Dirección</Label>
+                            <Input
+                                id="branch-edit-address"
+                                placeholder="Ej. Calle Principal 123, Puebla"
+                                value={editForm.data.address}
+                                onChange={(event) => editForm.setData('address', event.target.value)}
+                                className={editForm.errors.address ? 'border-destructive' : ''}
+                            />
+                            {editForm.errors.address && (
+                                <p className="text-xs text-destructive">{editForm.errors.address}</p>
+                            )}
+                        </div>
+
+                        <DialogFooter>
+                            <Button type="button" variant="outline" onClick={closeEditModal}>
+                                Cancelar
+                            </Button>
+                            <Button type="submit" disabled={editForm.processing}>
+                                {editForm.processing ? 'Guardando...' : 'Guardar cambios'}
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={deletingBranch !== null} onOpenChange={(open) => !open && setDeletingBranch(null)}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>Eliminar sucursal</DialogTitle>
+                        <DialogDescription>
+                            Esta acción no se puede deshacer. La sucursal seleccionada será eliminada permanentemente.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <DialogFooter>
+                        <Button type="button" variant="outline" onClick={() => setDeletingBranch(null)}>
+                            Cancelar
+                        </Button>
+                        <Button type="button" variant="destructive" onClick={submitDelete}>
+                            Eliminar
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </>
     );
 }

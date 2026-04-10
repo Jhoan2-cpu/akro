@@ -40,7 +40,7 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
     Route::post('categories/quick-store', [CategoryController::class, 'storeInline'])->name('categories.quick-store');
     Route::post('active-ingredients/quick-store', [ActiveIngredientController::class, 'storeInline'])->name('active-ingredients.quick-store');
     Route::resource('categories', CategoryController::class)->only(['index', 'store', 'update', 'destroy']);
-    Route::resource('branches', BranchController::class)->except(['show']);
+    Route::resource('branches', BranchController::class)->except(['show', 'create', 'edit']);
     Route::resource('medicines', MedicineController::class)->except(['show']);
 });
 
