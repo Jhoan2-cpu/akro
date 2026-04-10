@@ -20,7 +20,6 @@ use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\URL;
 use Inertia\Inertia;
 use Inertia\Response;
-use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Throwable;
 
 class ProfileController extends Controller
@@ -99,7 +98,7 @@ class ProfileController extends Controller
         try {
             Notification::route('mail', $verificationEmail)
                 ->notify(new ProfileVerificationEmailNotification($verificationUrl, $verificationEmail));
-        } catch (TransportExceptionInterface $exception) {
+        } catch (Throwable $exception) {
             report($exception);
 
             Inertia::flash('toast', [
