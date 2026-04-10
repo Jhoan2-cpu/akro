@@ -19,6 +19,7 @@ docker compose -f docker-compose.dev.yml up -d
 - Las **Notificaciones** y el acceso de **Perfil** se muestran en la esquina superior derecha del header principal (misma linea del breadcrumb), incluyendo icono de campana con dropdown de alertas.
 - Cuando existan productos vencidos o por caducar, la app muestra un aviso temporal flotante en la esquina inferior derecha para solicitar acciones correctivas/preventivas.
 - Se incorpora el módulo de **Reporte PDF de ventas por sucursal/rango de fecha** en `/reports/sales`, generando el PDF al momento de hacer clic en descargar.
+- En `/settings/profile` se agrega verificación de **correo de perfil** independiente al correo de login (puede ser el mismo o diferente), con envío de enlace firmado y estado de verificación visible en UI.
 
 ## MER Fiscal (Resumen)
 ```mermaid

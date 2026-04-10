@@ -9,6 +9,13 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('settings/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('settings/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::post('settings/profile/verification-email', [ProfileController::class, 'sendVerificationEmail'])
+        ->middleware('throttle:6,1')
+        ->name('profile.verification-email.send');
+
+    Route::get('settings/profile/verification-email/{id}/{hash}', [ProfileController::class, 'verifyVerificationEmail'])
+        ->middleware(['signed', 'throttle:6,1'])
+        ->name('profile.verification-email.verify');
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
