@@ -11,7 +11,7 @@ import {
     DialogTrigger,
 } from '@/components/ui/dialog';
 import UserUpsertModal from '@/components/users/user-upsert-modal';
-import type {UserUpsertFormValues} from '@/components/users/user-upsert-modal';
+import type { UserUpsertFormValues } from '@/components/users/user-upsert-modal';
 
 type Branch = {
     id: number;
@@ -25,11 +25,15 @@ type Props = {
     canAssignSuperuser: boolean;
 };
 
-export default function CreateUserDialog({ branches, canSelectBranch, userBranchId, canAssignSuperuser }: Props) {
+export default function CreateUserDialog({
+    branches,
+    canSelectBranch,
+    userBranchId,
+    canAssignSuperuser,
+}: Props) {
     const [open, setOpen] = useState(false);
-    const defaultBranchId = !canSelectBranch && userBranchId !== null
-        ? String(userBranchId)
-        : '';
+    const defaultBranchId =
+        !canSelectBranch && userBranchId !== null ? String(userBranchId) : '';
 
     const form = useForm<UserUpsertFormValues>({
         name: '',
@@ -43,7 +47,11 @@ export default function CreateUserDialog({ branches, canSelectBranch, userBranch
     });
 
     useEffect(() => {
-        if (!canSelectBranch && defaultBranchId !== '' && form.data.branch_id !== defaultBranchId) {
+        if (
+            !canSelectBranch &&
+            defaultBranchId !== '' &&
+            form.data.branch_id !== defaultBranchId
+        ) {
             form.setData('branch_id', defaultBranchId);
         }
     }, [canSelectBranch, defaultBranchId, form]);
@@ -86,7 +94,9 @@ export default function CreateUserDialog({ branches, canSelectBranch, userBranch
                 <UserUpsertModal
                     title="Agregar Nuevo Usuario"
                     description="Complete los detalles para registrar al personal en el sistema."
-                    submitLabel={form.processing ? 'Guardando...' : 'Crear Usuario'}
+                    submitLabel={
+                        form.processing ? 'Guardando...' : 'Crear Usuario'
+                    }
                     onCancel={() => setOpen(false)}
                     data={form.data}
                     setData={form.setData}

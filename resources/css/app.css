@@ -11,9 +11,8 @@
 
 @theme {
     --font-sans:
-        'Manrope', ui-sans-serif, system-ui, sans-serif,
-        'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
-        'Noto Color Emoji';
+        'Manrope', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
+        'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
     --font-inter: 'Inter', ui-sans-serif, system-ui, sans-serif;
 
     --radius-sm: 1px;
@@ -21,7 +20,8 @@
     --radius-lg: 3px;
     --radius-xl: 4px;
     --radius-2xl: 5px;
-    --shadow-clinical: 0 2px 4px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.1);
+    --shadow-clinical:
+        0 2px 4px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.1);
 
     --color-brand-50: #e1f5ee;
     --color-brand-100: #bde7d9;

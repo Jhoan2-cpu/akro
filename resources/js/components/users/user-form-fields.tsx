@@ -80,7 +80,10 @@ export default function UserFormFields({
                     </SelectTrigger>
                     <SelectContent>
                         {branches.map((branch) => (
-                            <SelectItem key={branch.id} value={String(branch.id)}>
+                            <SelectItem
+                                key={branch.id}
+                                value={String(branch.id)}
+                            >
                                 {branch.name}
                             </SelectItem>
                         ))}
@@ -139,14 +142,18 @@ export default function UserFormFields({
                     }
                     className={inputClassName}
                     placeholder={
-                        passwordRequired ? 'Mínimo 8 caracteres' : 'Dejar vacío si no cambia'
+                        passwordRequired
+                            ? 'Mínimo 8 caracteres'
+                            : 'Dejar vacío si no cambia'
                     }
                 />
                 <InputError message={errors.password} />
             </div>
 
             <div className="space-y-2">
-                <Label htmlFor="password_confirmation">Confirmar contraseña</Label>
+                <Label htmlFor="password_confirmation">
+                    Confirmar contraseña
+                </Label>
                 <Input
                     id="password_confirmation"
                     type="password"

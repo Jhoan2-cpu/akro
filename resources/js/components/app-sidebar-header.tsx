@@ -1,8 +1,8 @@
+import { memo } from 'react';
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { TopbarActions } from '@/components/topbar-actions';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import type { BreadcrumbItem as BreadcrumbItemType } from '@/types';
-import { memo } from 'react';
 
 export const AppSidebarHeader = memo(function AppSidebarHeader({
     breadcrumbs = [],
@@ -10,7 +10,7 @@ export const AppSidebarHeader = memo(function AppSidebarHeader({
     breadcrumbs?: BreadcrumbItemType[];
 }) {
     return (
-        <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between gap-3 border-b border-sidebar-border/70 bg-white/95 px-6 shadow-none backdrop-blur supports-backdrop-filter:bg-white/90 rounded-none transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 md:px-4">
+        <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between gap-3 rounded-none border-b border-sidebar-border/70 bg-white/95 px-6 shadow-none backdrop-blur transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 supports-backdrop-filter:bg-white/90 md:px-4">
             <div className="flex items-center gap-2">
                 <SidebarTrigger className="-ml-1" />
                 <Breadcrumbs breadcrumbs={breadcrumbs} />

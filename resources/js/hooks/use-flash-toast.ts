@@ -4,7 +4,8 @@ import { toast } from 'sonner';
 import type { FlashToast } from '@/types/ui';
 
 export function useFlashToast(): void {
-    const { flash } = usePage<{ flash?: { toast?: FlashToast | null } }>().props;
+    const { flash } = usePage<{ flash?: { toast?: FlashToast | null } }>()
+        .props;
     const lastToastSignature = useRef<string | null>(null);
 
     useEffect(() => {

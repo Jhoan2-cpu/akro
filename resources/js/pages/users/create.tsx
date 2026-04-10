@@ -1,9 +1,15 @@
 import { Head } from '@inertiajs/react';
 import { useForm } from '@inertiajs/react';
 import { useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+} from '@/components/ui/dialog';
 import UserUpsertModal from '@/components/users/user-upsert-modal';
-import type {UserUpsertFormValues} from '@/components/users/user-upsert-modal';
+import type { UserUpsertFormValues } from '@/components/users/user-upsert-modal';
 
 type Branch = {
     id: number;
@@ -19,9 +25,10 @@ type Props = {
 };
 
 export default function CreateUser({ branches, ui }: Props) {
-    const defaultBranchId = !ui.is_superuser && ui.user_branch_id !== null
-        ? String(ui.user_branch_id)
-        : '';
+    const defaultBranchId =
+        !ui.is_superuser && ui.user_branch_id !== null
+            ? String(ui.user_branch_id)
+            : '';
 
     const form = useForm<UserUpsertFormValues>({
         name: '',
@@ -35,7 +42,11 @@ export default function CreateUser({ branches, ui }: Props) {
     });
 
     useEffect(() => {
-        if (!ui.is_superuser && defaultBranchId !== '' && form.data.branch_id !== defaultBranchId) {
+        if (
+            !ui.is_superuser &&
+            defaultBranchId !== '' &&
+            form.data.branch_id !== defaultBranchId
+        ) {
             form.setData('branch_id', defaultBranchId);
         }
     }, [defaultBranchId, form, ui.is_superuser]);
@@ -56,11 +67,14 @@ export default function CreateUser({ branches, ui }: Props) {
     return (
         <>
             <Head title="Agregar Usuario" />
-            <Dialog open onOpenChange={(nextOpen) => {
- if (!nextOpen) {
-close();
-} 
-}}>
+            <Dialog
+                open
+                onOpenChange={(nextOpen) => {
+                    if (!nextOpen) {
+                        close();
+                    }
+                }}
+            >
                 <DialogContent className="max-h-[92vh] max-w-6xl overflow-y-auto rounded-3xl border-sidebar-border/70 bg-background p-0 sm:max-w-6xl">
                     <DialogHeader className="sr-only">
                         <DialogTitle>Agregar Nuevo Usuario</DialogTitle>
@@ -72,7 +86,9 @@ close();
                     <UserUpsertModal
                         title="Agregar Nuevo Usuario"
                         description="Complete los detalles para registrar al personal en el sistema."
-                        submitLabel={form.processing ? 'Guardando...' : 'Crear Usuario'}
+                        submitLabel={
+                            form.processing ? 'Guardando...' : 'Crear Usuario'
+                        }
                         onCancel={close}
                         data={form.data}
                         setData={form.setData}

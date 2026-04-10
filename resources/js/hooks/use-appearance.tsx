@@ -10,7 +10,6 @@ export type UseAppearanceReturn = {
 };
 
 const listeners = new Set<() => void>();
-let currentAppearance: Appearance = 'light';
 
 const setCookie = (name: string, value: string, days = 365): void => {
     if (typeof document === 'undefined') {
@@ -49,7 +48,6 @@ export function initializeTheme(): void {
         return;
     }
 
-    currentAppearance = 'light';
     localStorage.setItem('appearance', 'light');
     setCookie('appearance', 'light');
     applyTheme('light');
@@ -64,8 +62,8 @@ export function useAppearance(): UseAppearanceReturn {
 
     const resolvedAppearance: ResolvedAppearance = 'light';
 
-    const updateAppearance = (_mode: Appearance): void => {
-        currentAppearance = 'light';
+    const updateAppearance = (mode: Appearance): void => {
+        void mode;
         localStorage.setItem('appearance', 'light');
         setCookie('appearance', 'light');
         applyTheme('light');

@@ -29,7 +29,7 @@ export default function LibraryCheck() {
                 <motion.section
                     initial={{ opacity: 0, y: 18 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.20, delay: 0 }}
+                    transition={{ duration: 0.2, delay: 0 }}
                     className="rounded-2xl border border-sidebar-border/70 bg-linear-to-br from-neutral-950 via-neutral-900 to-neutral-800 p-6 text-white shadow-lg dark:border-sidebar-border"
                 >
                     <div className="flex items-center gap-3">
@@ -37,7 +37,7 @@ export default function LibraryCheck() {
                             <FaFlask />
                         </span>
                         <div>
-                            <p className="text-sm uppercase tracking-[0.3em] text-white/60">
+                            <p className="text-sm tracking-[0.3em] text-white/60 uppercase">
                                 Playground
                             </p>
                             <h1 className="text-2xl font-semibold">
@@ -48,8 +48,8 @@ export default function LibraryCheck() {
 
                     <p className="mt-4 max-w-2xl text-sm leading-6 text-white/75">
                         This page confirms that <strong>react-icons</strong> and
-                        <strong> framer-motion</strong> are installed and working
-                        inside the current Inertia + React setup.
+                        <strong> framer-motion</strong> are installed and
+                        working inside the current Inertia + React setup.
                     </p>
 
                     <div className="mt-6 flex flex-wrap gap-3 text-sm">

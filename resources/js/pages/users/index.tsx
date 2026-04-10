@@ -112,10 +112,18 @@ function decodePaginationLabel(label: string): string {
         .replace(/<[^>]*>/g, '');
 }
 
-export default function UsersIndex({ users, branches, filters, stats, ui }: Props) {
+export default function UsersIndex({
+    users,
+    branches,
+    filters,
+    stats,
+    ui,
+}: Props) {
     const { auth } = usePage<{ auth: { user: { id: number } } }>().props;
     const initials = useInitials();
-    const [pendingSuspendId, setPendingSuspendId] = useState<number | null>(null);
+    const [pendingSuspendId, setPendingSuspendId] = useState<number | null>(
+        null,
+    );
     const filterForm = useForm({
         search: filters.search ?? '',
         status: filters.status ?? 'all',
@@ -173,8 +181,8 @@ export default function UsersIndex({ users, branches, filters, stats, ui }: Prop
                                     Gestión de Usuarios
                                 </p>
                                 <p className="max-w-2xl text-sm text-primary-foreground/85 md:text-base">
-                                    Administra el acceso y los permisos del personal de
-                                    Farmacia San Lucas.
+                                    Administra el acceso y los permisos del
+                                    personal de Farmacia San Lucas.
                                 </p>
                             </div>
 
@@ -219,7 +227,9 @@ export default function UsersIndex({ users, branches, filters, stats, ui }: Prop
                                 transition={{ duration: 0.2, delay: 0 }}
                                 className="flex min-w-0 items-center gap-3 rounded-3xl border border-sidebar-border/70 bg-background p-4 shadow-sm md:p-5"
                             >
-                                <div className={`rounded-2xl p-2.5 ${card.tone}`}>
+                                <div
+                                    className={`rounded-2xl p-2.5 ${card.tone}`}
+                                >
                                     <Icon className="size-5 md:size-6" />
                                 </div>
                                 <div className="min-w-0">
@@ -290,7 +300,9 @@ export default function UsersIndex({ users, branches, filters, stats, ui }: Prop
                                     Todos los Estados
                                 </SelectItem>
                                 <SelectItem value="active">Activos</SelectItem>
-                                <SelectItem value="inactive">Inactivos</SelectItem>
+                                <SelectItem value="inactive">
+                                    Inactivos
+                                </SelectItem>
                                 <SelectItem value="suspended">
                                     Suspendidos
                                 </SelectItem>
@@ -298,7 +310,10 @@ export default function UsersIndex({ users, branches, filters, stats, ui }: Prop
                         </Select>
 
                         <div className="flex flex-wrap items-center justify-start gap-2 md:col-span-2 md:justify-end lg:col-span-1">
-                            <Button type="submit" className="h-11 rounded-full px-5">
+                            <Button
+                                type="submit"
+                                className="h-11 rounded-full px-5"
+                            >
                                 Buscar
                             </Button>
                             <Button
@@ -315,7 +330,7 @@ export default function UsersIndex({ users, branches, filters, stats, ui }: Prop
 
                 <div className="relative z-10 rounded-3xl border border-sidebar-border/70 bg-background shadow-sm">
                     <div className="hidden overflow-hidden rounded-3xl xl:block">
-                        <div className="table-header-highlight grid grid-cols-[1.45fr_1.2fr_0.75fr_0.9fr_0.75fr_0.95fr] border-b border-sidebar-border/70 px-6 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                        <div className="table-header-highlight grid grid-cols-[1.45fr_1.2fr_0.75fr_0.9fr_0.75fr_0.95fr] border-b border-sidebar-border/70 px-6 py-4 text-[11px] font-bold tracking-[0.2em] text-muted-foreground uppercase">
                             <span>Nombre y perfil</span>
                             <span>Correo electrónico</span>
                             <span className="text-center">Rol</span>
@@ -330,89 +345,109 @@ export default function UsersIndex({ users, branches, filters, stats, ui }: Prop
                                     const isSelf = user.id === auth.user.id;
 
                                     return (
-                                    <div
-                                        key={user.id}
-                                        className="grid grid-cols-[1.45fr_1.2fr_0.75fr_0.9fr_0.75fr_0.95fr] items-center gap-4 px-6 py-5"
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <Avatar className="size-12 border border-sidebar-border/70">
-                                                <AvatarImage
-                                                    src={user.profile_photo_path ?? undefined}
-                                                    alt={user.name}
-                                                    className="h-full w-full object-cover"
-                                                />
-                                                <AvatarFallback className="bg-emerald-100 font-semibold text-emerald-700">
-                                                    {initials(user.name)}
-                                                </AvatarFallback>
-                                            </Avatar>
-                                            <div>
-                                                <p className="font-semibold text-foreground">
-                                                    {user.name}
-                                                </p>
-                                                <p className="text-xs text-muted-foreground">
-                                                    ID: {user.id}
-                                                </p>
+                                        <div
+                                            key={user.id}
+                                            className="grid grid-cols-[1.45fr_1.2fr_0.75fr_0.9fr_0.75fr_0.95fr] items-center gap-4 px-6 py-5"
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <Avatar className="size-12 border border-sidebar-border/70">
+                                                    <AvatarImage
+                                                        src={
+                                                            user.profile_photo_path ??
+                                                            undefined
+                                                        }
+                                                        alt={user.name}
+                                                        className="h-full w-full object-cover"
+                                                    />
+                                                    <AvatarFallback className="bg-emerald-100 font-semibold text-emerald-700">
+                                                        {initials(user.name)}
+                                                    </AvatarFallback>
+                                                </Avatar>
+                                                <div>
+                                                    <p className="font-semibold text-foreground">
+                                                        {user.name}
+                                                    </p>
+                                                    <p className="text-xs text-muted-foreground">
+                                                        ID: {user.id}
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            <p className="text-sm text-muted-foreground">
+                                                {user.email}
+                                            </p>
+
+                                            <div className="flex justify-center">
+                                                <Badge
+                                                    variant="outline"
+                                                    className="w-fit rounded-full px-3 py-1"
+                                                >
+                                                    {getRoleLabel(user.role)}
+                                                </Badge>
+                                            </div>
+
+                                            <p className="text-center text-sm text-foreground">
+                                                {user.branch?.name ??
+                                                    'Sin sucursal'}
+                                            </p>
+
+                                            <div className="flex justify-center">
+                                                <Badge
+                                                    variant="outline"
+                                                    className={`w-fit rounded-full px-3 py-1 ${statusMeta[user.status].className}`}
+                                                >
+                                                    {
+                                                        statusMeta[user.status]
+                                                            .label
+                                                    }
+                                                </Badge>
+                                            </div>
+
+                                            <div className="flex flex-col items-end gap-2 2xl:flex-row 2xl:justify-end">
+                                                <Button
+                                                    asChild
+                                                    variant="outline"
+                                                    size="sm"
+                                                    className="min-w-34.5 justify-center rounded-full"
+                                                >
+                                                    <Link
+                                                        href={
+                                                            isSelf
+                                                                ? '/settings/profile'
+                                                                : `/users/${user.id}/edit`
+                                                        }
+                                                    >
+                                                        <PencilLine className="size-4" />
+                                                        {isSelf
+                                                            ? 'Editar en perfil'
+                                                            : 'Editar'}
+                                                    </Link>
+                                                </Button>
+
+                                                <Button
+                                                    size="sm"
+                                                    variant="destructive"
+                                                    className="min-w-34.5 justify-center rounded-full"
+                                                    onClick={() =>
+                                                        suspendUser(user.id)
+                                                    }
+                                                    disabled={
+                                                        user.status ===
+                                                            'suspended' ||
+                                                        pendingSuspendId ===
+                                                            user.id
+                                                    }
+                                                >
+                                                    <ShieldBan className="size-4" />
+                                                    {user.status === 'suspended'
+                                                        ? 'Suspendido'
+                                                        : pendingSuspendId ===
+                                                            user.id
+                                                          ? 'Procesando...'
+                                                          : 'Suspender'}
+                                                </Button>
                                             </div>
                                         </div>
-
-                                        <p className="text-sm text-muted-foreground">
-                                            {user.email}
-                                        </p>
-
-                                        <div className="flex justify-center">
-                                            <Badge
-                                                variant="outline"
-                                                className="w-fit rounded-full px-3 py-1"
-                                            >
-                                                {getRoleLabel(user.role)}
-                                            </Badge>
-                                        </div>
-
-                                        <p className="text-center text-sm text-foreground">
-                                            {user.branch?.name ?? 'Sin sucursal'}
-                                        </p>
-
-                                        <div className="flex justify-center">
-                                            <Badge
-                                                variant="outline"
-                                                className={`w-fit rounded-full px-3 py-1 ${statusMeta[user.status].className}`}
-                                            >
-                                                {statusMeta[user.status].label}
-                                            </Badge>
-                                        </div>
-
-                                        <div className="flex flex-col items-end gap-2 2xl:flex-row 2xl:justify-end">
-                                            <Button
-                                                asChild
-                                                variant="outline"
-                                                size="sm"
-                                                className="min-w-34.5 justify-center rounded-full"
-                                            >
-                                                <Link href={isSelf ? '/settings/profile' : `/users/${user.id}/edit`}>
-                                                    <PencilLine className="size-4" />
-                                                    {isSelf ? 'Editar en perfil' : 'Editar'}
-                                                </Link>
-                                            </Button>
-
-                                            <Button
-                                                size="sm"
-                                                variant="destructive"
-                                                className="min-w-34.5 justify-center rounded-full"
-                                                onClick={() => suspendUser(user.id)}
-                                                disabled={
-                                                    user.status === 'suspended' ||
-                                                    pendingSuspendId === user.id
-                                                }
-                                            >
-                                                <ShieldBan className="size-4" />
-                                                {user.status === 'suspended'
-                                                    ? 'Suspendido'
-                                                    : pendingSuspendId === user.id
-                                                      ? 'Procesando...'
-                                                      : 'Suspender'}
-                                            </Button>
-                                        </div>
-                                    </div>
                                     );
                                 })
                             ) : (
@@ -429,90 +464,114 @@ export default function UsersIndex({ users, branches, filters, stats, ui }: Prop
                                 const isSelf = user.id === auth.user.id;
 
                                 return (
-                                <article
-                                    key={user.id}
-                                    className="rounded-2xl border border-sidebar-border/70 p-4"
-                                >
-                                    <div className="flex items-start gap-3">
-                                        <Avatar className="size-12 border border-sidebar-border/70">
-                                            <AvatarImage
-                                                src={user.profile_photo_path ?? undefined}
-                                                alt={user.name}
-                                                className="h-full w-full object-cover"
-                                            />
-                                            <AvatarFallback className="bg-emerald-100 font-semibold text-emerald-700">
-                                                {initials(user.name)}
-                                            </AvatarFallback>
-                                        </Avatar>
+                                    <article
+                                        key={user.id}
+                                        className="rounded-2xl border border-sidebar-border/70 p-4"
+                                    >
+                                        <div className="flex items-start gap-3">
+                                            <Avatar className="size-12 border border-sidebar-border/70">
+                                                <AvatarImage
+                                                    src={
+                                                        user.profile_photo_path ??
+                                                        undefined
+                                                    }
+                                                    alt={user.name}
+                                                    className="h-full w-full object-cover"
+                                                />
+                                                <AvatarFallback className="bg-emerald-100 font-semibold text-emerald-700">
+                                                    {initials(user.name)}
+                                                </AvatarFallback>
+                                            </Avatar>
 
-                                        <div className="min-w-0 flex-1">
-                                            <div className="flex items-start justify-between gap-3">
-                                                <div className="min-w-0">
-                                                    <p className="truncate font-semibold text-foreground">
-                                                        {user.name}
-                                                    </p>
-                                                    <p className="truncate text-sm text-muted-foreground">
-                                                        {user.email}
-                                                    </p>
+                                            <div className="min-w-0 flex-1">
+                                                <div className="flex items-start justify-between gap-3">
+                                                    <div className="min-w-0">
+                                                        <p className="truncate font-semibold text-foreground">
+                                                            {user.name}
+                                                        </p>
+                                                        <p className="truncate text-sm text-muted-foreground">
+                                                            {user.email}
+                                                        </p>
+                                                    </div>
+
+                                                    <Badge
+                                                        variant="outline"
+                                                        className={`rounded-full px-3 py-1 ${statusMeta[user.status].className}`}
+                                                    >
+                                                        {
+                                                            statusMeta[
+                                                                user.status
+                                                            ].label
+                                                        }
+                                                    </Badge>
                                                 </div>
 
-                                                <Badge
-                                                    variant="outline"
-                                                    className={`rounded-full px-3 py-1 ${statusMeta[user.status].className}`}
-                                                >
-                                                    {statusMeta[user.status].label}
-                                                </Badge>
-                                            </div>
+                                                <div className="mt-3 flex flex-wrap gap-2 text-xs text-muted-foreground">
+                                                    <Badge
+                                                        variant="outline"
+                                                        className="rounded-full px-3 py-1"
+                                                    >
+                                                        {getRoleLabel(
+                                                            user.role,
+                                                        )}
+                                                    </Badge>
+                                                    <Badge
+                                                        variant="outline"
+                                                        className="rounded-full px-3 py-1"
+                                                    >
+                                                        {user.branch?.name ??
+                                                            'Sin sucursal'}
+                                                    </Badge>
+                                                </div>
 
-                                            <div className="mt-3 flex flex-wrap gap-2 text-xs text-muted-foreground">
-                                                <Badge
-                                                    variant="outline"
-                                                    className="rounded-full px-3 py-1"
-                                                >
-                                                    {getRoleLabel(user.role)}
-                                                </Badge>
-                                                <Badge
-                                                    variant="outline"
-                                                    className="rounded-full px-3 py-1"
-                                                >
-                                                    {user.branch?.name ?? 'Sin sucursal'}
-                                                </Badge>
-                                            </div>
+                                                <div className="mt-4 flex flex-wrap gap-2">
+                                                    <Button
+                                                        asChild
+                                                        variant="outline"
+                                                        size="sm"
+                                                        className="rounded-full"
+                                                    >
+                                                        <Link
+                                                            href={
+                                                                isSelf
+                                                                    ? '/settings/profile'
+                                                                    : `/users/${user.id}/edit`
+                                                            }
+                                                        >
+                                                            <PencilLine className="size-4" />
+                                                            {isSelf
+                                                                ? 'Editar en perfil'
+                                                                : 'Editar'}
+                                                        </Link>
+                                                    </Button>
 
-                                            <div className="mt-4 flex flex-wrap gap-2">
-                                                <Button
-                                                    asChild
-                                                    variant="outline"
-                                                    size="sm"
-                                                    className="rounded-full"
-                                                >
-                                                    <Link href={isSelf ? '/settings/profile' : `/users/${user.id}/edit`}>
-                                                        <PencilLine className="size-4" />
-                                                        {isSelf ? 'Editar en perfil' : 'Editar'}
-                                                    </Link>
-                                                </Button>
-
-                                                <Button
-                                                    size="sm"
-                                                    variant="destructive"
-                                                    className="rounded-full"
-                                                    onClick={() => suspendUser(user.id)}
-                                                    disabled={
-                                                        user.status === 'suspended' ||
-                                                        pendingSuspendId === user.id
-                                                    }
-                                                >
-                                                    <ShieldBan className="size-4" />
-                                                    {user.status === 'suspended'
-                                                        ? 'Suspendido'
-                                                        : pendingSuspendId === user.id
-                                                          ? 'Procesando...'
-                                                          : 'Suspender'}
-                                                </Button>
+                                                    <Button
+                                                        size="sm"
+                                                        variant="destructive"
+                                                        className="rounded-full"
+                                                        onClick={() =>
+                                                            suspendUser(user.id)
+                                                        }
+                                                        disabled={
+                                                            user.status ===
+                                                                'suspended' ||
+                                                            pendingSuspendId ===
+                                                                user.id
+                                                        }
+                                                    >
+                                                        <ShieldBan className="size-4" />
+                                                        {user.status ===
+                                                        'suspended'
+                                                            ? 'Suspendido'
+                                                            : pendingSuspendId ===
+                                                                user.id
+                                                              ? 'Procesando...'
+                                                              : 'Suspender'}
+                                                    </Button>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                </article>
+                                    </article>
                                 );
                             })
                         ) : (
@@ -544,7 +603,9 @@ export default function UsersIndex({ users, branches, filters, stats, ui }: Prop
                                                 : 'border-sidebar-border/70 bg-background text-foreground hover:bg-muted'
                                         }`}
                                         dangerouslySetInnerHTML={{
-                                            __html: decodePaginationLabel(link.label),
+                                            __html: decodePaginationLabel(
+                                                link.label,
+                                            ),
                                         }}
                                     />
                                 ) : (
@@ -554,7 +615,9 @@ export default function UsersIndex({ users, branches, filters, stats, ui }: Prop
                                             isDisabled ? 'opacity-50' : ''
                                         }`}
                                         dangerouslySetInnerHTML={{
-                                            __html: decodePaginationLabel(link.label),
+                                            __html: decodePaginationLabel(
+                                                link.label,
+                                            ),
                                         }}
                                     />
                                 );

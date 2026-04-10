@@ -74,7 +74,14 @@ function decodePaginationLabel(label: string): string {
         .replace(/<[^>]*>/g, '');
 }
 
-export default function MedicinesStock({ inventories, branches, categories, filters, summary, is_superuser }: Props) {
+export default function MedicinesStock({
+    inventories,
+    branches,
+    categories,
+    filters,
+    summary,
+    is_superuser,
+}: Props) {
     const form = useForm({
         search: filters.search ?? '',
         branch_id: filters.branch_id ?? 'all',
@@ -100,7 +107,11 @@ export default function MedicinesStock({ inventories, branches, categories, filt
             status: 'all',
         });
 
-        router.get('/medicines/stock', {}, { preserveScroll: true, replace: true });
+        router.get(
+            '/medicines/stock',
+            {},
+            { preserveScroll: true, replace: true },
+        );
     };
 
     return (
@@ -110,22 +121,35 @@ export default function MedicinesStock({ inventories, branches, categories, filt
             <div className="page-shell space-y-4 bg-transparent p-4 md:p-6">
                 <section className="overflow-hidden rounded-3xl border border-sidebar-border/70 bg-background shadow-sm">
                     <div className="bg-primary px-5 py-4 text-primary-foreground md:px-6 md:py-5">
-                        <h1 className="text-3xl font-semibold tracking-tight">Stock por sucursal</h1>
+                        <h1 className="text-3xl font-semibold tracking-tight">
+                            Stock por sucursal
+                        </h1>
                         <p className="mt-1 text-sm text-primary-foreground/85 md:text-base">
-                            Filtra por medicamento, sucursal, categoría y estado para localizar inventario crítico rápidamente.
+                            Filtra por medicamento, sucursal, categoría y estado
+                            para localizar inventario crítico rápidamente.
                         </p>
                     </div>
 
-                    <form onSubmit={submit} className="mt-3 grid gap-4 p-5 pt-1 lg:grid-cols-4 md:p-6 md:pt-2">
+                    <form
+                        onSubmit={submit}
+                        className="mt-3 grid gap-4 p-5 pt-1 md:p-6 md:pt-2 lg:grid-cols-4"
+                    >
                         <div className="space-y-2 lg:col-span-2">
-                            <Label htmlFor="stock_search">Medicamento o código</Label>
+                            <Label htmlFor="stock_search">
+                                Medicamento o código
+                            </Label>
                             <div className="flex flex-col gap-2 sm:flex-row">
                                 <div className="relative flex-1">
                                     <Search className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted-foreground" />
                                     <Input
                                         id="stock_search"
                                         value={form.data.search}
-                                        onChange={(event) => form.setData('search', event.target.value)}
+                                        onChange={(event) =>
+                                            form.setData(
+                                                'search',
+                                                event.target.value,
+                                            )
+                                        }
                                         placeholder="Nombre o código de barras"
                                         className="h-11 rounded-full pl-11"
                                     />
@@ -133,13 +157,17 @@ export default function MedicinesStock({ inventories, branches, categories, filt
                                 <BarcodeScannerDialog
                                     triggerLabel="Escanear"
                                     onDetected={(barcode) => {
-                                        router.get('/medicines/stock', {
-                                            ...form.data,
-                                            search: barcode,
-                                        }, {
-                                            preserveScroll: true,
-                                            replace: true,
-                                        });
+                                        router.get(
+                                            '/medicines/stock',
+                                            {
+                                                ...form.data,
+                                                search: barcode,
+                                            },
+                                            {
+                                                preserveScroll: true,
+                                                replace: true,
+                                            },
+                                        );
                                     }}
                                 />
                             </div>
@@ -149,24 +177,32 @@ export default function MedicinesStock({ inventories, branches, categories, filt
                             <Label>Sucursal</Label>
                             <Select
                                 value={form.data.branch_id}
-                                onValueChange={(value) => form.setData('branch_id', value)}
+                                onValueChange={(value) =>
+                                    form.setData('branch_id', value)
+                                }
                                 disabled={!is_superuser}
                             >
-                                <SelectTrigger className="h-11 w-full rounded-full border-input bg-background px-4 text-sm shadow-xs disabled:opacity-50 disabled:cursor-not-allowed">
+                                <SelectTrigger className="h-11 w-full rounded-full border-input bg-background px-4 text-sm shadow-xs disabled:cursor-not-allowed disabled:opacity-50">
                                     <SelectValue placeholder="Todas las sucursales" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="all">Todas las sucursales</SelectItem>
-                                    {branches.map((branch) => (
-                                    <SelectItem key={branch.id} value={String(branch.id)}>
-                                        {branch.name}
+                                    <SelectItem value="all">
+                                        Todas las sucursales
                                     </SelectItem>
-                                ))}
+                                    {branches.map((branch) => (
+                                        <SelectItem
+                                            key={branch.id}
+                                            value={String(branch.id)}
+                                        >
+                                            {branch.name}
+                                        </SelectItem>
+                                    ))}
                                 </SelectContent>
                             </Select>
                             {!is_superuser && (
                                 <p className="text-xs text-muted-foreground">
-                                    Solo superusuarios pueden seleccionar sucursal
+                                    Solo superusuarios pueden seleccionar
+                                    sucursal
                                 </p>
                             )}
                         </div>
@@ -175,18 +211,25 @@ export default function MedicinesStock({ inventories, branches, categories, filt
                             <Label>Categoría</Label>
                             <Select
                                 value={form.data.category_id}
-                                onValueChange={(value) => form.setData('category_id', value)}
+                                onValueChange={(value) =>
+                                    form.setData('category_id', value)
+                                }
                             >
                                 <SelectTrigger className="h-11 w-full rounded-full border-input bg-background px-4 text-sm shadow-xs">
                                     <SelectValue placeholder="Todas las categorías" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                <SelectItem value="all">Todas las categorías</SelectItem>
-                                {categories.map((category) => (
-                                    <SelectItem key={category.id} value={String(category.id)}>
-                                        {category.name}
+                                    <SelectItem value="all">
+                                        Todas las categorías
                                     </SelectItem>
-                                ))}
+                                    {categories.map((category) => (
+                                        <SelectItem
+                                            key={category.id}
+                                            value={String(category.id)}
+                                        >
+                                            {category.name}
+                                        </SelectItem>
+                                    ))}
                                 </SelectContent>
                             </Select>
                         </div>
@@ -195,26 +238,44 @@ export default function MedicinesStock({ inventories, branches, categories, filt
                             <Label>Estado</Label>
                             <Select
                                 value={form.data.status}
-                                onValueChange={(value) => form.setData('status', value)}
+                                onValueChange={(value) =>
+                                    form.setData('status', value)
+                                }
                             >
                                 <SelectTrigger className="h-11 w-full rounded-full border-input bg-background px-4 text-sm shadow-xs">
                                     <SelectValue placeholder="Todos" />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="all">Todos</SelectItem>
-                                    <SelectItem value="out">Sin stock</SelectItem>
-                                    <SelectItem value="low">Stock bajo</SelectItem>
-                                    <SelectItem value="near-expiry">Próximo a caducar (&lt;30 días)</SelectItem>
-                                    <SelectItem value="healthy">Saludable</SelectItem>
+                                    <SelectItem value="out">
+                                        Sin stock
+                                    </SelectItem>
+                                    <SelectItem value="low">
+                                        Stock bajo
+                                    </SelectItem>
+                                    <SelectItem value="near-expiry">
+                                        Próximo a caducar (&lt;30 días)
+                                    </SelectItem>
+                                    <SelectItem value="healthy">
+                                        Saludable
+                                    </SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
 
                         <div className="flex items-end justify-end gap-2 lg:col-span-3">
-                            <Button type="button" variant="ghost" className="h-11 rounded-full px-5" onClick={clearFilters}>
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                className="h-11 rounded-full px-5"
+                                onClick={clearFilters}
+                            >
                                 Limpiar
                             </Button>
-                            <Button type="submit" className="h-11 rounded-full px-6">
+                            <Button
+                                type="submit"
+                                className="h-11 rounded-full px-6"
+                            >
                                 <Boxes className="size-4" />
                                 Aplicar filtros
                             </Button>
@@ -224,29 +285,49 @@ export default function MedicinesStock({ inventories, branches, categories, filt
 
                 <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                     <article className="rounded-2xl border border-sidebar-border/70 bg-background p-4 shadow-sm">
-                        <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Registros</p>
-                        <p className="mt-2 text-2xl font-semibold text-foreground">{summary.total_records}</p>
+                        <p className="text-xs tracking-[0.14em] text-muted-foreground uppercase">
+                            Registros
+                        </p>
+                        <p className="mt-2 text-2xl font-semibold text-foreground">
+                            {summary.total_records}
+                        </p>
                     </article>
                     <article className="rounded-2xl border border-rose-200/70 bg-rose-50/60 p-4 shadow-sm">
-                        <p className="text-xs uppercase tracking-[0.14em] text-rose-700">Stock bajo</p>
-                        <p className="mt-2 text-2xl font-semibold text-rose-800">{summary.low_stock_records}</p>
+                        <p className="text-xs tracking-[0.14em] text-rose-700 uppercase">
+                            Stock bajo
+                        </p>
+                        <p className="mt-2 text-2xl font-semibold text-rose-800">
+                            {summary.low_stock_records}
+                        </p>
                     </article>
                     <article className="rounded-2xl border border-slate-300/70 bg-slate-100/80 p-4 shadow-sm">
-                        <p className="text-xs uppercase tracking-[0.14em] text-slate-700">Sin stock</p>
-                        <p className="mt-2 text-2xl font-semibold text-slate-800">{summary.out_of_stock_records}</p>
+                        <p className="text-xs tracking-[0.14em] text-slate-700 uppercase">
+                            Sin stock
+                        </p>
+                        <p className="mt-2 text-2xl font-semibold text-slate-800">
+                            {summary.out_of_stock_records}
+                        </p>
                     </article>
                     <article className="rounded-2xl border border-amber-200/70 bg-amber-50/70 p-4 shadow-sm">
-                        <p className="text-xs uppercase tracking-[0.14em] text-amber-700">Por caducar (&lt;30 días)</p>
-                        <p className="mt-2 text-2xl font-semibold text-amber-800">{summary.near_expiry_records}</p>
+                        <p className="text-xs tracking-[0.14em] text-amber-700 uppercase">
+                            Por caducar (&lt;30 días)
+                        </p>
+                        <p className="mt-2 text-2xl font-semibold text-amber-800">
+                            {summary.near_expiry_records}
+                        </p>
                     </article>
                 </section>
 
                 <section className="overflow-hidden rounded-3xl border border-sidebar-border/70 bg-background shadow-sm">
                     <div className="bg-primary px-5 py-4 text-primary-foreground md:px-6 md:py-5">
                         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                            <h2 className="text-lg font-semibold text-primary-foreground">Detalle de inventario</h2>
+                            <h2 className="text-lg font-semibold text-primary-foreground">
+                                Detalle de inventario
+                            </h2>
                             <p className="text-sm text-primary-foreground/85">
-                                Mostrando {inventories.from ?? 0} a {inventories.to ?? 0} de {inventories.total} registros
+                                Mostrando {inventories.from ?? 0} a{' '}
+                                {inventories.to ?? 0} de {inventories.total}{' '}
+                                registros
                             </p>
                         </div>
                     </div>
@@ -259,31 +340,70 @@ export default function MedicinesStock({ inventories, branches, categories, filt
                         <>
                             <div className="hidden overflow-x-auto rounded-2xl border border-sidebar-border/70 xl:block">
                                 <table className="table-zebra-native min-w-full text-sm">
-                                    <thead className="text-left text-xs uppercase tracking-[0.12em] text-muted-foreground">
+                                    <thead className="text-left text-xs tracking-[0.12em] text-muted-foreground uppercase">
                                         <tr>
-                                            <th className="px-4 py-3">Sucursal</th>
-                                            <th className="px-4 py-3">Medicamento</th>
-                                            <th className="px-4 py-3">Categoría</th>
-                                            <th className="px-4 py-3 text-center">Stock actual</th>
-                                            <th className="px-4 py-3 text-center">Stock mínimo</th>
-                                            <th className="px-4 py-3 text-center">Caducidad</th>
-                                            <th className="px-4 py-3">Estado</th>
+                                            <th className="px-4 py-3">
+                                                Sucursal
+                                            </th>
+                                            <th className="px-4 py-3">
+                                                Medicamento
+                                            </th>
+                                            <th className="px-4 py-3">
+                                                Categoría
+                                            </th>
+                                            <th className="px-4 py-3 text-center">
+                                                Stock actual
+                                            </th>
+                                            <th className="px-4 py-3 text-center">
+                                                Stock mínimo
+                                            </th>
+                                            <th className="px-4 py-3 text-center">
+                                                Caducidad
+                                            </th>
+                                            <th className="px-4 py-3">
+                                                Estado
+                                            </th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {inventories.data.map((inventory) => (
-                                            <tr key={inventory.id} className="border-t border-sidebar-border/70">
-                                                <td className="px-4 py-3 font-medium text-foreground">{inventory.branch_name ?? 'Sin sucursal'}</td>
-                                                <td className="px-4 py-3">
-                                                    <p className="font-medium text-foreground">{inventory.medicine_name ?? 'Sin medicamento'}</p>
-                                                    <p className="text-xs text-muted-foreground">{inventory.barcode ?? 'Sin código'}</p>
+                                            <tr
+                                                key={inventory.id}
+                                                className="border-t border-sidebar-border/70"
+                                            >
+                                                <td className="px-4 py-3 font-medium text-foreground">
+                                                    {inventory.branch_name ??
+                                                        'Sin sucursal'}
                                                 </td>
-                                                <td className="px-4 py-3 text-foreground">{inventory.category ?? 'Sin categoría'}</td>
-                                                <td className="px-4 py-3 text-center text-foreground">{inventory.current_stock}</td>
-                                                <td className="px-4 py-3 text-center text-foreground">{inventory.minimum_stock}</td>
+                                                <td className="px-4 py-3">
+                                                    <p className="font-medium text-foreground">
+                                                        {inventory.medicine_name ??
+                                                            'Sin medicamento'}
+                                                    </p>
+                                                    <p className="text-xs text-muted-foreground">
+                                                        {inventory.barcode ??
+                                                            'Sin código'}
+                                                    </p>
+                                                </td>
+                                                <td className="px-4 py-3 text-foreground">
+                                                    {inventory.category ??
+                                                        'Sin categoría'}
+                                                </td>
+                                                <td className="px-4 py-3 text-center text-foreground">
+                                                    {inventory.current_stock}
+                                                </td>
+                                                <td className="px-4 py-3 text-center text-foreground">
+                                                    {inventory.minimum_stock}
+                                                </td>
                                                 <td className="px-4 py-3 text-center">
-                                                    <p className="text-foreground">{inventory.expiration_date}</p>
-                                                    <p className={`text-xs ${inventory.is_expired ? 'text-rose-700' : 'text-muted-foreground'}`}>
+                                                    <p className="text-foreground">
+                                                        {
+                                                            inventory.expiration_date
+                                                        }
+                                                    </p>
+                                                    <p
+                                                        className={`text-xs ${inventory.is_expired ? 'text-rose-700' : 'text-muted-foreground'}`}
+                                                    >
                                                         {inventory.is_expired
                                                             ? `Vencido hace ${Math.abs(inventory.days_to_expire)} días`
                                                             : `Faltan ${inventory.days_to_expire} días`}
@@ -292,20 +412,51 @@ export default function MedicinesStock({ inventories, branches, categories, filt
                                                 <td className="px-4 py-3">
                                                     <div className="flex flex-wrap gap-2">
                                                         {inventory.is_out_of_stock && (
-                                                            <Badge variant="outline" className="border-slate-300 bg-slate-100 text-slate-700">Sin stock</Badge>
+                                                            <Badge
+                                                                variant="outline"
+                                                                className="border-slate-300 bg-slate-100 text-slate-700"
+                                                            >
+                                                                Sin stock
+                                                            </Badge>
                                                         )}
-                                                        {inventory.is_low_stock && !inventory.is_out_of_stock && (
-                                                            <Badge variant="outline" className="border-rose-200 bg-rose-50 text-rose-700">Stock bajo</Badge>
-                                                        )}
+                                                        {inventory.is_low_stock &&
+                                                            !inventory.is_out_of_stock && (
+                                                                <Badge
+                                                                    variant="outline"
+                                                                    className="border-rose-200 bg-rose-50 text-rose-700"
+                                                                >
+                                                                    Stock bajo
+                                                                </Badge>
+                                                            )}
                                                         {inventory.is_expired && (
-                                                            <Badge variant="outline" className="border-rose-200 bg-rose-50 text-rose-700">Vencido</Badge>
+                                                            <Badge
+                                                                variant="outline"
+                                                                className="border-rose-200 bg-rose-50 text-rose-700"
+                                                            >
+                                                                Vencido
+                                                            </Badge>
                                                         )}
-                                                        {!inventory.is_expired && inventory.is_near_expiry && (
-                                                            <Badge variant="outline" className="border-amber-200 bg-amber-50 text-amber-700">Caduca pronto</Badge>
-                                                        )}
-                                                        {!inventory.is_expired && !inventory.is_low_stock && !inventory.is_near_expiry && !inventory.is_out_of_stock && (
-                                                            <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-700">Saludable</Badge>
-                                                        )}
+                                                        {!inventory.is_expired &&
+                                                            inventory.is_near_expiry && (
+                                                                <Badge
+                                                                    variant="outline"
+                                                                    className="border-amber-200 bg-amber-50 text-amber-700"
+                                                                >
+                                                                    Caduca
+                                                                    pronto
+                                                                </Badge>
+                                                            )}
+                                                        {!inventory.is_expired &&
+                                                            !inventory.is_low_stock &&
+                                                            !inventory.is_near_expiry &&
+                                                            !inventory.is_out_of_stock && (
+                                                                <Badge
+                                                                    variant="outline"
+                                                                    className="border-emerald-200 bg-emerald-50 text-emerald-700"
+                                                                >
+                                                                    Saludable
+                                                                </Badge>
+                                                            )}
                                                     </div>
                                                 </td>
                                             </tr>
@@ -316,49 +467,112 @@ export default function MedicinesStock({ inventories, branches, categories, filt
 
                             <div className="space-y-3 xl:hidden">
                                 {inventories.data.map((inventory) => (
-                                    <article key={`mobile-${inventory.id}`} className="rounded-2xl border border-sidebar-border/70 p-4">
+                                    <article
+                                        key={`mobile-${inventory.id}`}
+                                        className="rounded-2xl border border-sidebar-border/70 p-4"
+                                    >
                                         <div className="flex items-start justify-between gap-3">
                                             <div>
-                                                <p className="font-semibold text-foreground">{inventory.medicine_name ?? 'Sin medicamento'}</p>
-                                                <p className="text-xs text-muted-foreground">{inventory.barcode ?? 'Sin código'} · {inventory.category ?? 'Sin categoría'}</p>
-                                                <p className="mt-1 text-xs text-muted-foreground">Sucursal: {inventory.branch_name ?? 'Sin sucursal'}</p>
+                                                <p className="font-semibold text-foreground">
+                                                    {inventory.medicine_name ??
+                                                        'Sin medicamento'}
+                                                </p>
+                                                <p className="text-xs text-muted-foreground">
+                                                    {inventory.barcode ??
+                                                        'Sin código'}{' '}
+                                                    ·{' '}
+                                                    {inventory.category ??
+                                                        'Sin categoría'}
+                                                </p>
+                                                <p className="mt-1 text-xs text-muted-foreground">
+                                                    Sucursal:{' '}
+                                                    {inventory.branch_name ??
+                                                        'Sin sucursal'}
+                                                </p>
                                             </div>
-                                            <Badge variant="outline" className="rounded-full">Stock: {inventory.current_stock}</Badge>
+                                            <Badge
+                                                variant="outline"
+                                                className="rounded-full"
+                                            >
+                                                Stock: {inventory.current_stock}
+                                            </Badge>
                                         </div>
 
                                         <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-muted-foreground">
-                                            <p>Mínimo: <span className="font-medium text-foreground">{inventory.minimum_stock}</span></p>
-                                            <p>Caduca: <span className="font-medium text-foreground">{inventory.expiration_date}</span></p>
+                                            <p>
+                                                Mínimo:{' '}
+                                                <span className="font-medium text-foreground">
+                                                    {inventory.minimum_stock}
+                                                </span>
+                                            </p>
+                                            <p>
+                                                Caduca:{' '}
+                                                <span className="font-medium text-foreground">
+                                                    {inventory.expiration_date}
+                                                </span>
+                                            </p>
                                         </div>
 
                                         <div className="mt-3 flex flex-wrap gap-2">
                                             {inventory.is_out_of_stock && (
-                                                <Badge variant="outline" className="border-slate-300 bg-slate-100 text-slate-700">Sin stock</Badge>
+                                                <Badge
+                                                    variant="outline"
+                                                    className="border-slate-300 bg-slate-100 text-slate-700"
+                                                >
+                                                    Sin stock
+                                                </Badge>
                                             )}
-                                            {inventory.is_low_stock && !inventory.is_out_of_stock && (
-                                                <Badge variant="outline" className="border-rose-200 bg-rose-50 text-rose-700">Stock bajo</Badge>
-                                            )}
+                                            {inventory.is_low_stock &&
+                                                !inventory.is_out_of_stock && (
+                                                    <Badge
+                                                        variant="outline"
+                                                        className="border-rose-200 bg-rose-50 text-rose-700"
+                                                    >
+                                                        Stock bajo
+                                                    </Badge>
+                                                )}
                                             {inventory.is_expired && (
-                                                <Badge variant="outline" className="border-rose-200 bg-rose-50 text-rose-700">Vencido</Badge>
+                                                <Badge
+                                                    variant="outline"
+                                                    className="border-rose-200 bg-rose-50 text-rose-700"
+                                                >
+                                                    Vencido
+                                                </Badge>
                                             )}
-                                            {!inventory.is_expired && inventory.is_near_expiry && (
-                                                <Badge variant="outline" className="border-amber-200 bg-amber-50 text-amber-700">Caduca pronto</Badge>
-                                            )}
-                                            {!inventory.is_expired && !inventory.is_low_stock && !inventory.is_near_expiry && !inventory.is_out_of_stock && (
-                                                <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-700">Saludable</Badge>
-                                            )}
+                                            {!inventory.is_expired &&
+                                                inventory.is_near_expiry && (
+                                                    <Badge
+                                                        variant="outline"
+                                                        className="border-amber-200 bg-amber-50 text-amber-700"
+                                                    >
+                                                        Caduca pronto
+                                                    </Badge>
+                                                )}
+                                            {!inventory.is_expired &&
+                                                !inventory.is_low_stock &&
+                                                !inventory.is_near_expiry &&
+                                                !inventory.is_out_of_stock && (
+                                                    <Badge
+                                                        variant="outline"
+                                                        className="border-emerald-200 bg-emerald-50 text-emerald-700"
+                                                    >
+                                                        Saludable
+                                                    </Badge>
+                                                )}
                                         </div>
                                     </article>
                                 ))}
                             </div>
 
-                            <div className="mt-4 flex flex-col gap-4 border-t border-sidebar-border/70 px-4 pb-2 pt-4 md:flex-row md:items-center md:justify-between md:px-6">
+                            <div className="mt-4 flex flex-col gap-4 border-t border-sidebar-border/70 px-4 pt-4 pb-2 md:flex-row md:items-center md:justify-between md:px-6">
                                 <p className="text-sm text-muted-foreground">
-                                    Mostrando {inventories.from ?? 0} a {inventories.to ?? 0} de {inventories.total} registros.
+                                    Mostrando {inventories.from ?? 0} a{' '}
+                                    {inventories.to ?? 0} de {inventories.total}{' '}
+                                    registros.
                                 </p>
 
                                 <div className="flex flex-wrap items-center gap-2 md:justify-end">
-                                    {inventories.links.map((link, index) => (
+                                    {inventories.links.map((link, index) =>
                                         link.url ? (
                                             <Link
                                                 key={`${link.label}-${index}`}
@@ -367,17 +581,21 @@ export default function MedicinesStock({ inventories, branches, categories, filt
                                                 preserveState
                                                 className={`rounded-full px-4 py-2 text-sm transition ${link.active ? 'bg-foreground text-background' : 'border border-sidebar-border/70 bg-background text-foreground hover:bg-muted'}`}
                                             >
-                                                {decodePaginationLabel(link.label)}
+                                                {decodePaginationLabel(
+                                                    link.label,
+                                                )}
                                             </Link>
                                         ) : (
                                             <span
                                                 key={`${link.label}-${index}`}
                                                 className="rounded-full border border-sidebar-border/70 px-4 py-2 text-sm text-muted-foreground"
                                             >
-                                                {decodePaginationLabel(link.label)}
+                                                {decodePaginationLabel(
+                                                    link.label,
+                                                )}
                                             </span>
-                                        )
-                                    ))}
+                                        ),
+                                    )}
                                 </div>
                             </div>
                         </>
@@ -389,7 +607,9 @@ export default function MedicinesStock({ inventories, branches, categories, filt
                         <div className="flex items-start gap-2">
                             <TriangleAlert className="mt-0.5 size-4" />
                             <p className="text-sm">
-                                Hay {summary.out_of_stock_records} registro(s) sin stock. Revisa el filtro Estado para priorizar reposiciones.
+                                Hay {summary.out_of_stock_records} registro(s)
+                                sin stock. Revisa el filtro Estado para
+                                priorizar reposiciones.
                             </p>
                         </div>
                     </section>

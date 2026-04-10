@@ -1,6 +1,14 @@
-﻿import { CircleAlert, FlaskConical, Pill, Plus, Save, UploadCloud, X } from 'lucide-react';
-import { useEffect, useRef, useState   } from 'react';
-import type {FormEvent, KeyboardEvent} from 'react';
+﻿import {
+    CircleAlert,
+    FlaskConical,
+    Pill,
+    Plus,
+    Save,
+    UploadCloud,
+    X,
+} from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import type { FormEvent, KeyboardEvent } from 'react';
 import BarcodeScannerDialog from '@/components/barcode-scanner-dialog';
 import InputError from '@/components/input-error';
 import { Badge } from '@/components/ui/badge';
@@ -57,9 +65,20 @@ type Props = {
     currentImagePath?: string | null;
     onSubmit: (event: FormEvent<HTMLFormElement>) => void;
     onCancel: () => void;
-    setData: (field: keyof MedicineFormValues, value: MedicineFormValues[keyof MedicineFormValues]) => void;
+    setData: (
+        field: keyof MedicineFormValues,
+        value: MedicineFormValues[keyof MedicineFormValues],
+    ) => void;
     setBarcode: (barcode: string) => void;
-    updateStock: (branchId: number, field: 'current_stock' | 'minimum_stock' | 'expiration_date' | 'sale_price', value: string) => void;
+    updateStock: (
+        branchId: number,
+        field:
+            | 'current_stock'
+            | 'minimum_stock'
+            | 'expiration_date'
+            | 'sale_price',
+        value: string,
+    ) => void;
     toggleActiveIngredient: (activeIngredientId: number) => void;
     onQuickCreateCategory: (name: string) => Promise<void>;
     onQuickCreateActiveIngredient: (name: string) => Promise<void>;
@@ -114,8 +133,12 @@ export default function MedicineForm({
         };
     }, [data.image]);
 
-    const selectedActiveIngredients = activeIngredients.filter((option) => data.active_ingredient_ids.includes(option.id));
-    const availableBranches = branches.filter((branch) => !data.stocks.some((stock) => stock.branch_id === branch.id));
+    const selectedActiveIngredients = activeIngredients.filter((option) =>
+        data.active_ingredient_ids.includes(option.id),
+    );
+    const availableBranches = branches.filter(
+        (branch) => !data.stocks.some((stock) => stock.branch_id === branch.id),
+    );
 
     useEffect(() => {
         if (availableBranches.length === 0) {
@@ -124,7 +147,12 @@ export default function MedicineForm({
             return;
         }
 
-        if (selectedBranchId === '' || !availableBranches.some((branch) => String(branch.id) === selectedBranchId)) {
+        if (
+            selectedBranchId === '' ||
+            !availableBranches.some(
+                (branch) => String(branch.id) === selectedBranchId,
+            )
+        ) {
             setSelectedBranchId(String(availableBranches[0].id));
         }
     }, [availableBranches, selectedBranchId]);
@@ -146,7 +174,11 @@ export default function MedicineForm({
             setNewCategoryName('');
             setIsCategoryDialogOpen(false);
         } catch (error) {
-            setCategoryError(error instanceof Error ? error.message : 'No se pudo crear la categoría.');
+            setCategoryError(
+                error instanceof Error
+                    ? error.message
+                    : 'No se pudo crear la categoría.',
+            );
         } finally {
             setIsCreatingCategory(false);
         }
@@ -168,13 +200,19 @@ export default function MedicineForm({
             await onQuickCreateActiveIngredient(name);
             setNewActiveIngredientName('');
         } catch (error) {
-            setIngredientError(error instanceof Error ? error.message : 'No se pudo crear el principio activo.');
+            setIngredientError(
+                error instanceof Error
+                    ? error.message
+                    : 'No se pudo crear el principio activo.',
+            );
         } finally {
             setIsCreatingIngredient(false);
         }
     };
 
-    const handleIngredientInputEnter = (event: KeyboardEvent<HTMLInputElement>): void => {
+    const handleIngredientInputEnter = (
+        event: KeyboardEvent<HTMLInputElement>,
+    ): void => {
         if (event.key !== 'Enter') {
             return;
         }
@@ -211,7 +249,9 @@ export default function MedicineForm({
             return;
         }
 
-        const branch = branches.find((item) => String(item.id) === selectedBranchId);
+        const branch = branches.find(
+            (item) => String(item.id) === selectedBranchId,
+        );
 
         if (!branch) {
             return;
@@ -231,7 +271,10 @@ export default function MedicineForm({
     };
 
     const removeBranchStock = (branchId: number): void => {
-        setData('stocks', data.stocks.filter((stock) => stock.branch_id !== branchId));
+        setData(
+            'stocks',
+            data.stocks.filter((stock) => stock.branch_id !== branchId),
+        );
     };
 
     const hasImagePreview = previewUrl !== null || currentImagePath !== null;
@@ -246,8 +289,12 @@ export default function MedicineForm({
                                 <Pill className="size-6" />
                             </div>
                             <div>
-                                <h1 className="text-2xl font-semibold tracking-tight text-primary-foreground md:text-3xl">{title}</h1>
-                                <p className="mt-1 text-sm text-primary-foreground/85 md:text-base">{description}</p>
+                                <h1 className="text-2xl font-semibold tracking-tight text-primary-foreground md:text-3xl">
+                                    {title}
+                                </h1>
+                                <p className="mt-1 text-sm text-primary-foreground/85 md:text-base">
+                                    {description}
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -256,11 +303,15 @@ export default function MedicineForm({
                         <div className="space-y-4">
                             <div className="grid gap-4 md:grid-cols-2">
                                 <div className="space-y-2">
-                                    <Label htmlFor="name">Nombre del medicamento</Label>
+                                    <Label htmlFor="name">
+                                        Nombre del medicamento
+                                    </Label>
                                     <Input
                                         id="name"
                                         value={data.name}
-                                        onChange={(event) => setData('name', event.target.value)}
+                                        onChange={(event) =>
+                                            setData('name', event.target.value)
+                                        }
                                         placeholder="Ej. Ibuprofeno 400mg"
                                         className="h-11 rounded-xl"
                                     />
@@ -269,17 +320,27 @@ export default function MedicineForm({
 
                                 <div className="space-y-2">
                                     <Label>Categoría</Label>
-                                    <Select value={data.category_id} onValueChange={handleCategorySelection}>
+                                    <Select
+                                        value={data.category_id}
+                                        onValueChange={handleCategorySelection}
+                                    >
                                         <SelectTrigger className="h-11 rounded-xl">
                                             <SelectValue placeholder="Seleccionar Categoría" />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {categories.map((category) => (
-                                                <SelectItem key={category.id} value={String(category.id)}>
+                                                <SelectItem
+                                                    key={category.id}
+                                                    value={String(category.id)}
+                                                >
                                                     {category.name}
                                                 </SelectItem>
                                             ))}
-                                            <SelectItem value={CREATE_CATEGORY_VALUE}>+ Crear nueva categoría</SelectItem>
+                                            <SelectItem
+                                                value={CREATE_CATEGORY_VALUE}
+                                            >
+                                                + Crear nueva categoría
+                                            </SelectItem>
                                         </SelectContent>
                                     </Select>
                                     <InputError message={errors.category_id} />
@@ -287,28 +348,45 @@ export default function MedicineForm({
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="barcode">Código de barras (UPC/EAN)</Label>
+                                <Label htmlFor="barcode">
+                                    Código de barras (UPC/EAN)
+                                </Label>
                                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                                     <Input
                                         id="barcode"
                                         value={data.barcode}
-                                        onChange={(event) => setData('barcode', event.target.value)}
+                                        onChange={(event) =>
+                                            setData(
+                                                'barcode',
+                                                event.target.value,
+                                            )
+                                        }
                                         placeholder="Escanear o ingresar manual"
                                         className="h-11 rounded-xl"
                                     />
-                                    <BarcodeScannerDialog onDetected={setBarcode} triggerLabel="Escanear" />
+                                    <BarcodeScannerDialog
+                                        onDetected={setBarcode}
+                                        triggerLabel="Escanear"
+                                    />
                                 </div>
                                 <InputError message={errors.barcode} />
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="description">Descripción y notas</Label>
+                                <Label htmlFor="description">
+                                    Descripción y notas
+                                </Label>
                                 <textarea
                                     id="description"
                                     value={data.description}
-                                    onChange={(event) => setData('description', event.target.value)}
+                                    onChange={(event) =>
+                                        setData(
+                                            'description',
+                                            event.target.value,
+                                        )
+                                    }
                                     placeholder="Indicaciones, contraindicaciones o notas adicionales..."
-                                    className="min-h-28 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm shadow-xs outline-none transition focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]"
+                                    className="min-h-28 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm shadow-xs transition outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
                                 />
                                 <InputError message={errors.description} />
                             </div>
@@ -321,7 +399,11 @@ export default function MedicineForm({
                                 type="file"
                                 accept="image/*"
                                 className="hidden"
-                                onChange={(event) => handleImageSelection(event.target.files?.[0] ?? null)}
+                                onChange={(event) =>
+                                    handleImageSelection(
+                                        event.target.files?.[0] ?? null,
+                                    )
+                                }
                             />
 
                             <button
@@ -343,22 +425,39 @@ export default function MedicineForm({
                                 onDrop={(event) => {
                                     event.preventDefault();
                                     setIsDraggingImage(false);
-                                    handleImageSelection(event.dataTransfer.files?.[0] ?? null);
+                                    handleImageSelection(
+                                        event.dataTransfer.files?.[0] ?? null,
+                                    );
                                 }}
                             >
                                 {previewUrl ? (
-                                    <img src={previewUrl} alt="Vista previa" className="h-56 w-full rounded-xl bg-white object-contain p-2" />
+                                    <img
+                                        src={previewUrl}
+                                        alt="Vista previa"
+                                        className="h-56 w-full rounded-xl bg-white object-contain p-2"
+                                    />
                                 ) : currentImagePath ? (
-                                    <img src={currentImagePath} alt="Imagen actual" className="h-56 w-full rounded-xl bg-white object-contain p-2" />
+                                    <img
+                                        src={currentImagePath}
+                                        alt="Imagen actual"
+                                        className="h-56 w-full rounded-xl bg-white object-contain p-2"
+                                    />
                                 ) : (
                                     <>
                                         <span className="rounded-2xl bg-background p-4 shadow-sm">
                                             <UploadCloud className="size-7 text-emerald-700" />
                                         </span>
                                         <div>
-                                            <p className="text-sm font-semibold text-foreground">Subir imagen</p>
-                                            <p className="text-xs text-muted-foreground">PNG, JPG hasta 5MB</p>
-                                            <p className="text-xs text-muted-foreground">Haz click o arrastra la imagen aquí</p>
+                                            <p className="text-sm font-semibold text-foreground">
+                                                Subir imagen
+                                            </p>
+                                            <p className="text-xs text-muted-foreground">
+                                                PNG, JPG hasta 5MB
+                                            </p>
+                                            <p className="text-xs text-muted-foreground">
+                                                Haz click o arrastra la imagen
+                                                aquí
+                                            </p>
                                         </div>
                                     </>
                                 )}
@@ -372,7 +471,11 @@ export default function MedicineForm({
                                 )}
                             </button>
 
-                            {data.image && <p className="text-xs text-muted-foreground">Archivo seleccionado: {data.image.name}</p>}
+                            {data.image && (
+                                <p className="text-xs text-muted-foreground">
+                                    Archivo seleccionado: {data.image.name}
+                                </p>
+                            )}
                             <InputError message={errors.image} />
                         </div>
                     </div>
@@ -383,36 +486,56 @@ export default function MedicineForm({
                         <div className="mb-4 flex items-center gap-2">
                             <FlaskConical className="size-5 text-emerald-700" />
                             <div>
-                                <h2 className="text-lg font-semibold text-foreground">Principios activos</h2>
-                                <p className="text-sm text-muted-foreground">Selecciona existentes o crea uno nuevo por nombre y Enter.</p>
+                                <h2 className="text-lg font-semibold text-foreground">
+                                    Principios activos
+                                </h2>
+                                <p className="text-sm text-muted-foreground">
+                                    Selecciona existentes o crea uno nuevo por
+                                    nombre y Enter.
+                                </p>
                             </div>
                         </div>
 
                         <div className="rounded-2xl border border-sidebar-border/70 bg-muted/20 p-4">
                             <div className="mb-3 flex flex-wrap gap-2">
                                 {selectedActiveIngredients.length > 0 ? (
-                                    selectedActiveIngredients.map((activeIngredient) => (
-                                        <Badge key={activeIngredient.id} className="rounded-full bg-emerald-100 px-3 py-1 text-emerald-800 hover:bg-emerald-100">
-                                            {activeIngredient.name}
-                                            <button
-                                                type="button"
-                                                className="ml-2 inline-flex"
-                                                onClick={() => toggleActiveIngredient(activeIngredient.id)}
-                                                aria-label={`Quitar ${activeIngredient.name}`}
+                                    selectedActiveIngredients.map(
+                                        (activeIngredient) => (
+                                            <Badge
+                                                key={activeIngredient.id}
+                                                className="rounded-full bg-emerald-100 px-3 py-1 text-emerald-800 hover:bg-emerald-100"
                                             >
-                                                <X className="size-3" />
-                                            </button>
-                                        </Badge>
-                                    ))
+                                                {activeIngredient.name}
+                                                <button
+                                                    type="button"
+                                                    className="ml-2 inline-flex"
+                                                    onClick={() =>
+                                                        toggleActiveIngredient(
+                                                            activeIngredient.id,
+                                                        )
+                                                    }
+                                                    aria-label={`Quitar ${activeIngredient.name}`}
+                                                >
+                                                    <X className="size-3" />
+                                                </button>
+                                            </Badge>
+                                        ),
+                                    )
                                 ) : (
-                                    <p className="text-sm text-muted-foreground">No hay principios activos seleccionados.</p>
+                                    <p className="text-sm text-muted-foreground">
+                                        No hay principios activos seleccionados.
+                                    </p>
                                 )}
                             </div>
 
                             <div className="flex flex-col gap-2 sm:flex-row">
                                 <Input
                                     value={newActiveIngredientName}
-                                    onChange={(event) => setNewActiveIngredientName(event.target.value)}
+                                    onChange={(event) =>
+                                        setNewActiveIngredientName(
+                                            event.target.value,
+                                        )
+                                    }
                                     onKeyDown={handleIngredientInputEnter}
                                     placeholder="Añadir ingrediente..."
                                     className="h-10 rounded-xl"
@@ -422,28 +545,44 @@ export default function MedicineForm({
                                     variant="outline"
                                     className="rounded-xl"
                                     disabled={isCreatingIngredient}
-                                    onClick={() => void createActiveIngredient()}
+                                    onClick={() =>
+                                        void createActiveIngredient()
+                                    }
                                 >
-                                    {isCreatingIngredient ? 'Agregando...' : 'Agregar'}
+                                    {isCreatingIngredient
+                                        ? 'Agregando...'
+                                        : 'Agregar'}
                                 </Button>
                             </div>
 
                             <p className="mt-2 text-xs text-muted-foreground">
-                                Escribe el nombre y presiona Enter para crear y seleccionar un nuevo principio activo.
+                                Escribe el nombre y presiona Enter para crear y
+                                seleccionar un nuevo principio activo.
                             </p>
 
-                            {ingredientError && <p className="mt-2 text-sm text-rose-600">{ingredientError}</p>}
+                            {ingredientError && (
+                                <p className="mt-2 text-sm text-rose-600">
+                                    {ingredientError}
+                                </p>
+                            )}
 
                             <div className="mt-3 flex flex-wrap gap-2">
                                 {activeIngredients.map((activeIngredient) => {
-                                    const isSelected = data.active_ingredient_ids.includes(activeIngredient.id);
+                                    const isSelected =
+                                        data.active_ingredient_ids.includes(
+                                            activeIngredient.id,
+                                        );
 
                                     return (
                                         <button
                                             key={activeIngredient.id}
                                             type="button"
                                             className={`rounded-full border px-3 py-1 text-xs transition ${isSelected ? 'border-emerald-300 bg-emerald-100 text-emerald-800' : 'border-sidebar-border/70 bg-background text-muted-foreground hover:bg-muted'}`}
-                                            onClick={() => toggleActiveIngredient(activeIngredient.id)}
+                                            onClick={() =>
+                                                toggleActiveIngredient(
+                                                    activeIngredient.id,
+                                                )
+                                            }
                                         >
                                             {activeIngredient.name}
                                         </button>
@@ -452,11 +591,16 @@ export default function MedicineForm({
                             </div>
                         </div>
 
-                        <InputError message={errors.active_ingredient_ids} className="mt-3" />
+                        <InputError
+                            message={errors.active_ingredient_ids}
+                            className="mt-3"
+                        />
                     </div>
 
                     <div className="rounded-3xl border border-sidebar-border/70 bg-background p-5 shadow-sm md:p-6 xl:max-h-[34vh] xl:overflow-y-auto">
-                        <h2 className="text-lg font-semibold text-foreground">Sucursales e inventario</h2>
+                        <h2 className="text-lg font-semibold text-foreground">
+                            Sucursales e inventario
+                        </h2>
                         <p className="mb-4 text-sm text-muted-foreground">
                             {isSuperuser
                                 ? 'Agrega solo las sucursales que necesites registrar y configura su inventario.'
@@ -465,26 +609,42 @@ export default function MedicineForm({
 
                         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end">
                             <div className="flex-1 space-y-2">
-                                <Label htmlFor="stock_branch_selector">Sucursal a registrar</Label>
+                                <Label htmlFor="stock_branch_selector">
+                                    Sucursal a registrar
+                                </Label>
                                 <select
                                     id="stock_branch_selector"
                                     value={selectedBranchId}
-                                    onChange={(event) => setSelectedBranchId(event.target.value)}
+                                    onChange={(event) =>
+                                        setSelectedBranchId(event.target.value)
+                                    }
                                     className="h-11 w-full rounded-xl border border-input bg-background px-3 text-sm"
-                                    disabled={!isSuperuser || availableBranches.length === 0}
+                                    disabled={
+                                        !isSuperuser ||
+                                        availableBranches.length === 0
+                                    }
                                 >
                                     {availableBranches.length === 0 ? (
-                                        <option value="">Todas las sucursales ya fueron agregadas</option>
+                                        <option value="">
+                                            Todas las sucursales ya fueron
+                                            agregadas
+                                        </option>
                                     ) : (
                                         availableBranches.map((branch) => (
-                                            <option key={branch.id} value={String(branch.id)}>
+                                            <option
+                                                key={branch.id}
+                                                value={String(branch.id)}
+                                            >
                                                 {branch.name}
                                             </option>
                                         ))
                                     )}
                                 </select>
                                 {!isSuperuser && (
-                                    <p className="text-xs text-muted-foreground">Solo los superusuarios pueden seleccionar sucursales distintas.</p>
+                                    <p className="text-xs text-muted-foreground">
+                                        Solo los superusuarios pueden
+                                        seleccionar sucursales distintas.
+                                    </p>
                                 )}
                             </div>
 
@@ -493,7 +653,10 @@ export default function MedicineForm({
                                 variant="outline"
                                 className="h-11 rounded-xl"
                                 onClick={addBranchStock}
-                                disabled={availableBranches.length === 0 || selectedBranchId === ''}
+                                disabled={
+                                    availableBranches.length === 0 ||
+                                    selectedBranchId === ''
+                                }
                             >
                                 <Plus className="size-4" />
                                 Agregar sucursal
@@ -503,17 +666,34 @@ export default function MedicineForm({
                         <div className="space-y-4">
                             {data.stocks.length === 0 && (
                                 <div className="rounded-2xl border border-dashed border-sidebar-border/70 px-4 py-6 text-sm text-muted-foreground">
-                                    Aún no agregaste sucursales. Selecciona una sucursal y presiona "Agregar sucursal".
+                                    Aún no agregaste sucursales. Selecciona una
+                                    sucursal y presiona "Agregar sucursal".
                                 </div>
                             )}
 
                             {data.stocks.map((stock, index) => (
-                                <div key={stock.branch_id} className="rounded-2xl border border-sidebar-border/70 p-4">
+                                <div
+                                    key={stock.branch_id}
+                                    className="rounded-2xl border border-sidebar-border/70 p-4"
+                                >
                                     <div className="mb-3 flex items-center justify-between">
-                                        <p className="font-medium text-foreground">{stock.branch_name}</p>
+                                        <p className="font-medium text-foreground">
+                                            {stock.branch_name}
+                                        </p>
                                         <div className="flex items-center gap-2">
-                                            <Badge variant="outline">Sucursal</Badge>
-                                            <Button type="button" variant="ghost" className="h-8 rounded-lg px-3" onClick={() => removeBranchStock(stock.branch_id)}>
+                                            <Badge variant="outline">
+                                                Sucursal
+                                            </Badge>
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                className="h-8 rounded-lg px-3"
+                                                onClick={() =>
+                                                    removeBranchStock(
+                                                        stock.branch_id,
+                                                    )
+                                                }
+                                            >
                                                 Quitar
                                             </Button>
                                         </div>
@@ -521,51 +701,115 @@ export default function MedicineForm({
 
                                     <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
                                         <div className="space-y-2">
-                                            <Label htmlFor={`current_stock_${stock.branch_id}`}>Stock actual</Label>
+                                            <Label
+                                                htmlFor={`current_stock_${stock.branch_id}`}
+                                            >
+                                                Stock actual
+                                            </Label>
                                             <Input
                                                 id={`current_stock_${stock.branch_id}`}
                                                 type="number"
                                                 min={0}
                                                 value={stock.current_stock}
-                                                onChange={(event) => updateStock(stock.branch_id, 'current_stock', event.target.value)}
+                                                onChange={(event) =>
+                                                    updateStock(
+                                                        stock.branch_id,
+                                                        'current_stock',
+                                                        event.target.value,
+                                                    )
+                                                }
                                             />
-                                            <InputError message={errors[`stocks.${index}.current_stock`]} />
+                                            <InputError
+                                                message={
+                                                    errors[
+                                                        `stocks.${index}.current_stock`
+                                                    ]
+                                                }
+                                            />
                                         </div>
 
                                         <div className="space-y-2">
-                                            <Label htmlFor={`minimum_stock_${stock.branch_id}`}>Stock mínimo</Label>
+                                            <Label
+                                                htmlFor={`minimum_stock_${stock.branch_id}`}
+                                            >
+                                                Stock mínimo
+                                            </Label>
                                             <Input
                                                 id={`minimum_stock_${stock.branch_id}`}
                                                 type="number"
                                                 min={0}
                                                 value={stock.minimum_stock}
-                                                onChange={(event) => updateStock(stock.branch_id, 'minimum_stock', event.target.value)}
+                                                onChange={(event) =>
+                                                    updateStock(
+                                                        stock.branch_id,
+                                                        'minimum_stock',
+                                                        event.target.value,
+                                                    )
+                                                }
                                             />
-                                            <InputError message={errors[`stocks.${index}.minimum_stock`]} />
+                                            <InputError
+                                                message={
+                                                    errors[
+                                                        `stocks.${index}.minimum_stock`
+                                                    ]
+                                                }
+                                            />
                                         </div>
 
                                         <div className="space-y-2">
-                                            <Label htmlFor={`expiration_date_${stock.branch_id}`}>Caducidad</Label>
+                                            <Label
+                                                htmlFor={`expiration_date_${stock.branch_id}`}
+                                            >
+                                                Caducidad
+                                            </Label>
                                             <Input
                                                 id={`expiration_date_${stock.branch_id}`}
                                                 type="date"
                                                 value={stock.expiration_date}
-                                                onChange={(event) => updateStock(stock.branch_id, 'expiration_date', event.target.value)}
+                                                onChange={(event) =>
+                                                    updateStock(
+                                                        stock.branch_id,
+                                                        'expiration_date',
+                                                        event.target.value,
+                                                    )
+                                                }
                                             />
-                                            <InputError message={errors[`stocks.${index}.expiration_date`]} />
+                                            <InputError
+                                                message={
+                                                    errors[
+                                                        `stocks.${index}.expiration_date`
+                                                    ]
+                                                }
+                                            />
                                         </div>
 
                                         <div className="space-y-2">
-                                            <Label htmlFor={`sale_price_${stock.branch_id}`}>Precio venta</Label>
+                                            <Label
+                                                htmlFor={`sale_price_${stock.branch_id}`}
+                                            >
+                                                Precio venta
+                                            </Label>
                                             <Input
                                                 id={`sale_price_${stock.branch_id}`}
                                                 type="number"
                                                 min={0.01}
                                                 step="0.01"
                                                 value={stock.sale_price}
-                                                onChange={(event) => updateStock(stock.branch_id, 'sale_price', event.target.value)}
+                                                onChange={(event) =>
+                                                    updateStock(
+                                                        stock.branch_id,
+                                                        'sale_price',
+                                                        event.target.value,
+                                                    )
+                                                }
                                             />
-                                            <InputError message={errors[`stocks.${index}.sale_price`]} />
+                                            <InputError
+                                                message={
+                                                    errors[
+                                                        `stocks.${index}.sale_price`
+                                                    ]
+                                                }
+                                            />
                                         </div>
                                     </div>
                                 </div>
@@ -586,22 +830,35 @@ export default function MedicineForm({
                 )}
 
                 <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
-                    <Button type="button" variant="outline" className="rounded-full" onClick={onCancel}>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        className="rounded-full"
+                        onClick={onCancel}
+                    >
                         Cancelar
                     </Button>
-                    <Button type="submit" className="rounded-full" disabled={processing}>
+                    <Button
+                        type="submit"
+                        className="rounded-full"
+                        disabled={processing}
+                    >
                         <Save className="size-4" />
                         {processing ? 'Guardando...' : submitLabel}
                     </Button>
                 </div>
             </form>
 
-            <Dialog open={isCategoryDialogOpen} onOpenChange={setIsCategoryDialogOpen}>
+            <Dialog
+                open={isCategoryDialogOpen}
+                onOpenChange={setIsCategoryDialogOpen}
+            >
                 <DialogContent className="rounded-3xl border-sidebar-border/70 sm:max-w-md">
                     <DialogHeader>
                         <DialogTitle>Nueva categoría</DialogTitle>
                         <DialogDescription>
-                            Esta opción fue elegida desde el desplegable de categoría.
+                            Esta opción fue elegida desde el desplegable de
+                            categoría.
                         </DialogDescription>
                     </DialogHeader>
 
@@ -610,11 +867,17 @@ export default function MedicineForm({
                         <Input
                             id="quick_category_name"
                             value={newCategoryName}
-                            onChange={(event) => setNewCategoryName(event.target.value)}
+                            onChange={(event) =>
+                                setNewCategoryName(event.target.value)
+                            }
                             placeholder="Ej. Analgésicos"
                             className="h-11"
                         />
-                        {categoryError && <p className="text-sm text-rose-600">{categoryError}</p>}
+                        {categoryError && (
+                            <p className="text-sm text-rose-600">
+                                {categoryError}
+                            </p>
+                        )}
                     </div>
 
                     <DialogFooter>
@@ -626,8 +889,15 @@ export default function MedicineForm({
                         >
                             Cancelar
                         </Button>
-                        <Button type="button" className="rounded-full" onClick={() => void createCategory()} disabled={isCreatingCategory}>
-                            {isCreatingCategory ? 'Creando...' : 'Crear categoría'}
+                        <Button
+                            type="button"
+                            className="rounded-full"
+                            onClick={() => void createCategory()}
+                            disabled={isCreatingCategory}
+                        >
+                            {isCreatingCategory
+                                ? 'Creando...'
+                                : 'Crear categoría'}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

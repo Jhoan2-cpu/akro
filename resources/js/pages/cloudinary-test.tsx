@@ -10,7 +10,13 @@ import {
     FaRotate,
 } from 'react-icons/fa6';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
 
 type CloudinaryResult = {
     public_id?: string | null;
@@ -71,7 +77,7 @@ export default function CloudinaryTest({ result, error, cloudName }: Props) {
                     <section className="overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-6 text-white shadow-2xl backdrop-blur-md sm:p-8">
                         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                             <div className="max-w-2xl space-y-3">
-                                <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-medium uppercase tracking-[0.24em] text-white/70">
+                                <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-medium tracking-[0.24em] text-white/70 uppercase">
                                     <FaCloudArrowUp />
                                     Cloudinary Playground
                                 </div>
@@ -79,23 +85,30 @@ export default function CloudinaryTest({ result, error, cloudName }: Props) {
                                     Prueba pública de Cloudinary
                                 </h1>
                                 <p className="text-sm leading-6 text-white/75 sm:text-base">
-                                    Sube una imagen sin iniciar sesión y confirma que el SDK,
-                                    las credenciales y la conexión con Cloudinary están funcionando.
+                                    Sube una imagen sin iniciar sesión y
+                                    confirma que el SDK, las credenciales y la
+                                    conexión con Cloudinary están funcionando.
                                 </p>
                             </div>
 
                             <div className="grid gap-3 text-sm text-white/75 sm:grid-cols-3 lg:min-w-120">
                                 <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
                                     <p className="text-white/50">Cloud name</p>
-                                    <p className="mt-1 font-medium text-white">{cloudName ?? 'No configurado'}</p>
+                                    <p className="mt-1 font-medium text-white">
+                                        {cloudName ?? 'No configurado'}
+                                    </p>
                                 </div>
                                 <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
                                     <p className="text-white/50">Modo</p>
-                                    <p className="mt-1 font-medium text-white">Server-side upload</p>
+                                    <p className="mt-1 font-medium text-white">
+                                        Server-side upload
+                                    </p>
                                 </div>
                                 <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
                                     <p className="text-white/50">Acceso</p>
-                                    <p className="mt-1 font-medium text-white">Público</p>
+                                    <p className="mt-1 font-medium text-white">
+                                        Público
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -109,7 +122,8 @@ export default function CloudinaryTest({ result, error, cloudName }: Props) {
                                     Subir imagen
                                 </CardTitle>
                                 <CardDescription>
-                                    Selecciona una imagen y Cloudinary devolverá la URL segura y el public_id.
+                                    Selecciona una imagen y Cloudinary devolverá
+                                    la URL segura y el public_id.
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>
@@ -120,7 +134,9 @@ export default function CloudinaryTest({ result, error, cloudName }: Props) {
                                             accept="image/*"
                                             className="sr-only"
                                             onChange={(event) => {
-                                                const file = event.target.files?.[0] ?? null;
+                                                const file =
+                                                    event.target.files?.[0] ??
+                                                    null;
                                                 form.setData('image', file);
                                             }}
                                         />
@@ -131,10 +147,12 @@ export default function CloudinaryTest({ result, error, cloudName }: Props) {
                                             </span>
                                             <div>
                                                 <p className="font-medium text-foreground">
-                                                    Haz clic para seleccionar una imagen
+                                                    Haz clic para seleccionar
+                                                    una imagen
                                                 </p>
                                                 <p className="text-sm text-muted-foreground">
-                                                    JPG, PNG, WEBP o GIF. Máximo 5 MB.
+                                                    JPG, PNG, WEBP o GIF. Máximo
+                                                    5 MB.
                                                 </p>
                                             </div>
                                         </div>
@@ -142,10 +160,16 @@ export default function CloudinaryTest({ result, error, cloudName }: Props) {
                                         <div className="rounded-2xl bg-background p-4 text-sm text-muted-foreground">
                                             {form.data.image ? (
                                                 <span>
-                                                    Archivo seleccionado: <strong>{form.data.image.name}</strong>
+                                                    Archivo seleccionado:{' '}
+                                                    <strong>
+                                                        {form.data.image.name}
+                                                    </strong>
                                                 </span>
                                             ) : (
-                                                <span>No has seleccionado ningún archivo todavía.</span>
+                                                <span>
+                                                    No has seleccionado ningún
+                                                    archivo todavía.
+                                                </span>
                                             )}
                                         </div>
                                     </label>
@@ -160,13 +184,19 @@ export default function CloudinaryTest({ result, error, cloudName }: Props) {
                                         <Button
                                             type="submit"
                                             className="h-11 rounded-full px-6"
-                                            disabled={form.processing || !form.data.image}
+                                            disabled={
+                                                form.processing ||
+                                                !form.data.image
+                                            }
                                         >
-                                            {form.processing ? 'Subiendo...' : 'Probar Cloudinary'}
+                                            {form.processing
+                                                ? 'Subiendo...'
+                                                : 'Probar Cloudinary'}
                                         </Button>
 
                                         <p className="text-xs text-muted-foreground">
-                                            Esta ruta no requiere inicio de sesión.
+                                            Esta ruta no requiere inicio de
+                                            sesión.
                                         </p>
                                     </div>
                                 </form>
@@ -181,7 +211,8 @@ export default function CloudinaryTest({ result, error, cloudName }: Props) {
                                         Vista previa
                                     </CardTitle>
                                     <CardDescription>
-                                        Muestra local antes de subir y resultado almacenado en Cloudinary.
+                                        Muestra local antes de subir y resultado
+                                        almacenado en Cloudinary.
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent className="space-y-4">
@@ -212,15 +243,21 @@ export default function CloudinaryTest({ result, error, cloudName }: Props) {
                                                     <FaCircleCheck />
                                                     Subida exitosa
                                                 </div>
-                                                <div className="mt-3 space-y-2 break-all text-xs sm:text-sm">
+                                                <div className="mt-3 space-y-2 text-xs break-all sm:text-sm">
                                                     <p>
-                                                        <span className="font-semibold">public_id:</span>{' '}
+                                                        <span className="font-semibold">
+                                                            public_id:
+                                                        </span>{' '}
                                                         {result.public_id}
                                                     </p>
                                                     <p>
-                                                        <span className="font-semibold">secure_url:</span>{' '}
+                                                        <span className="font-semibold">
+                                                            secure_url:
+                                                        </span>{' '}
                                                         <a
-                                                            href={result.secure_url}
+                                                            href={
+                                                                result.secure_url
+                                                            }
                                                             target="_blank"
                                                             rel="noreferrer"
                                                             className="inline-flex items-center gap-1 underline underline-offset-4"
@@ -230,11 +267,16 @@ export default function CloudinaryTest({ result, error, cloudName }: Props) {
                                                         </a>
                                                     </p>
                                                     <p>
-                                                        <span className="font-semibold">dimensiones:</span>{' '}
-                                                        {result.width} x {result.height}
+                                                        <span className="font-semibold">
+                                                            dimensiones:
+                                                        </span>{' '}
+                                                        {result.width} x{' '}
+                                                        {result.height}
                                                     </p>
                                                     <p>
-                                                        <span className="font-semibold">formato:</span>{' '}
+                                                        <span className="font-semibold">
+                                                            formato:
+                                                        </span>{' '}
                                                         {result.format}
                                                     </p>
                                                 </div>
@@ -247,7 +289,9 @@ export default function CloudinaryTest({ result, error, cloudName }: Props) {
                                                     <FaCircleExclamation />
                                                     Error
                                                 </div>
-                                                <p className="mt-2 text-sm">{error}</p>
+                                                <p className="mt-2 text-sm">
+                                                    {error}
+                                                </p>
                                             </div>
                                         )}
                                     </div>

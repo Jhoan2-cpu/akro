@@ -1,12 +1,27 @@
 ﻿import { Head, Link, router, useForm } from '@inertiajs/react';
-import { AlertTriangle, Boxes, PencilLine, Pill, Plus, Search, Trash2, TriangleAlert } from 'lucide-react';
+import {
+    AlertTriangle,
+    Boxes,
+    PencilLine,
+    Pill,
+    Plus,
+    Search,
+    Trash2,
+    TriangleAlert,
+} from 'lucide-react';
 import { useState } from 'react';
 import BarcodeScannerDialog from '@/components/barcode-scanner-dialog';
 import MedicineForm from '@/components/medicines/medicine-form';
-import type {MedicineFormValues} from '@/components/medicines/medicine-form';
+import type { MedicineFormValues } from '@/components/medicines/medicine-form';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import {
     Select,
@@ -64,15 +79,26 @@ type Props = {
 
 function decodePaginationLabel(label: string): string {
     return label
-    .replace(/&laquo;\s?/g, '« ')
-    .replace(/\s?&raquo;/g, ' »')
+        .replace(/&laquo;\s?/g, '« ')
+        .replace(/\s?&raquo;/g, ' »')
         .replace(/<[^>]*>/g, '');
 }
 
-export default function MedicinesIndex({ medicines, categories, activeIngredients, branches, filters, ui }: Props) {
-    const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(ui.openCreateModal ?? false);
-    const [categoryOptions, setCategoryOptions] = useState<Option[]>(categories);
-    const [activeIngredientOptions, setActiveIngredientOptions] = useState<Option[]>(activeIngredients);
+export default function MedicinesIndex({
+    medicines,
+    categories,
+    activeIngredients,
+    branches,
+    filters,
+    ui,
+}: Props) {
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(
+        ui.openCreateModal ?? false,
+    );
+    const [categoryOptions, setCategoryOptions] =
+        useState<Option[]>(categories);
+    const [activeIngredientOptions, setActiveIngredientOptions] =
+        useState<Option[]>(activeIngredients);
 
     const filterForm = useForm({
         search: filters.search ?? '',
@@ -104,13 +130,25 @@ export default function MedicinesIndex({ medicines, categories, activeIngredient
     };
 
     const getCsrfToken = (): string => {
-        return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? '';
+        return (
+            document
+                .querySelector('meta[name="csrf-token"]')
+                ?.getAttribute('content') ?? ''
+        );
     };
 
-    const parseErrorMessage = async (response: Response, fallback: string): Promise<string> => {
+    const parseErrorMessage = async (
+        response: Response,
+        fallback: string,
+    ): Promise<string> => {
         try {
-            const payload = await response.json() as { message?: string; errors?: Record<string, string[] | undefined> };
-            const firstError = Object.values(payload.errors ?? {}).flat().find(Boolean);
+            const payload = (await response.json()) as {
+                message?: string;
+                errors?: Record<string, string[] | undefined>;
+            };
+            const firstError = Object.values(payload.errors ?? {})
+                .flat()
+                .find(Boolean);
 
             return firstError ?? payload.message ?? fallback;
         } catch {
@@ -131,16 +169,23 @@ export default function MedicinesIndex({ medicines, categories, activeIngredient
         });
 
         if (!response.ok) {
-            throw new Error(await parseErrorMessage(response, 'No se pudo crear la categoría.'));
+            throw new Error(
+                await parseErrorMessage(
+                    response,
+                    'No se pudo crear la categoría.',
+                ),
+            );
         }
 
-        const payload = await response.json() as { item: Option };
+        const payload = (await response.json()) as { item: Option };
 
-        setCategoryOptions((previous) => (
+        setCategoryOptions((previous) =>
             previous.some((option) => option.id === payload.item.id)
                 ? previous
-                : [...previous, payload.item].sort((a, b) => a.name.localeCompare(b.name))
-        ));
+                : [...previous, payload.item].sort((a, b) =>
+                      a.name.localeCompare(b.name),
+                  ),
+        );
         createForm.setData('category_id', String(payload.item.id));
     };
 
@@ -157,38 +202,71 @@ export default function MedicinesIndex({ medicines, categories, activeIngredient
         });
 
         if (!response.ok) {
-            throw new Error(await parseErrorMessage(response, 'No se pudo crear el principio activo.'));
+            throw new Error(
+                await parseErrorMessage(
+                    response,
+                    'No se pudo crear el principio activo.',
+                ),
+            );
         }
 
-        const payload = await response.json() as { item: Option };
+        const payload = (await response.json()) as { item: Option };
 
-        setActiveIngredientOptions((previous) => (
+        setActiveIngredientOptions((previous) =>
             previous.some((option) => option.id === payload.item.id)
                 ? previous
-                : [...previous, payload.item].sort((a, b) => a.name.localeCompare(b.name))
-        ));
+                : [...previous, payload.item].sort((a, b) =>
+                      a.name.localeCompare(b.name),
+                  ),
+        );
 
         if (!createForm.data.active_ingredient_ids.includes(payload.item.id)) {
-            createForm.setData('active_ingredient_ids', [...createForm.data.active_ingredient_ids, payload.item.id]);
+            createForm.setData('active_ingredient_ids', [
+                ...createForm.data.active_ingredient_ids,
+                payload.item.id,
+            ]);
         }
     };
 
-    const updateCreateStock = (branchId: number, field: 'current_stock' | 'minimum_stock' | 'expiration_date' | 'sale_price', value: string): void => {
-        createForm.setData('stocks', createForm.data.stocks.map((stock) => (
-            stock.branch_id === branchId ? { ...stock, [field]: value } : stock
-        )));
-    };
-
-    const toggleCreateActiveIngredient = (activeIngredientId: number): void => {
-        const exists = createForm.data.active_ingredient_ids.includes(activeIngredientId);
-
-        createForm.setData('active_ingredient_ids', exists
-            ? createForm.data.active_ingredient_ids.filter((id) => id !== activeIngredientId)
-            : [...createForm.data.active_ingredient_ids, activeIngredientId],
+    const updateCreateStock = (
+        branchId: number,
+        field:
+            | 'current_stock'
+            | 'minimum_stock'
+            | 'expiration_date'
+            | 'sale_price',
+        value: string,
+    ): void => {
+        createForm.setData(
+            'stocks',
+            createForm.data.stocks.map((stock) =>
+                stock.branch_id === branchId
+                    ? { ...stock, [field]: value }
+                    : stock,
+            ),
         );
     };
 
-    const submitCreateMedicine = (event: React.FormEvent<HTMLFormElement>): void => {
+    const toggleCreateActiveIngredient = (activeIngredientId: number): void => {
+        const exists =
+            createForm.data.active_ingredient_ids.includes(activeIngredientId);
+
+        createForm.setData(
+            'active_ingredient_ids',
+            exists
+                ? createForm.data.active_ingredient_ids.filter(
+                      (id) => id !== activeIngredientId,
+                  )
+                : [
+                      ...createForm.data.active_ingredient_ids,
+                      activeIngredientId,
+                  ],
+        );
+    };
+
+    const submitCreateMedicine = (
+        event: React.FormEvent<HTMLFormElement>,
+    ): void => {
         event.preventDefault();
 
         createForm.post('/medicines', {
@@ -200,19 +278,28 @@ export default function MedicinesIndex({ medicines, categories, activeIngredient
                 setIsCreateModalOpen(false);
 
                 if (ui.openCreateModal) {
-                    router.get('/medicines', {
-                        search: filterForm.data.search,
-                        category_id: filterForm.data.category_id,
-                    }, { preserveScroll: true, replace: true, preserveState: true });
+                    router.get(
+                        '/medicines',
+                        {
+                            search: filterForm.data.search,
+                            category_id: filterForm.data.category_id,
+                        },
+                        {
+                            preserveScroll: true,
+                            replace: true,
+                            preserveState: true,
+                        },
+                    );
                 }
             },
         });
     };
 
     const deleteMedicine = (medicine: MedicineRow): void => {
-        const warning = medicine.total_stock > 0
-            ? `Este medicamento tiene stock activo (${medicine.total_stock}).\n¿Deseas darlo de baja igualmente?`
-            : '¿Deseas dar de baja este medicamento?';
+        const warning =
+            medicine.total_stock > 0
+                ? `Este medicamento tiene stock activo (${medicine.total_stock}).\n¿Deseas darlo de baja igualmente?`
+                : '¿Deseas dar de baja este medicamento?';
 
         if (!window.confirm(warning)) {
             return;
@@ -232,20 +319,30 @@ export default function MedicinesIndex({ medicines, categories, activeIngredient
                     <div className="bg-primary px-5 py-4 text-primary-foreground md:px-6 md:py-5">
                         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
                             <div>
-                                <h1 className="text-3xl font-semibold tracking-tight">Catálogo de medicamentos</h1>
+                                <h1 className="text-3xl font-semibold tracking-tight">
+                                    Catálogo de medicamentos
+                                </h1>
                                 <p className="mt-1 text-sm text-primary-foreground/85 md:text-base">
-                                    Registra, edita y da de baja medicamentos del catálogo.
+                                    Registra, edita y da de baja medicamentos
+                                    del catálogo.
                                 </p>
                             </div>
 
                             <div className="flex flex-col gap-2 md:flex-row md:flex-wrap md:justify-end">
-                                <Button asChild variant="outline" className="rounded-full border-primary-foreground/20 bg-primary-foreground/10 text-primary-foreground hover:bg-primary-foreground/20 hover:text-primary-foreground">
+                                <Button
+                                    asChild
+                                    variant="outline"
+                                    className="rounded-full border-primary-foreground/20 bg-primary-foreground/10 text-primary-foreground hover:bg-primary-foreground/20 hover:text-primary-foreground"
+                                >
                                     <Link href="/medicines/stock">
                                         <Boxes className="size-4" />
                                         Ver stock
                                     </Link>
                                 </Button>
-                                <Button onClick={() => setIsCreateModalOpen(true)} className="rounded-full border border-primary-foreground/20 bg-primary-foreground text-primary hover:bg-primary-foreground/90">
+                                <Button
+                                    onClick={() => setIsCreateModalOpen(true)}
+                                    className="rounded-full border border-primary-foreground/20 bg-primary-foreground text-primary hover:bg-primary-foreground/90"
+                                >
                                     <Plus className="size-4" />
                                     Registrar medicamento
                                 </Button>
@@ -254,12 +351,17 @@ export default function MedicinesIndex({ medicines, categories, activeIngredient
                     </div>
                 </section>
 
-                <form onSubmit={submitFilters} className="flex flex-col gap-3 rounded-3xl border border-sidebar-border/70 bg-background p-4 shadow-sm lg:flex-row lg:items-center">
+                <form
+                    onSubmit={submitFilters}
+                    className="flex flex-col gap-3 rounded-3xl border border-sidebar-border/70 bg-background p-4 shadow-sm lg:flex-row lg:items-center"
+                >
                     <div className="relative w-full lg:flex-1">
                         <Search className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted-foreground" />
                         <Input
                             value={filterForm.data.search}
-                            onChange={(event) => filterForm.setData('search', event.target.value)}
+                            onChange={(event) =>
+                                filterForm.setData('search', event.target.value)
+                            }
                             placeholder="Buscar por nombre o código de barras..."
                             className="h-11 rounded-full pl-11"
                         />
@@ -268,15 +370,22 @@ export default function MedicinesIndex({ medicines, categories, activeIngredient
                     <div className="grid gap-3 md:grid-cols-2 lg:flex lg:w-auto lg:items-center lg:gap-2">
                         <Select
                             value={filterForm.data.category_id}
-                            onValueChange={(value) => filterForm.setData('category_id', value)}
+                            onValueChange={(value) =>
+                                filterForm.setData('category_id', value)
+                            }
                         >
                             <SelectTrigger className="h-11 rounded-full border-input bg-background px-4 text-sm shadow-xs lg:w-56">
                                 <SelectValue placeholder="Todas las categorías" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="all">Todas las categorías</SelectItem>
+                                <SelectItem value="all">
+                                    Todas las categorías
+                                </SelectItem>
                                 {categories.map((category) => (
-                                    <SelectItem key={category.id} value={String(category.id)}>
+                                    <SelectItem
+                                        key={category.id}
+                                        value={String(category.id)}
+                                    >
                                         {category.name}
                                     </SelectItem>
                                 ))}
@@ -284,12 +393,27 @@ export default function MedicinesIndex({ medicines, categories, activeIngredient
                         </Select>
 
                         <div className="min-w-0">
-                            <BarcodeScannerDialog onDetected={(barcode) => filterForm.setData('search', barcode)} triggerLabel="Escanear" />
+                            <BarcodeScannerDialog
+                                onDetected={(barcode) =>
+                                    filterForm.setData('search', barcode)
+                                }
+                                triggerLabel="Escanear"
+                            />
                         </div>
 
                         <div className="flex items-center justify-start gap-2 md:col-span-2 md:justify-end lg:justify-end">
-                            <Button type="submit" className="h-11 rounded-full px-5">Buscar</Button>
-                            <Button type="button" variant="ghost" className="h-11 rounded-full px-5 whitespace-nowrap" onClick={clearFilters}>
+                            <Button
+                                type="submit"
+                                className="h-11 rounded-full px-5"
+                            >
+                                Buscar
+                            </Button>
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                className="h-11 rounded-full px-5 whitespace-nowrap"
+                                onClick={clearFilters}
+                            >
                                 Limpiar
                             </Button>
                         </div>
@@ -298,24 +422,44 @@ export default function MedicinesIndex({ medicines, categories, activeIngredient
 
                 <div className="rounded-3xl border border-sidebar-border/70 bg-background shadow-sm">
                     <div className="hidden overflow-hidden rounded-3xl lg:block">
-                        <div className="table-header-highlight grid grid-cols-[1.2fr_0.95fr_1.1fr_0.7fr_0.95fr_0.8fr] border-b border-sidebar-border/70 px-6 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+                        <div className="table-header-highlight grid grid-cols-[1.2fr_0.95fr_1.1fr_0.7fr_0.95fr_0.8fr] border-b border-sidebar-border/70 px-6 py-4 text-[11px] font-bold tracking-[0.2em] text-muted-foreground uppercase">
                             <span className="leading-tight">Medicamento</span>
-                            <span className="text-center leading-tight">Categoría /<br />Código</span>
-                            <span className="text-center leading-tight">Principios<br />activos</span>
-                            <span className="text-center leading-tight">Stock<br />total</span>
-                            <span className="text-center leading-tight">Alertas</span>
-                            <span className="text-right leading-tight">Acciones</span>
+                            <span className="text-center leading-tight">
+                                Categoría /<br />
+                                Código
+                            </span>
+                            <span className="text-center leading-tight">
+                                Principios
+                                <br />
+                                activos
+                            </span>
+                            <span className="text-center leading-tight">
+                                Stock
+                                <br />
+                                total
+                            </span>
+                            <span className="text-center leading-tight">
+                                Alertas
+                            </span>
+                            <span className="text-right leading-tight">
+                                Acciones
+                            </span>
                         </div>
 
                         <div className="table-zebra divide-y divide-sidebar-border/70">
                             {medicines.data.length > 0 ? (
                                 medicines.data.map((medicine) => (
-                                    <div key={medicine.id} className="grid grid-cols-[1.2fr_0.95fr_1.1fr_0.7fr_0.95fr_0.8fr] items-center gap-4 px-6 py-5">
+                                    <div
+                                        key={medicine.id}
+                                        className="grid grid-cols-[1.2fr_0.95fr_1.1fr_0.7fr_0.95fr_0.8fr] items-center gap-4 px-6 py-5"
+                                    >
                                         <div className="flex min-w-0 items-center gap-3">
                                             <div className="flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-sidebar-border/70 bg-muted/40">
                                                 {medicine.image_path ? (
                                                     <img
-                                                        src={medicine.image_path}
+                                                        src={
+                                                            medicine.image_path
+                                                        }
                                                         alt={`Imagen de ${medicine.name}`}
                                                         className="size-full object-cover"
                                                     />
@@ -324,57 +468,103 @@ export default function MedicinesIndex({ medicines, categories, activeIngredient
                                                 )}
                                             </div>
                                             <div className="min-w-0">
-                                                <p className="truncate font-semibold text-foreground">{medicine.name}</p>
-                                                <p className="truncate text-xs text-muted-foreground">{medicine.description || 'Sin descripción'}</p>
+                                                <p className="truncate font-semibold text-foreground">
+                                                    {medicine.name}
+                                                </p>
+                                                <p className="truncate text-xs text-muted-foreground">
+                                                    {medicine.description ||
+                                                        'Sin descripción'}
+                                                </p>
                                             </div>
                                         </div>
 
                                         <div className="text-center">
-                                            <p className="text-sm text-foreground">{medicine.category ?? 'Sin categoría'}</p>
-                                            <p className="text-xs text-muted-foreground">{medicine.barcode}</p>
+                                            <p className="text-sm text-foreground">
+                                                {medicine.category ??
+                                                    'Sin categoría'}
+                                            </p>
+                                            <p className="text-xs text-muted-foreground">
+                                                {medicine.barcode}
+                                            </p>
                                         </div>
 
                                         <p className="text-center text-sm text-muted-foreground">
-                                            {medicine.active_ingredients.length > 0 ? medicine.active_ingredients.join(', ') : 'Sin principios activos'}
+                                            {medicine.active_ingredients
+                                                .length > 0
+                                                ? medicine.active_ingredients.join(
+                                                      ', ',
+                                                  )
+                                                : 'Sin principios activos'}
                                         </p>
 
-                                        <p className="text-center text-sm font-semibold text-foreground">{medicine.total_stock}</p>
+                                        <p className="text-center text-sm font-semibold text-foreground">
+                                            {medicine.total_stock}
+                                        </p>
 
                                         <div className="flex flex-wrap justify-center gap-2">
                                             {medicine.expired && (
-                                                <Badge variant="outline" className="border-rose-200 bg-rose-50 text-rose-700">
+                                                <Badge
+                                                    variant="outline"
+                                                    className="border-rose-200 bg-rose-50 text-rose-700"
+                                                >
                                                     <AlertTriangle className="size-3" />
                                                     Vencido
                                                 </Badge>
                                             )}
                                             {medicine.low_stock && (
-                                                <Badge variant="outline" className="border-rose-200 bg-rose-50 text-rose-700">
+                                                <Badge
+                                                    variant="outline"
+                                                    className="border-rose-200 bg-rose-50 text-rose-700"
+                                                >
                                                     <AlertTriangle className="size-3" />
                                                     Stock bajo
                                                 </Badge>
                                             )}
-                                            {!medicine.expired && medicine.near_expiry && (
-                                                <Badge variant="outline" className="border-amber-200 bg-amber-50 text-amber-700">
-                                                    <TriangleAlert className="size-3" />
-                                                    Próximo a caducar
-                                                </Badge>
-                                            )}
-                                            {!medicine.expired && !medicine.low_stock && !medicine.near_expiry && (
-                                                <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-700">
-                                                    <Boxes className="size-3" />
-                                                    Saludable
-                                                </Badge>
-                                            )}
+                                            {!medicine.expired &&
+                                                medicine.near_expiry && (
+                                                    <Badge
+                                                        variant="outline"
+                                                        className="border-amber-200 bg-amber-50 text-amber-700"
+                                                    >
+                                                        <TriangleAlert className="size-3" />
+                                                        Próximo a caducar
+                                                    </Badge>
+                                                )}
+                                            {!medicine.expired &&
+                                                !medicine.low_stock &&
+                                                !medicine.near_expiry && (
+                                                    <Badge
+                                                        variant="outline"
+                                                        className="border-emerald-200 bg-emerald-50 text-emerald-700"
+                                                    >
+                                                        <Boxes className="size-3" />
+                                                        Saludable
+                                                    </Badge>
+                                                )}
                                         </div>
 
                                         <div className="flex flex-col items-end gap-2 xl:flex-row xl:justify-end">
-                                            <Button asChild variant="outline" size="sm" className="rounded-full">
-                                                <Link href={`/medicines/${medicine.id}/edit`}>
+                                            <Button
+                                                asChild
+                                                variant="outline"
+                                                size="sm"
+                                                className="rounded-full"
+                                            >
+                                                <Link
+                                                    href={`/medicines/${medicine.id}/edit`}
+                                                >
                                                     <PencilLine className="size-4" />
                                                     Editar
                                                 </Link>
                                             </Button>
-                                            <Button size="sm" variant="destructive" className="rounded-full" onClick={() => deleteMedicine(medicine)}>
+                                            <Button
+                                                size="sm"
+                                                variant="destructive"
+                                                className="rounded-full"
+                                                onClick={() =>
+                                                    deleteMedicine(medicine)
+                                                }
+                                            >
                                                 <Trash2 className="size-4" />
                                                 Baja
                                             </Button>
@@ -392,7 +582,10 @@ export default function MedicinesIndex({ medicines, categories, activeIngredient
                     <div className="space-y-3 p-4 lg:hidden">
                         {medicines.data.length > 0 ? (
                             medicines.data.map((medicine) => (
-                                <article key={medicine.id} className="rounded-2xl border border-sidebar-border/70 p-4">
+                                <article
+                                    key={medicine.id}
+                                    className="rounded-2xl border border-sidebar-border/70 p-4"
+                                >
                                     <div className="flex items-center gap-3">
                                         <div className="flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-sidebar-border/70 bg-muted/40">
                                             {medicine.image_path ? (
@@ -406,32 +599,82 @@ export default function MedicinesIndex({ medicines, categories, activeIngredient
                                             )}
                                         </div>
                                         <div className="min-w-0">
-                                            <p className="truncate font-semibold text-foreground">{medicine.name}</p>
-                                            <p className="truncate text-sm text-muted-foreground">{medicine.category ?? 'Sin categoría'} · {medicine.barcode}</p>
+                                            <p className="truncate font-semibold text-foreground">
+                                                {medicine.name}
+                                            </p>
+                                            <p className="truncate text-sm text-muted-foreground">
+                                                {medicine.category ??
+                                                    'Sin categoría'}{' '}
+                                                · {medicine.barcode}
+                                            </p>
                                         </div>
                                     </div>
-                                    <p className="mt-2 text-sm text-muted-foreground">Stock: <span className="font-medium text-foreground">{medicine.total_stock}</span></p>
+                                    <p className="mt-2 text-sm text-muted-foreground">
+                                        Stock:{' '}
+                                        <span className="font-medium text-foreground">
+                                            {medicine.total_stock}
+                                        </span>
+                                    </p>
 
                                     <div className="mt-3 flex flex-wrap gap-2">
-                                            {medicine.expired && (
-                                                <Badge variant="outline" className="border-rose-200 bg-rose-50 text-rose-700">Vencido</Badge>
-                                            )}
+                                        {medicine.expired && (
+                                            <Badge
+                                                variant="outline"
+                                                className="border-rose-200 bg-rose-50 text-rose-700"
+                                            >
+                                                Vencido
+                                            </Badge>
+                                        )}
                                         {medicine.low_stock && (
-                                            <Badge variant="outline" className="border-rose-200 bg-rose-50 text-rose-700">Stock bajo</Badge>
+                                            <Badge
+                                                variant="outline"
+                                                className="border-rose-200 bg-rose-50 text-rose-700"
+                                            >
+                                                Stock bajo
+                                            </Badge>
                                         )}
-                                            {!medicine.expired && medicine.near_expiry && (
-                                            <Badge variant="outline" className="border-amber-200 bg-amber-50 text-amber-700">Próximo a caducar</Badge>
-                                        )}
-                                            {!medicine.expired && !medicine.low_stock && !medicine.near_expiry && (
-                                                <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-700">Saludable</Badge>
+                                        {!medicine.expired &&
+                                            medicine.near_expiry && (
+                                                <Badge
+                                                    variant="outline"
+                                                    className="border-amber-200 bg-amber-50 text-amber-700"
+                                                >
+                                                    Próximo a caducar
+                                                </Badge>
+                                            )}
+                                        {!medicine.expired &&
+                                            !medicine.low_stock &&
+                                            !medicine.near_expiry && (
+                                                <Badge
+                                                    variant="outline"
+                                                    className="border-emerald-200 bg-emerald-50 text-emerald-700"
+                                                >
+                                                    Saludable
+                                                </Badge>
                                             )}
                                     </div>
 
                                     <div className="mt-4 flex flex-wrap gap-2">
-                                        <Button asChild variant="outline" size="sm" className="rounded-full">
-                                            <Link href={`/medicines/${medicine.id}/edit`}>Editar</Link>
+                                        <Button
+                                            asChild
+                                            variant="outline"
+                                            size="sm"
+                                            className="rounded-full"
+                                        >
+                                            <Link
+                                                href={`/medicines/${medicine.id}/edit`}
+                                            >
+                                                Editar
+                                            </Link>
                                         </Button>
-                                        <Button size="sm" variant="destructive" className="rounded-full" onClick={() => deleteMedicine(medicine)}>
+                                        <Button
+                                            size="sm"
+                                            variant="destructive"
+                                            className="rounded-full"
+                                            onClick={() =>
+                                                deleteMedicine(medicine)
+                                            }
+                                        >
                                             Dar de baja
                                         </Button>
                                     </div>
@@ -446,7 +689,8 @@ export default function MedicinesIndex({ medicines, categories, activeIngredient
 
                     <div className="flex flex-col gap-4 border-t border-sidebar-border/70 px-4 py-4 md:flex-row md:items-center md:justify-between md:px-6">
                         <p className="text-sm text-muted-foreground">
-                            Mostrando {medicines.from ?? 0} a {medicines.to ?? 0} de {medicines.total} registros.
+                            Mostrando {medicines.from ?? 0} a{' '}
+                            {medicines.to ?? 0} de {medicines.total} registros.
                         </p>
 
                         <nav className="flex flex-wrap items-center gap-2">
@@ -464,13 +708,21 @@ export default function MedicinesIndex({ medicines, categories, activeIngredient
                                                 ? 'border-emerald-600 bg-emerald-600 text-white'
                                                 : 'border-sidebar-border/70 bg-background text-foreground hover:bg-muted'
                                         }`}
-                                        dangerouslySetInnerHTML={{ __html: decodePaginationLabel(link.label) }}
+                                        dangerouslySetInnerHTML={{
+                                            __html: decodePaginationLabel(
+                                                link.label,
+                                            ),
+                                        }}
                                     />
                                 ) : (
                                     <span
                                         key={index}
                                         className={`inline-flex min-w-10 items-center justify-center rounded-full border px-3 py-2 text-sm text-muted-foreground ${isDisabled ? 'opacity-50' : ''}`}
-                                        dangerouslySetInnerHTML={{ __html: decodePaginationLabel(link.label) }}
+                                        dangerouslySetInnerHTML={{
+                                            __html: decodePaginationLabel(
+                                                link.label,
+                                            ),
+                                        }}
                                     />
                                 );
                             })}
@@ -479,8 +731,11 @@ export default function MedicinesIndex({ medicines, categories, activeIngredient
                 </div>
             </div>
 
-            <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-                <DialogContent className="w-[calc(100vw-1rem)] max-w-none max-h-[92vh] overflow-y-auto rounded-3xl border-sidebar-border/70 p-4 sm:w-[calc(100vw-2rem)] sm:max-w-none sm:p-6 lg:w-[min(96vw,1300px)] [scrollbar-gutter:stable] [scrollbar-width:thin] [scrollbar-color:rgb(16_185_129)_transparent] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-emerald-500/70 [&::-webkit-scrollbar-thumb:hover]:bg-emerald-600/80">
+            <Dialog
+                open={isCreateModalOpen}
+                onOpenChange={setIsCreateModalOpen}
+            >
+                <DialogContent className="max-h-[92vh] w-[calc(100vw-1rem)] max-w-none overflow-y-auto rounded-3xl border-sidebar-border/70 p-4 [scrollbar-color:rgb(16_185_129)_transparent] [scrollbar-gutter:stable] [scrollbar-width:thin] sm:w-[calc(100vw-2rem)] sm:max-w-none sm:p-6 lg:w-[min(96vw,1300px)] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-emerald-500/70 [&::-webkit-scrollbar-thumb:hover]:bg-emerald-600/80 [&::-webkit-scrollbar-track]:bg-transparent">
                     <DialogHeader className="sr-only">
                         <DialogTitle>Registrar medicamento</DialogTitle>
                         <DialogDescription>
@@ -501,12 +756,16 @@ export default function MedicinesIndex({ medicines, categories, activeIngredient
                         onSubmit={submitCreateMedicine}
                         onCancel={() => setIsCreateModalOpen(false)}
                         setData={createForm.setData}
-                        setBarcode={(barcode) => createForm.setData('barcode', barcode)}
+                        setBarcode={(barcode) =>
+                            createForm.setData('barcode', barcode)
+                        }
                         updateStock={updateCreateStock}
                         toggleActiveIngredient={toggleCreateActiveIngredient}
                         onQuickCreateCategory={quickCreateCategory}
-                        onQuickCreateActiveIngredient={quickCreateActiveIngredient}
-                                            isSuperuser={ui.is_superuser}
+                        onQuickCreateActiveIngredient={
+                            quickCreateActiveIngredient
+                        }
+                        isSuperuser={ui.is_superuser}
                     />
                 </DialogContent>
             </Dialog>

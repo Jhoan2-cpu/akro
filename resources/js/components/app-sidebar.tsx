@@ -1,16 +1,16 @@
 import { Link, usePage } from '@inertiajs/react';
-import { memo } from 'react';
-import { 
-    Boxes, 
-    Clock3, 
-    LayoutGrid, 
-    Pill, 
+import {
+    Boxes,
+    Clock3,
+    LayoutGrid,
+    Pill,
     ReceiptText,
     FileSpreadsheet,
-    Tags, 
+    Tags,
     Users,
-    Building2 
+    Building2,
 } from 'lucide-react';
+import { memo } from 'react';
 import AppLogo from '@/components/app-logo';
 import {
     Sidebar,
@@ -30,8 +30,12 @@ export const AppSidebar = memo(function AppSidebar() {
     const { auth } = usePage<{
         auth: { user: { role?: string } };
     }>().props;
-    
-    const userRole = auth.user.role as 'employee' | 'admin' | 'superuser' | undefined;
+
+    const userRole = auth.user.role as
+        | 'employee'
+        | 'admin'
+        | 'superuser'
+        | undefined;
     const isSuperuser = userRole === 'superuser';
     const isAdminOrSuperuser = userRole === 'admin' || userRole === 'superuser';
     const { isCurrentUrl } = useCurrentUrl();
@@ -108,7 +112,9 @@ export const AppSidebar = memo(function AppSidebar() {
     const renderNavGroup = (label: string, items: NavItem[]) => {
         return (
             <SidebarGroup key={label} className="px-2 py-0">
-                <SidebarGroupLabel className="font-semibold">{label}</SidebarGroupLabel>
+                <SidebarGroupLabel className="font-semibold">
+                    {label}
+                </SidebarGroupLabel>
                 <SidebarMenu>
                     {items.map((item) => (
                         <SidebarMenuItem key={item.title}>
@@ -152,12 +158,13 @@ export const AppSidebar = memo(function AppSidebar() {
                 {renderNavGroup('Reportes', reportesItems)}
 
                 {/* Catálogo/Maestros - Admin and superuser only */}
-                {isAdminOrSuperuser && renderNavGroup('Catálogo / Maestros', catalogoItems)}
+                {isAdminOrSuperuser &&
+                    renderNavGroup('Catálogo / Maestros', catalogoItems)}
 
                 {/* Administración - Admin and superuser only */}
-                {isAdminOrSuperuser && renderNavGroup('Administración', adminItems)}
+                {isAdminOrSuperuser &&
+                    renderNavGroup('Administración', adminItems)}
             </SidebarContent>
-
         </Sidebar>
     );
 });

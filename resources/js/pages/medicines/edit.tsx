@@ -1,8 +1,8 @@
 import { Head, router, useForm } from '@inertiajs/react';
-import { useState  } from 'react';
-import type {FormEvent} from 'react';
+import { useState } from 'react';
+import type { FormEvent } from 'react';
 import MedicineForm from '@/components/medicines/medicine-form';
-import type {MedicineFormValues} from '@/components/medicines/medicine-form';
+import type { MedicineFormValues } from '@/components/medicines/medicine-form';
 
 type Option = { id: number; name: string };
 
@@ -35,11 +35,21 @@ type Props = {
     };
 };
 
-export default function EditMedicine({ medicine, categories, activeIngredients, branches, ui }: Props) {
-    const [categoryOptions, setCategoryOptions] = useState<Option[]>(categories);
-    const [activeIngredientOptions, setActiveIngredientOptions] = useState<Option[]>(activeIngredients);
+export default function EditMedicine({
+    medicine,
+    categories,
+    activeIngredients,
+    branches,
+    ui,
+}: Props) {
+    const [categoryOptions, setCategoryOptions] =
+        useState<Option[]>(categories);
+    const [activeIngredientOptions, setActiveIngredientOptions] =
+        useState<Option[]>(activeIngredients);
 
-    const normalizeDateForInput = (value: string | null | undefined): string => {
+    const normalizeDateForInput = (
+        value: string | null | undefined,
+    ): string => {
         if (!value) {
             return '';
         }
@@ -83,29 +93,59 @@ export default function EditMedicine({ medicine, categories, activeIngredients, 
         });
     };
 
-    const updateStock = (branchId: number, field: 'current_stock' | 'minimum_stock' | 'expiration_date' | 'sale_price', value: string): void => {
-        form.setData('stocks', form.data.stocks.map((stock) => (
-            stock.branch_id === branchId ? { ...stock, [field]: value } : stock
-        )));
+    const updateStock = (
+        branchId: number,
+        field:
+            | 'current_stock'
+            | 'minimum_stock'
+            | 'expiration_date'
+            | 'sale_price',
+        value: string,
+    ): void => {
+        form.setData(
+            'stocks',
+            form.data.stocks.map((stock) =>
+                stock.branch_id === branchId
+                    ? { ...stock, [field]: value }
+                    : stock,
+            ),
+        );
     };
 
     const toggleActiveIngredient = (activeIngredientId: number): void => {
-        const exists = form.data.active_ingredient_ids.includes(activeIngredientId);
+        const exists =
+            form.data.active_ingredient_ids.includes(activeIngredientId);
 
-        form.setData('active_ingredient_ids', exists
-            ? form.data.active_ingredient_ids.filter((id) => id !== activeIngredientId)
-            : [...form.data.active_ingredient_ids, activeIngredientId],
+        form.setData(
+            'active_ingredient_ids',
+            exists
+                ? form.data.active_ingredient_ids.filter(
+                      (id) => id !== activeIngredientId,
+                  )
+                : [...form.data.active_ingredient_ids, activeIngredientId],
         );
     };
 
     const getCsrfToken = (): string => {
-        return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? '';
+        return (
+            document
+                .querySelector('meta[name="csrf-token"]')
+                ?.getAttribute('content') ?? ''
+        );
     };
 
-    const parseErrorMessage = async (response: Response, fallback: string): Promise<string> => {
+    const parseErrorMessage = async (
+        response: Response,
+        fallback: string,
+    ): Promise<string> => {
         try {
-            const payload = await response.json() as { message?: string; errors?: Record<string, string[] | undefined> };
-            const firstError = Object.values(payload.errors ?? {}).flat().find(Boolean);
+            const payload = (await response.json()) as {
+                message?: string;
+                errors?: Record<string, string[] | undefined>;
+            };
+            const firstError = Object.values(payload.errors ?? {})
+                .flat()
+                .find(Boolean);
 
             return firstError ?? payload.message ?? fallback;
         } catch {
@@ -126,16 +166,23 @@ export default function EditMedicine({ medicine, categories, activeIngredients, 
         });
 
         if (!response.ok) {
-            throw new Error(await parseErrorMessage(response, 'No se pudo crear la categoría.'));
+            throw new Error(
+                await parseErrorMessage(
+                    response,
+                    'No se pudo crear la categoría.',
+                ),
+            );
         }
 
-        const payload = await response.json() as { item: Option };
+        const payload = (await response.json()) as { item: Option };
 
-        setCategoryOptions((previous) => (
+        setCategoryOptions((previous) =>
             previous.some((option) => option.id === payload.item.id)
                 ? previous
-                : [...previous, payload.item].sort((a, b) => a.name.localeCompare(b.name))
-        ));
+                : [...previous, payload.item].sort((a, b) =>
+                      a.name.localeCompare(b.name),
+                  ),
+        );
         form.setData('category_id', String(payload.item.id));
     };
 
@@ -152,19 +199,29 @@ export default function EditMedicine({ medicine, categories, activeIngredients, 
         });
 
         if (!response.ok) {
-            throw new Error(await parseErrorMessage(response, 'No se pudo crear el principio activo.'));
+            throw new Error(
+                await parseErrorMessage(
+                    response,
+                    'No se pudo crear el principio activo.',
+                ),
+            );
         }
 
-        const payload = await response.json() as { item: Option };
+        const payload = (await response.json()) as { item: Option };
 
-        setActiveIngredientOptions((previous) => (
+        setActiveIngredientOptions((previous) =>
             previous.some((option) => option.id === payload.item.id)
                 ? previous
-                : [...previous, payload.item].sort((a, b) => a.name.localeCompare(b.name))
-        ));
+                : [...previous, payload.item].sort((a, b) =>
+                      a.name.localeCompare(b.name),
+                  ),
+        );
 
         if (!form.data.active_ingredient_ids.includes(payload.item.id)) {
-            form.setData('active_ingredient_ids', [...form.data.active_ingredient_ids, payload.item.id]);
+            form.setData('active_ingredient_ids', [
+                ...form.data.active_ingredient_ids,
+                payload.item.id,
+            ]);
         }
     };
 
