@@ -19,7 +19,8 @@ type ExpiryNotifications = {
 };
 
 export function useExpiryAlertToast(): void {
-    const { notifications } = usePage<{ notifications?: ExpiryNotifications }>().props;
+    const { notifications } = usePage<{ notifications?: ExpiryNotifications }>()
+        .props;
     const lastSignatureRef = useRef<string | null>(null);
 
     useEffect(() => {
@@ -34,7 +35,11 @@ export function useExpiryAlertToast(): void {
             items,
         } = notifications;
 
-        if (expiredCount === 0 && nearExpiryCount === 0 && lowStockCount === 0) {
+        if (
+            expiredCount === 0 &&
+            nearExpiryCount === 0 &&
+            lowStockCount === 0
+        ) {
             return;
         }
 
@@ -47,11 +52,12 @@ export function useExpiryAlertToast(): void {
 
         lastSignatureRef.current = signature;
 
-        const baseMessage = expiredCount > 0
-            ? `Hay ${expiredCount} producto(s) vencido(s). Toma medidas correctivas de inmediato.`
-                        : lowStockCount > 0
-                            ? `Hay ${lowStockCount} producto(s) con stock bajo. Reabastece cuanto antes.`
-                            : `Hay ${nearExpiryCount} producto(s) por caducar (<30 días). Toma medidas preventivas.`;
+        const baseMessage =
+            expiredCount > 0
+                ? `Hay ${expiredCount} producto(s) vencido(s). Toma medidas correctivas de inmediato.`
+                : lowStockCount > 0
+                  ? `Hay ${lowStockCount} producto(s) con stock bajo. Reabastece cuanto antes.`
+                  : `Hay ${nearExpiryCount} producto(s) por caducar (<30 días). Toma medidas preventivas.`;
 
         const detail = firstItem
             ? `Ejemplo: ${firstItem.medicine_name} en ${firstItem.branch_name}.`

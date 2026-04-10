@@ -15,10 +15,7 @@ type Props = {
     canResetPassword: boolean;
 };
 
-export default function Login({
-    status,
-    canResetPassword,
-}: Props) {
+export default function Login({ status, canResetPassword }: Props) {
     return (
         <>
             <Head title="Log in" />
@@ -52,7 +49,7 @@ export default function Login({
                                     {canResetPassword && (
                                         <TextLink
                                             href={request()}
-                                            className="hidden ml-auto text-sm"
+                                            className="ml-auto hidden text-sm"
                                             tabIndex={5}
                                         >
                                             Forgot password?
@@ -90,7 +87,6 @@ export default function Login({
                                 Log in
                             </Button>
                         </div>
-
                     </>
                 )}
             </Form>

@@ -37,7 +37,10 @@ type Props = {
     submitLabel: string;
     onCancel: () => void;
     data: UserUpsertFormValues;
-    setData: (field: keyof UserUpsertFormValues, value: string | File | null) => void;
+    setData: (
+        field: keyof UserUpsertFormValues,
+        value: string | File | null,
+    ) => void;
     errors: Partial<Record<keyof UserUpsertFormValues, string>>;
     branches: BranchOption[];
     processing: boolean;
@@ -56,9 +59,21 @@ const roleOptions = [
 ];
 
 const statusOptions = [
-    { value: 'active', label: 'Activo', tone: 'border-lime-300 bg-lime-50 text-lime-800' },
-    { value: 'inactive', label: 'Inactivo', tone: 'border-slate-200 bg-slate-100 text-slate-700' },
-    { value: 'suspended', label: 'Suspendido', tone: 'border-rose-200 bg-rose-50 text-rose-700' },
+    {
+        value: 'active',
+        label: 'Activo',
+        tone: 'border-lime-300 bg-lime-50 text-lime-800',
+    },
+    {
+        value: 'inactive',
+        label: 'Inactivo',
+        tone: 'border-slate-200 bg-slate-100 text-slate-700',
+    },
+    {
+        value: 'suspended',
+        label: 'Suspendido',
+        tone: 'border-rose-200 bg-rose-50 text-rose-700',
+    },
 ];
 
 export default function UserUpsertModal({
@@ -79,10 +94,12 @@ export default function UserUpsertModal({
     canAssignSuperuser = false,
 }: Props) {
     const getInitials = useInitials();
-    const fieldSurfaceClass = mode === 'page' ? 'bg-neutral-100/60' : 'bg-neutral-50';
-    const formShellClassName = mode === 'page'
-        ? 'rounded-3xl border border-sidebar-border/70 bg-white p-5 shadow-sm sm:p-8'
-        : 'p-5 sm:p-8';
+    const fieldSurfaceClass =
+        mode === 'page' ? 'bg-neutral-100/60' : 'bg-neutral-50';
+    const formShellClassName =
+        mode === 'page'
+            ? 'rounded-3xl border border-sidebar-border/70 bg-white p-5 shadow-sm sm:p-8'
+            : 'p-5 sm:p-8';
 
     const photoPreview = useMemo(() => {
         if (!data.profile_photo) {
@@ -125,7 +142,9 @@ export default function UserUpsertModal({
 
             <div className="grid gap-6 lg:grid-cols-[1fr_1.2fr]">
                 <section className="space-y-5">
-                    <div className={`flex items-start gap-4 rounded-3xl p-4 ${fieldSurfaceClass}`}>
+                    <div
+                        className={`flex items-start gap-4 rounded-3xl p-4 ${fieldSurfaceClass}`}
+                    >
                         <div className="shrink-0">
                             <input
                                 id="profile_photo"
@@ -152,7 +171,9 @@ export default function UserUpsertModal({
                                             className="object-cover"
                                         />
                                         <AvatarFallback className="rounded-none bg-emerald-100 text-emerald-800">
-                                            {getInitials(data.name || 'Usuario')}
+                                            {getInitials(
+                                                data.name || 'Usuario',
+                                            )}
                                         </AvatarFallback>
                                     </Avatar>
                                 ) : (
@@ -166,7 +187,8 @@ export default function UserUpsertModal({
                                 Foto de Perfil
                             </p>
                             <p className="mt-1 text-xs leading-5 text-neutral-500 sm:text-sm">
-                                Formatos recomendados: JPG o PNG. Tamaño máximo 2MB.
+                                Formatos recomendados: JPG o PNG. Tamaño máximo
+                                2MB.
                             </p>
                             <label
                                 htmlFor="profile_photo"
@@ -184,13 +206,18 @@ export default function UserUpsertModal({
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="name" className="text-xs font-semibold uppercase tracking-[0.18em] text-neutral-500">
+                        <Label
+                            htmlFor="name"
+                            className="text-xs font-semibold tracking-[0.18em] text-neutral-500 uppercase"
+                        >
                             Nombre Completo
                         </Label>
                         <Input
                             id="name"
                             value={data.name}
-                            onChange={(event) => setData('name', event.target.value)}
+                            onChange={(event) =>
+                                setData('name', event.target.value)
+                            }
                             className={`h-12 rounded-2xl border-neutral-200 pl-10 ${fieldSurfaceClass}`}
                             placeholder="Ej. Juan Pérez García"
                         />
@@ -198,14 +225,19 @@ export default function UserUpsertModal({
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="email" className="text-xs font-semibold uppercase tracking-[0.18em] text-neutral-500">
+                        <Label
+                            htmlFor="email"
+                            className="text-xs font-semibold tracking-[0.18em] text-neutral-500 uppercase"
+                        >
                             Correo Electrónico
                         </Label>
                         <Input
                             id="email"
                             type="email"
                             value={data.email}
-                            onChange={(event) => setData('email', event.target.value)}
+                            onChange={(event) =>
+                                setData('email', event.target.value)
+                            }
                             className={`h-12 rounded-2xl border-neutral-200 pl-10 ${fieldSurfaceClass}`}
                             placeholder="usuario@sanlucas.com"
                         />
@@ -216,16 +248,26 @@ export default function UserUpsertModal({
                 <section className="space-y-5">
                     <div className="grid gap-4 md:grid-cols-2">
                         <div className="space-y-2">
-                            <Label className="text-xs font-semibold uppercase tracking-[0.18em] text-neutral-500">
+                            <Label className="text-xs font-semibold tracking-[0.18em] text-neutral-500 uppercase">
                                 Rol del Sistema
                             </Label>
-                            <Select value={data.role} onValueChange={(value) => setData('role', value)}>
-                                <SelectTrigger className={`h-12 w-full rounded-2xl border-neutral-200 px-4 text-sm shadow-none ${fieldSurfaceClass}`}>
+                            <Select
+                                value={data.role}
+                                onValueChange={(value) =>
+                                    setData('role', value)
+                                }
+                            >
+                                <SelectTrigger
+                                    className={`h-12 w-full rounded-2xl border-neutral-200 px-4 text-sm shadow-none ${fieldSurfaceClass}`}
+                                >
                                     <SelectValue placeholder="Seleccionar rol" />
                                 </SelectTrigger>
                                 <SelectContent>
                                     {availableRoleOptions.map((option) => (
-                                        <SelectItem key={option.value} value={option.value}>
+                                        <SelectItem
+                                            key={option.value}
+                                            value={option.value}
+                                        >
                                             {option.label}
                                         </SelectItem>
                                     ))}
@@ -235,34 +277,44 @@ export default function UserUpsertModal({
                         </div>
 
                         <div className="space-y-2">
-                            <Label className="text-xs font-semibold uppercase tracking-[0.18em] text-neutral-500">
+                            <Label className="text-xs font-semibold tracking-[0.18em] text-neutral-500 uppercase">
                                 Sucursal Asignada
                             </Label>
                             <Select
                                 value={data.branch_id}
-                                onValueChange={(value) => setData('branch_id', value)}
+                                onValueChange={(value) =>
+                                    setData('branch_id', value)
+                                }
                                 disabled={!canSelectBranch}
                             >
-                                <SelectTrigger className={`h-12 w-full rounded-2xl border-neutral-200 px-4 text-sm shadow-none ${fieldSurfaceClass}`}>
+                                <SelectTrigger
+                                    className={`h-12 w-full rounded-2xl border-neutral-200 px-4 text-sm shadow-none ${fieldSurfaceClass}`}
+                                >
                                     <SelectValue placeholder="Seleccionar sucursal" />
                                 </SelectTrigger>
                                 <SelectContent>
                                     {branches.map((branch) => (
-                                        <SelectItem key={branch.id} value={String(branch.id)}>
+                                        <SelectItem
+                                            key={branch.id}
+                                            value={String(branch.id)}
+                                        >
                                             {branch.name}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
                             </Select>
                             {!canSelectBranch && (
-                                <p className="text-xs text-neutral-500">Como administrador, solo puedes crear usuarios en tu sucursal asignada.</p>
+                                <p className="text-xs text-neutral-500">
+                                    Como administrador, solo puedes crear
+                                    usuarios en tu sucursal asignada.
+                                </p>
                             )}
                             <InputError message={errors.branch_id} />
                         </div>
                     </div>
 
                     <div className="space-y-2">
-                        <Label className="text-xs font-semibold uppercase tracking-[0.18em] text-neutral-500">
+                        <Label className="text-xs font-semibold tracking-[0.18em] text-neutral-500 uppercase">
                             Estado Inicial
                         </Label>
                         <div className="grid gap-3 sm:grid-cols-3">
@@ -273,14 +325,18 @@ export default function UserUpsertModal({
                                     <button
                                         key={option.value}
                                         type="button"
-                                        onClick={() => setData('status', option.value)}
+                                        onClick={() =>
+                                            setData('status', option.value)
+                                        }
                                         className={`flex h-14 items-center justify-center gap-2 rounded-2xl border px-3 text-sm font-medium transition ${
                                             isActive
                                                 ? `${option.tone} ring-2 ring-lime-300`
                                                 : `border-neutral-200 ${fieldSurfaceClass} text-neutral-600 hover:border-emerald-300`
                                         }`}
                                     >
-                                        <Circle className={`size-2.5 ${isActive ? 'fill-current' : 'fill-neutral-400 text-neutral-400'}`} />
+                                        <Circle
+                                            className={`size-2.5 ${isActive ? 'fill-current' : 'fill-neutral-400 text-neutral-400'}`}
+                                        />
                                         {option.label}
                                     </button>
                                 );
@@ -291,35 +347,51 @@ export default function UserUpsertModal({
 
                     <div className="grid gap-4 md:grid-cols-2">
                         <div className="space-y-2">
-                            <Label htmlFor="password" className="text-xs font-semibold uppercase tracking-[0.18em] text-neutral-500">
+                            <Label
+                                htmlFor="password"
+                                className="text-xs font-semibold tracking-[0.18em] text-neutral-500 uppercase"
+                            >
                                 Contraseña
                             </Label>
                             <Input
                                 id="password"
                                 type="password"
                                 value={data.password}
-                                onChange={(event) => setData('password', event.target.value)}
+                                onChange={(event) =>
+                                    setData('password', event.target.value)
+                                }
                                 className={`h-12 rounded-2xl border-neutral-200 pl-10 ${fieldSurfaceClass}`}
-                                placeholder={passwordRequired ? 'Mínimo 8 caracteres' : 'Dejar vacío si no cambia'}
+                                placeholder={
+                                    passwordRequired
+                                        ? 'Mínimo 8 caracteres'
+                                        : 'Dejar vacío si no cambia'
+                                }
                             />
                             <InputError message={errors.password} />
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="password_confirmation" className="text-xs font-semibold uppercase tracking-[0.18em] text-neutral-500">
+                            <Label
+                                htmlFor="password_confirmation"
+                                className="text-xs font-semibold tracking-[0.18em] text-neutral-500 uppercase"
+                            >
                                 Confirmar Contraseña
                             </Label>
                             <Input
                                 id="password_confirmation"
                                 type="password"
                                 value={data.password_confirmation}
-                                onChange={(event) => setData('password_confirmation', event.target.value)}
+                                onChange={(event) =>
+                                    setData(
+                                        'password_confirmation',
+                                        event.target.value,
+                                    )
+                                }
                                 className={`h-12 rounded-2xl border-neutral-200 pl-10 ${fieldSurfaceClass}`}
                                 placeholder="Repite la contraseña"
                             />
                         </div>
                     </div>
-
                 </section>
             </div>
 

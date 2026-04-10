@@ -1,5 +1,5 @@
-import { BrowserMultiFormatReader  } from '@zxing/browser';
-import type {IScannerControls} from '@zxing/browser';
+import { BrowserMultiFormatReader } from '@zxing/browser';
+import type { IScannerControls } from '@zxing/browser';
 import { Camera, ScanLine, XCircle } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -17,7 +17,10 @@ type Props = {
     triggerLabel?: string;
 };
 
-export default function BarcodeScannerDialog({ onDetected, triggerLabel = 'Escanear' }: Props) {
+export default function BarcodeScannerDialog({
+    onDetected,
+    triggerLabel = 'Escanear',
+}: Props) {
     const [open, setOpen] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -51,15 +54,27 @@ export default function BarcodeScannerDialog({ onDetected, triggerLabel = 'Escan
                     return videoRef.current;
                 }
 
-                await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+                await new Promise<void>((resolve) =>
+                    requestAnimationFrame(() => resolve()),
+                );
             }
 
             throw new Error('Video element not available');
         };
 
-        const resolvePreferredDeviceId = async (): Promise<string | undefined> => {
-            const devices = await BrowserMultiFormatReader.listVideoInputDevices();
-            console.log('[scanner] video devices found:', devices.length, devices.map((device) => ({ id: device.deviceId, label: device.label })));
+        const resolvePreferredDeviceId = async (): Promise<
+            string | undefined
+        > => {
+            const devices =
+                await BrowserMultiFormatReader.listVideoInputDevices();
+            console.log(
+                '[scanner] video devices found:',
+                devices.length,
+                devices.map((device) => ({
+                    id: device.deviceId,
+                    label: device.label,
+                })),
+            );
 
             if (devices.length === 0) {
                 return undefined;
@@ -80,11 +95,17 @@ export default function BarcodeScannerDialog({ onDetected, triggerLabel = 'Escan
                         return;
                     }
 
-                    if (typeof result !== 'object' || result === null || !('getText' in result)) {
+                    if (
+                        typeof result !== 'object' ||
+                        result === null ||
+                        !('getText' in result)
+                    ) {
                         return;
                     }
 
-                    const barcode = (result as { getText: () => string }).getText().trim();
+                    const barcode = (result as { getText: () => string })
+                        .getText()
+                        .trim();
 
                     if (barcode === '') {
                         return;
@@ -102,17 +123,28 @@ export default function BarcodeScannerDialog({ onDetected, triggerLabel = 'Escan
 
                 try {
                     console.log('[scanner] trying facingMode=environment');
-                    controls = await reader.decodeFromConstraints({
-                        video: {
-                            facingMode: { ideal: 'environment' },
-                            width: { ideal: 1280 },
-                            height: { ideal: 720 },
+                    controls = await reader.decodeFromConstraints(
+                        {
+                            video: {
+                                facingMode: { ideal: 'environment' },
+                                width: { ideal: 1280 },
+                                height: { ideal: 720 },
+                            },
                         },
-                    }, videoElement, handleResult);
+                        videoElement,
+                        handleResult,
+                    );
                 } catch (constraintError) {
-                    console.log('[scanner] facingMode flow failed, fallback to preferred device', constraintError);
+                    console.log(
+                        '[scanner] facingMode flow failed, fallback to preferred device',
+                        constraintError,
+                    );
                     const preferredDeviceId = await resolvePreferredDeviceId();
-                    controls = await reader.decodeFromVideoDevice(preferredDeviceId, videoElement, handleResult);
+                    controls = await reader.decodeFromVideoDevice(
+                        preferredDeviceId,
+                        videoElement,
+                        handleResult,
+                    );
                 }
 
                 if (cancelled) {
@@ -127,7 +159,9 @@ export default function BarcodeScannerDialog({ onDetected, triggerLabel = 'Escan
                 console.error('[scanner] failed to start camera', error);
 
                 if (!cancelled) {
-                    setErrorMessage('No se pudo iniciar la cámara. Verifica permisos del navegador.');
+                    setErrorMessage(
+                        'No se pudo iniciar la cámara. Verifica permisos del navegador.',
+                    );
                 }
             }
         };
@@ -142,7 +176,9 @@ export default function BarcodeScannerDialog({ onDetected, triggerLabel = 'Escan
             hasDetectedRef.current = false;
 
             if (videoElement?.srcObject instanceof MediaStream) {
-                videoElement.srcObject.getTracks().forEach((track) => track.stop());
+                videoElement.srcObject
+                    .getTracks()
+                    .forEach((track) => track.stop());
                 videoElement.srcObject = null;
             }
         };
@@ -160,7 +196,11 @@ export default function BarcodeScannerDialog({ onDetected, triggerLabel = 'Escan
             }}
         >
             <DialogTrigger asChild>
-                <Button type="button" variant="outline" className="rounded-full">
+                <Button
+                    type="button"
+                    variant="outline"
+                    className="rounded-full"
+                >
                     <Camera className="size-4" />
                     {triggerLabel}
                 </Button>
@@ -170,13 +210,20 @@ export default function BarcodeScannerDialog({ onDetected, triggerLabel = 'Escan
                 <DialogHeader>
                     <DialogTitle>Escanear código de barras</DialogTitle>
                     <DialogDescription>
-                        Apunta la cámara al código de barras para capturarlo automáticamente.
+                        Apunta la cámara al código de barras para capturarlo
+                        automáticamente.
                     </DialogDescription>
                 </DialogHeader>
 
                 <div className="space-y-4">
                     <div className="relative overflow-hidden rounded-2xl border border-sidebar-border/70 bg-black">
-                        <video ref={videoRef} className="h-72 w-full object-cover" muted playsInline autoPlay />
+                        <video
+                            ref={videoRef}
+                            className="h-72 w-full object-cover"
+                            muted
+                            playsInline
+                            autoPlay
+                        />
                         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
                             <div className="rounded-xl border-2 border-emerald-300/80 p-10 text-emerald-300/80">
                                 <ScanLine className="size-8" />

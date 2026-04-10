@@ -1,5 +1,11 @@
 import { Head, Link } from '@inertiajs/react';
-import { ArrowDownToLine, ArrowRight, HeartPulse, ShieldCheck, Truck } from 'lucide-react';
+import {
+    ArrowDownToLine,
+    ArrowRight,
+    HeartPulse,
+    ShieldCheck,
+    Truck,
+} from 'lucide-react';
 import { useEffect, useState } from 'react';
 import AppLogo from '@/components/app-logo';
 import { login } from '@/routes';
@@ -13,7 +19,8 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 export default function Welcome() {
-    const [installPromptEvent, setInstallPromptEvent] = useState<BeforeInstallPromptEvent | null>(null);
+    const [installPromptEvent, setInstallPromptEvent] =
+        useState<BeforeInstallPromptEvent | null>(null);
     const [showInstallHint, setShowInstallHint] = useState(false);
 
     useEffect(() => {
@@ -30,7 +37,10 @@ export default function Welcome() {
         window.addEventListener('appinstalled', onInstalled);
 
         return () => {
-            window.removeEventListener('beforeinstallprompt', onBeforeInstallPrompt);
+            window.removeEventListener(
+                'beforeinstallprompt',
+                onBeforeInstallPrompt,
+            );
             window.removeEventListener('appinstalled', onInstalled);
         };
     }, []);
@@ -67,21 +77,30 @@ export default function Welcome() {
                             <div className="relative flex h-full flex-col justify-center gap-8">
                                 <div className="space-y-5">
                                     <div className="flex items-center gap-2">
-                                        <Link href={login()} className="flex items-center gap-2">
+                                        <Link
+                                            href={login()}
+                                            className="flex items-center gap-2"
+                                        >
                                             <AppLogo />
                                         </Link>
                                     </div>
 
-                                    <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-emerald-800">
+                                    <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-xs font-bold tracking-[0.18em] text-emerald-800 uppercase">
                                         Atención farmacéutica integral
                                     </div>
 
                                     <div className="space-y-4">
                                         <h1 className="max-w-md text-4xl font-extrabold tracking-tight text-[#103327] sm:text-5xl lg:text-[3.35rem] lg:leading-[0.98]">
-                                            Cuidado experto y control preciso para una farmacia que se siente cercana.
+                                            Cuidado experto y control preciso
+                                            para una farmacia que se siente
+                                            cercana.
                                         </h1>
                                         <p className="max-w-xl text-base leading-7 text-slate-600 sm:text-lg">
-                                            Farmacia San Lucas centraliza tu operación, ventas y alertas críticas en una sola plataforma, con una experiencia clara para el equipo y para cada paciente.
+                                            Farmacia San Lucas centraliza tu
+                                            operación, ventas y alertas críticas
+                                            en una sola plataforma, con una
+                                            experiencia clara para el equipo y
+                                            para cada paciente.
                                         </p>
                                     </div>
 
@@ -108,7 +127,10 @@ export default function Welcome() {
 
                                     {showInstallHint ? (
                                         <p className="text-sm font-medium text-slate-600">
-                                            Si no aparece la ventana de instalación, abre el menú de Chrome (⋮) y toca "Instalar app" o "Agregar a pantalla principal".
+                                            Si no aparece la ventana de
+                                            instalación, abre el menú de Chrome
+                                            (⋮) y toca "Instalar app" o "Agregar
+                                            a pantalla principal".
                                         </p>
                                     ) : null}
 
@@ -130,10 +152,17 @@ export default function Welcome() {
                                                 text: 'Alertas de stock y caducidad.',
                                             },
                                         ].map((item) => (
-                                            <div key={item.title} className="rounded-2xl border border-emerald-100 bg-white/90 p-4 shadow-sm">
+                                            <div
+                                                key={item.title}
+                                                className="rounded-2xl border border-emerald-100 bg-white/90 p-4 shadow-sm"
+                                            >
                                                 <item.icon className="size-5 text-emerald-700" />
-                                                <p className="mt-3 text-sm font-bold text-[#103327]">{item.title}</p>
-                                                <p className="mt-1 text-sm leading-6 text-slate-600">{item.text}</p>
+                                                <p className="mt-3 text-sm font-bold text-[#103327]">
+                                                    {item.title}
+                                                </p>
+                                                <p className="mt-1 text-sm leading-6 text-slate-600">
+                                                    {item.text}
+                                                </p>
                                             </div>
                                         ))}
                                     </div>
@@ -152,35 +181,48 @@ export default function Welcome() {
                             <div className="relative flex h-full w-full flex-col justify-between p-6 sm:p-8 lg:p-10">
                                 <div className="flex items-start justify-between gap-4">
                                     <div className="max-w-sm rounded-2xl border border-white/30 bg-white/90 px-4 py-3 text-sm font-semibold text-[#103327] shadow-lg backdrop-blur">
-                                        <p className="text-xs font-bold uppercase tracking-[0.16em] text-emerald-700">
+                                        <p className="text-xs font-bold tracking-[0.16em] text-emerald-700 uppercase">
                                             Farmacia San Lucas
                                         </p>
                                         <p className="mt-1 text-base leading-6">
-                                            Atención cercana, control de stock y soporte operativo en cada sucursal.
+                                            Atención cercana, control de stock y
+                                            soporte operativo en cada sucursal.
                                         </p>
                                     </div>
 
-                                    <div className="rounded-full border border-white/30 bg-white/20 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white/90 backdrop-blur">
+                                    <div className="rounded-full border border-white/30 bg-white/20 px-4 py-2 text-xs font-semibold tracking-[0.2em] text-white/90 uppercase backdrop-blur">
                                         Salud que se nota
                                     </div>
                                 </div>
 
                                 <div className="max-w-xl rounded-[1.75rem] border border-white/20 bg-[#083c2c]/60 p-6 text-white shadow-2xl backdrop-blur-md sm:p-8">
-                                    <p className="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-200">
+                                    <p className="text-sm font-semibold tracking-[0.18em] text-emerald-200 uppercase">
                                         Slogan
                                     </p>
                                     <h2 className="mt-2 text-3xl font-extrabold tracking-tight sm:text-4xl">
-                                        Tu farmacia, más ágil, más humana, siempre lista.
+                                        Tu farmacia, más ágil, más humana,
+                                        siempre lista.
                                     </h2>
                                     <p className="mt-3 max-w-lg text-sm leading-7 text-emerald-50/90 sm:text-base">
-                                        La operación diaria se ve mejor cuando el equipo cuenta con una interfaz clara, una atención confiable y un control preciso de cada movimiento.
+                                        La operación diaria se ve mejor cuando
+                                        el equipo cuenta con una interfaz clara,
+                                        una atención confiable y un control
+                                        preciso de cada movimiento.
                                     </p>
 
-                                    <div className="mt-6 flex flex-wrap gap-3 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-100">
-                                        <span className="rounded-full border border-white/20 bg-white/10 px-4 py-2">Mostrador</span>
-                                        <span className="rounded-full border border-white/20 bg-white/10 px-4 py-2">Stock</span>
-                                        <span className="rounded-full border border-white/20 bg-white/10 px-4 py-2">Caducidades</span>
-                                        <span className="rounded-full border border-white/20 bg-white/10 px-4 py-2">Ventas</span>
+                                    <div className="mt-6 flex flex-wrap gap-3 text-xs font-semibold tracking-[0.18em] text-emerald-100 uppercase">
+                                        <span className="rounded-full border border-white/20 bg-white/10 px-4 py-2">
+                                            Mostrador
+                                        </span>
+                                        <span className="rounded-full border border-white/20 bg-white/10 px-4 py-2">
+                                            Stock
+                                        </span>
+                                        <span className="rounded-full border border-white/20 bg-white/10 px-4 py-2">
+                                            Caducidades
+                                        </span>
+                                        <span className="rounded-full border border-white/20 bg-white/10 px-4 py-2">
+                                            Ventas
+                                        </span>
                                     </div>
                                 </div>
                             </div>

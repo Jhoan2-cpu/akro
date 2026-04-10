@@ -24,7 +24,9 @@ export default function Profile({
     const { auth } = usePage().props;
     const getInitials = useInitials();
     const verificationForm = useForm({
-        verification_email: (auth.user.verification_email as string | null | undefined) ?? auth.user.email,
+        verification_email:
+            (auth.user.verification_email as string | null | undefined) ??
+            auth.user.email,
     });
     const photoForm = useForm<{ profile_photo: File | null }>({
         profile_photo: null,
@@ -38,8 +40,12 @@ export default function Profile({
         return URL.createObjectURL(photoForm.data.profile_photo);
     }, [photoForm.data.profile_photo]);
 
-    const hasVerificationEmail = Boolean(verificationForm.data.verification_email);
-    const isVerificationEmailVerified = Boolean(auth.user.verification_email_verified_at);
+    const hasVerificationEmail = Boolean(
+        verificationForm.data.verification_email,
+    );
+    const isVerificationEmailVerified = Boolean(
+        auth.user.verification_email_verified_at,
+    );
     const selectedPhotoUrl = useMemo(
         () => photoPreview ?? auth.user.avatar ?? null,
         [auth.user.avatar, photoPreview],
@@ -53,7 +59,9 @@ export default function Profile({
         };
     }, [photoPreview]);
 
-    const submitVerificationEmail = (event: React.FormEvent<HTMLFormElement>): void => {
+    const submitVerificationEmail = (
+        event: React.FormEvent<HTMLFormElement>,
+    ): void => {
         event.preventDefault();
 
         verificationForm.post('/settings/profile/verification-email', {
@@ -87,7 +95,8 @@ export default function Profile({
                             photoForm.post('/settings/profile/photo', {
                                 preserveScroll: true,
                                 forceFormData: true,
-                                onSuccess: () => photoForm.reset('profile_photo'),
+                                onSuccess: () =>
+                                    photoForm.reset('profile_photo'),
                                 onFinish: () => {
                                     photoForm.transform((data) => data);
                                 },
@@ -98,20 +107,27 @@ export default function Profile({
                         <div className="flex flex-col gap-4 rounded-2xl border border-dashed border-emerald-200 bg-emerald-50/60 p-4 md:flex-row md:items-center md:justify-between">
                             <div className="flex items-center gap-4">
                                 <Avatar className="h-20 w-20 border border-white shadow-sm">
-                                    <AvatarImage src={selectedPhotoUrl ?? undefined} alt={auth.user.name} />
-                                    <AvatarFallback className="bg-emerald-100 text-emerald-800 text-lg font-semibold">
+                                    <AvatarImage
+                                        src={selectedPhotoUrl ?? undefined}
+                                        alt={auth.user.name}
+                                    />
+                                    <AvatarFallback className="bg-emerald-100 text-lg font-semibold text-emerald-800">
                                         {getInitials(auth.user.name)}
                                     </AvatarFallback>
                                 </Avatar>
 
                                 <div className="space-y-1">
-                                    <p className="font-semibold text-foreground">Current profile image</p>
+                                    <p className="font-semibold text-foreground">
+                                        Current profile image
+                                    </p>
                                     <p className="text-sm text-muted-foreground">
-                                        JPG or PNG, up to 5MB. Replaces only your current image.
+                                        JPG or PNG, up to 5MB. Replaces only
+                                        your current image.
                                     </p>
                                     {photoForm.data.profile_photo && (
                                         <p className="text-xs text-emerald-800">
-                                            Selected: {photoForm.data.profile_photo.name}
+                                            Selected:{' '}
+                                            {photoForm.data.profile_photo.name}
                                         </p>
                                     )}
                                 </div>
@@ -132,16 +148,24 @@ export default function Profile({
                                     accept="image/*"
                                     className="hidden"
                                     onChange={(event) => {
-                                        photoForm.setData('profile_photo', event.target.files?.[0] ?? null);
+                                        photoForm.setData(
+                                            'profile_photo',
+                                            event.target.files?.[0] ?? null,
+                                        );
                                     }}
                                 />
 
                                 <Button
                                     type="submit"
-                                    disabled={photoForm.processing || !photoForm.data.profile_photo}
+                                    disabled={
+                                        photoForm.processing ||
+                                        !photoForm.data.profile_photo
+                                    }
                                     className="min-h-11"
                                 >
-                                    {photoForm.processing ? 'Uploading...' : 'Update photo'}
+                                    {photoForm.processing
+                                        ? 'Uploading...'
+                                        : 'Update photo'}
                                 </Button>
                             </div>
                         </div>
@@ -209,7 +233,8 @@ export default function Profile({
                                     auth.user.email_verified_at === null && (
                                         <div className="rounded-xl border border-amber-200 bg-amber-50/80 p-3">
                                             <p className="text-sm text-amber-900">
-                                                Your email address is unverified.{' '}
+                                                Your email address is
+                                                unverified.{' '}
                                                 <Link
                                                     href={send()}
                                                     as="button"
@@ -252,40 +277,73 @@ export default function Profile({
                             description="Verify an email for profile notifications and recovery workflows"
                         />
 
-                        <Badge variant={isVerificationEmailVerified ? 'default' : 'secondary'}>
-                            {isVerificationEmailVerified ? 'Verified' : 'Pending verification'}
+                        <Badge
+                            variant={
+                                isVerificationEmailVerified
+                                    ? 'default'
+                                    : 'secondary'
+                            }
+                        >
+                            {isVerificationEmailVerified
+                                ? 'Verified'
+                                : 'Pending verification'}
                         </Badge>
                     </div>
 
-                    <form onSubmit={submitVerificationEmail} className="space-y-4">
+                    <form
+                        onSubmit={submitVerificationEmail}
+                        className="space-y-4"
+                    >
                         <div className="grid gap-2">
-                            <Label htmlFor="verification_email">Verification email</Label>
+                            <Label htmlFor="verification_email">
+                                Verification email
+                            </Label>
                             <Input
                                 id="verification_email"
                                 type="email"
                                 name="verification_email"
                                 className="mt-1 block w-full"
                                 value={verificationForm.data.verification_email}
-                                onChange={(event) => verificationForm.setData('verification_email', event.target.value)}
+                                onChange={(event) =>
+                                    verificationForm.setData(
+                                        'verification_email',
+                                        event.target.value,
+                                    )
+                                }
                                 autoComplete="email"
                                 placeholder="verification@example.com"
                                 required
                             />
-                            <InputError className="mt-2" message={verificationForm.errors.verification_email} />
+                            <InputError
+                                className="mt-2"
+                                message={
+                                    verificationForm.errors.verification_email
+                                }
+                            />
                         </div>
 
                         <p className="text-sm text-muted-foreground">
-                            Puedes usar un correo diferente al de inicio de sesión, o el mismo si así lo prefieres.
+                            Puedes usar un correo diferente al de inicio de
+                            sesión, o el mismo si así lo prefieres.
                         </p>
 
                         <div className="flex flex-wrap items-center gap-3">
-                            <Button type="submit" disabled={verificationForm.processing || !hasVerificationEmail}>
-                                {isVerificationEmailVerified ? 'Re-verify email' : 'Send verification link'}
+                            <Button
+                                type="submit"
+                                disabled={
+                                    verificationForm.processing ||
+                                    !hasVerificationEmail
+                                }
+                            >
+                                {isVerificationEmailVerified
+                                    ? 'Re-verify email'
+                                    : 'Send verification link'}
                             </Button>
 
                             {auth.user.verification_email && (
                                 <span className="text-xs text-muted-foreground">
-                                    Current: {String(auth.user.verification_email)}
+                                    Current:{' '}
+                                    {String(auth.user.verification_email)}
                                 </span>
                             )}
                         </div>

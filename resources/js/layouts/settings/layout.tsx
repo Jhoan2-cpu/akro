@@ -36,40 +36,46 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
                 <div className="mt-5 flex flex-col gap-6 lg:flex-row lg:gap-8">
                     <aside className="w-full max-w-xl lg:w-52">
                         <div className="rounded-2xl border border-sidebar-border/70 bg-white/95 p-2 shadow-sm">
-                    <nav
-                        className="flex flex-col space-y-1 space-x-0"
-                        aria-label="Settings"
-                    >
-                        {sidebarNavItems.map((item, index) => (
-                            <Button
-                                key={`${toUrl(item.href)}-${index}`}
-                                size="sm"
-                                variant="ghost"
-                                asChild
-                                className={cn('h-11 w-full justify-start rounded-lg px-3 font-medium', {
-                                    'bg-emerald-100 text-emerald-900 hover:bg-emerald-100': isCurrentOrParentUrl(item.href),
-                                })}
+                            <nav
+                                className="flex flex-col space-y-1 space-x-0"
+                                aria-label="Settings"
                             >
-                                <Link href={item.href}>
-                                    {item.icon && (
-                                        <item.icon className="h-4 w-4" />
-                                    )}
-                                    {item.title}
-                                </Link>
-                            </Button>
-                        ))}
-                    </nav>
+                                {sidebarNavItems.map((item, index) => (
+                                    <Button
+                                        key={`${toUrl(item.href)}-${index}`}
+                                        size="sm"
+                                        variant="ghost"
+                                        asChild
+                                        className={cn(
+                                            'h-11 w-full justify-start rounded-lg px-3 font-medium',
+                                            {
+                                                'bg-emerald-100 text-emerald-900 hover:bg-emerald-100':
+                                                    isCurrentOrParentUrl(
+                                                        item.href,
+                                                    ),
+                                            },
+                                        )}
+                                    >
+                                        <Link href={item.href}>
+                                            {item.icon && (
+                                                <item.icon className="h-4 w-4" />
+                                            )}
+                                            {item.title}
+                                        </Link>
+                                    </Button>
+                                ))}
+                            </nav>
                         </div>
-                </aside>
+                    </aside>
 
-                <Separator className="my-6 lg:hidden" />
+                    <Separator className="my-6 lg:hidden" />
 
                     <div className="flex-1 md:max-w-3xl">
                         <section className="max-w-2xl space-y-8">
-                        {children}
-                    </section>
+                            {children}
+                        </section>
+                    </div>
                 </div>
-            </div>
             </div>
         </div>
     );
