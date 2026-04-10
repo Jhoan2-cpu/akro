@@ -382,8 +382,12 @@ export default function SalesIndex({ branch, branches, employee, canSell, is_sup
                             {is_superuser ? (
                                 <div className="space-y-1">
                                     <label className="text-xs font-medium uppercase tracking-[0.2em] text-primary-foreground/80">Sucursal</label>
-                                    <Select value={selectedBranchId} onValueChange={setSelectedBranchId}>
-                                        <SelectTrigger className="h-11 w-48 rounded-full border-primary-foreground/20 bg-primary-foreground/10 text-primary-foreground">
+                                    <Select 
+                                        value={selectedBranchId} 
+                                        onValueChange={setSelectedBranchId}
+                                        disabled={cart.length > 0}
+                                    >
+                                        <SelectTrigger className="h-11 w-48 rounded-full border-primary-foreground/20 bg-primary-foreground/10 text-primary-foreground disabled:opacity-50 disabled:cursor-not-allowed">
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -394,6 +398,11 @@ export default function SalesIndex({ branch, branches, employee, canSell, is_sup
                                             ))}
                                         </SelectContent>
                                     </Select>
+                                    {cart.length > 0 && (
+                                        <p className="text-xs text-primary-foreground/70">
+                                            Vacía el carrito para cambiar de sucursal
+                                        </p>
+                                    )}
                                 </div>
                             ) : (
                                 <Badge variant="outline" className="rounded-full border-primary-foreground/20 bg-primary-foreground/10 text-primary-foreground backdrop-blur-sm">
