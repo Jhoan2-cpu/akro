@@ -161,6 +161,52 @@
 @layer base {
     * {
         @apply border-border;
+        scrollbar-width: thin;
+        scrollbar-color: #13785f #d5dce8;
+    }
+
+    *::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+    }
+
+    *::-webkit-scrollbar-track {
+        background: #d5dce8;
+    }
+
+    *::-webkit-scrollbar-thumb {
+        background: #13785f;
+        border: 2px solid #d5dce8;
+        border-radius: 999px;
+    }
+
+    *::-webkit-scrollbar-thumb:hover {
+        background: #0f6e56;
+    }
+
+    *::-webkit-scrollbar-thumb:active {
+        background: #0a5341;
+    }
+
+    .dark * {
+        scrollbar-color: #3fb392 #2a3342;
+    }
+
+    .dark *::-webkit-scrollbar-track {
+        background: #2a3342;
+    }
+
+    .dark *::-webkit-scrollbar-thumb {
+        background: #3fb392;
+        border-color: #2a3342;
+    }
+
+    .dark *::-webkit-scrollbar-thumb:hover {
+        background: #66c5a9;
+    }
+
+    .dark *::-webkit-scrollbar-thumb:active {
+        background: #94d7c2;
     }
 
     body {
