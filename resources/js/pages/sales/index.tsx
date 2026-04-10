@@ -1,7 +1,8 @@
 import { Head, useForm } from '@inertiajs/react';
-import { AlertTriangle, Plus, Search, ShoppingCart, Trash2 } from 'lucide-react';
+import { AlertTriangle, Edit, Plus, Search, ShoppingCart, Trash2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import BarcodeScannerDialog from '@/components/barcode-scanner-dialog';
+import PriceEditWarningModal from '@/components/price-edit-warning-modal';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -70,6 +71,7 @@ export default function SalesIndex({ branch, employee, canSell }: Props) {
     const [draftQuantity, setDraftQuantity] = useState('1');
     const [draftUnitPrice, setDraftUnitPrice] = useState('0.00');
     const [cart, setCart] = useState<CartItem[]>([]);
+    const [priceEditModal, setPriceEditModal] = useState<{ itemId: number | null; medicineName: string; currentPrice: string } | null>(null);
 
     const saleForm = useForm<{ items: SaleFormItem[] }>({
         items: [],
@@ -448,14 +450,24 @@ export default function SalesIndex({ branch, employee, canSell }: Props) {
                                     </div>
                                     <div className="space-y-2">
                                         <label className="text-sm font-medium">Precio unitario</label>
-                                        <Input
-                                            type="number"
-                                            min="0.01"
-                                            step="0.01"
-                                            value={draftUnitPrice}
-                                            onChange={(event) => setDraftUnitPrice(event.target.value)}
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            className="w-full h-11 justify-between font-normal"
+                                            onClick={() => {
+                                                if (selectedMedicine) {
+                                                    setPriceEditModal({
+                                                        itemId: null,
+                                                        medicineName: selectedMedicine.name,
+                                                        currentPrice: draftUnitPrice,
+                                                    });
+                                                }
+                                            }}
                                             disabled={!canSell || isOutOfStock}
-                                        />
+                                        >
+                                            ${draftUnitPrice}
+                                            <Edit className="size-4" />
+                                        </Button>
                                     </div>
                                     <div className="space-y-2">
                                         <label className="text-sm font-medium">Subtotal</label>
@@ -534,13 +546,21 @@ export default function SalesIndex({ branch, employee, canSell }: Props) {
                                                     </div>
                                                     <div className="space-y-2">
                                                         <label className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">Precio unitario</label>
-                                                        <Input
-                                                            type="number"
-                                                            step="0.01"
-                                                            min="0.01"
-                                                            value={item.unit_price}
-                                                            onChange={(event) => updateCartItem(item.id, 'unit_price', event.target.value)}
-                                                        />
+                                                        <Button
+                                                            type="button"
+                                                            variant="outline"
+                                                            className="w-full h-10 justify-between font-normal"
+                                                            onClick={() =>
+                                                                setPriceEditModal({
+                                                                    itemId: item.id,
+                                                                    medicineName: item.name,
+                                                                    currentPrice: item.unit_price,
+                                                                })
+                                                            }
+                                                        >
+                                                            ${item.unit_price}
+                                                            <Edit className="size-4" />
+                                                        </Button>
                                                     </div>
                                                     <div className="space-y-2">
                                                         <label className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">Subtotal</label>
@@ -585,6 +605,25 @@ export default function SalesIndex({ branch, employee, canSell }: Props) {
                     </section>
                 </div>
             </div>
+
+            <PriceEditWarningModal
+                isOpen={!!priceEditModal}
+                currentPrice={priceEditModal?.currentPrice ?? '0.00'}
+                medicineName={priceEditModal?.medicineName ?? ''}
+                onConfirm={(newPrice) => {
+                    if (priceEditModal) {
+                        if (priceEditModal.itemId === null) {
+                            // Update draft price before adding to cart
+                            setDraftUnitPrice(newPrice);
+                        } else {
+                            // Update cart item price
+                            updateCartItem(priceEditModal.itemId, 'unit_price', newPrice);
+                        }
+                        setPriceEditModal(null);
+                    }
+                }}
+                onCancel={() => setPriceEditModal(null)}
+            />
         </AppSidebarLayout>
     );
 }
