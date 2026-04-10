@@ -29,6 +29,7 @@ docker compose -f docker-compose.dev.yml up -d
 - La asignación del rol `superuser` está restringida: `admin` no puede crear usuarios con ese rol ni actualizar usuarios existentes para convertirlos en `superuser` (regla aplicada en formulario y backend).
 - El redirect post-login de Fortify ahora valida `url.intended` por rol: usuarios `employee` no son enviados a rutas administrativas (`/medicines`, `/users`, `/categories`, `/active-ingredients`, `/branches`) y se redirigen de forma segura a `/dashboard`.
 - El dashboard operativo se ajusta con `minmax(0, ...)` y contenedores `min-w-0` para evitar desbordes horizontales en producción (zoom 100%/pantallas intermedias), garantizando visibilidad del bloque "Alertas operativas".
+- El envío de alertas de inventario tras registrar ventas prioriza Brevo API (`BREVO_API_KEY`) y admite destinatario de respaldo (`email` verificado) cuando no exista `verification_email` verificado, con logging de diagnóstico y sin bloquear el cierre de la venta ante fallos de transporte.
 
 ## MER Fiscal (Resumen)
 ```mermaid
