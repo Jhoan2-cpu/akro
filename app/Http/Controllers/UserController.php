@@ -26,6 +26,8 @@ class UserController extends Controller
 
     public function index(Request $request): Response
     {
+        $isSuperuser = $this->isSuperuser($request);
+        $userBranchId = $request->user()?->branch_id;
         $search = trim((string) $request->input('search', ''));
         $status = (string) $request->input('status', 'all');
         $branchId = (string) $request->input('branch_id', 'all');
@@ -45,8 +47,7 @@ class UserController extends Controller
             ->when($status !== 'all', fn ($query) => $query->where('status', $status));
 
         // Scoping: admins solo ven usuarios de su sucursal
-        if (!$this->isSuperuser($request)) {
-            $userBranchId = $request->user()?->branch_id;
+        if (!$isSuperuser) {
 
             if ($userBranchId === null) {
                 $usersQuery->whereRaw('1 = 0'); // Sin sucursal: no mostrar nada
@@ -60,13 +61,23 @@ class UserController extends Controller
 
         $usersQuery->orderBy('name');
 
+        $branchesQuery = Branch::query()->orderBy('name');
+
+        if (!$isSuperuser && $userBranchId !== null) {
+            $branchesQuery->where('id', $userBranchId);
+        }
+
         return Inertia::render('users/index', [
             'users' => $usersQuery->paginate(10)->withQueryString(),
-            'branches' => Branch::query()->orderBy('name')->get(['id', 'name']),
+            'branches' => $branchesQuery->get(['id', 'name']),
             'filters' => [
                 'search' => $search,
                 'status' => $status,
                 'branch_id' => $branchId,
+            ],
+            'ui' => [
+                'is_superuser' => $isSuperuser,
+                'user_branch_id' => $userBranchId,
             ],
             'stats' => [
                 'total' => User::query()->count(),

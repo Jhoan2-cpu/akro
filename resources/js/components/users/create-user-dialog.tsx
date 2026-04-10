@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Plus } from 'lucide-react';
 import { useForm } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
@@ -21,20 +21,32 @@ type Branch = {
 
 type Props = {
     branches: Branch[];
+    canSelectBranch: boolean;
+    userBranchId: number | null;
 };
 
-export default function CreateUserDialog({ branches }: Props) {
+export default function CreateUserDialog({ branches, canSelectBranch, userBranchId }: Props) {
     const [open, setOpen] = useState(false);
+    const defaultBranchId = !canSelectBranch && userBranchId !== null
+        ? String(userBranchId)
+        : '';
+
     const form = useForm<UserUpsertFormValues>({
         name: '',
         email: '',
         profile_photo: null,
-        branch_id: '',
+        branch_id: defaultBranchId,
         role: 'employee',
         status: 'active',
         password: '',
         password_confirmation: '',
     });
+
+    useEffect(() => {
+        if (!canSelectBranch && defaultBranchId !== '' && form.data.branch_id !== defaultBranchId) {
+            form.setData('branch_id', defaultBranchId);
+        }
+    }, [canSelectBranch, defaultBranchId, form]);
 
     const submit = (event: React.FormEvent<HTMLFormElement>): void => {
         event.preventDefault();
@@ -44,6 +56,9 @@ export default function CreateUserDialog({ branches }: Props) {
             preserveScroll: true,
             onSuccess: () => {
                 form.reset();
+                if (!canSelectBranch && defaultBranchId !== '') {
+                    form.setData('branch_id', defaultBranchId);
+                }
                 setOpen(false);
             },
         });
@@ -75,6 +90,7 @@ export default function CreateUserDialog({ branches }: Props) {
                     setData={form.setData}
                     errors={form.errors}
                     branches={branches}
+                    canSelectBranch={canSelectBranch}
                     processing={form.processing}
                     onSubmit={submit}
                     passwordRequired

@@ -68,6 +68,10 @@ type Props = {
         active: number;
         suspended: number;
     };
+    ui: {
+        is_superuser: boolean;
+        user_branch_id: number | null;
+    };
 };
 
 const statusMeta: Record<
@@ -109,7 +113,7 @@ function decodePaginationLabel(label: string): string {
         .replace(/<[^>]*>/g, '');
 }
 
-export default function UsersIndex({ users, branches, filters, stats }: Props) {
+export default function UsersIndex({ users, branches, filters, stats, ui }: Props) {
     const { auth } = usePage<{ auth: { user: { id: number } } }>().props;
     const initials = useInitials();
     const [pendingSuspendId, setPendingSuspendId] = useState<number | null>(null);
@@ -175,7 +179,11 @@ export default function UsersIndex({ users, branches, filters, stats }: Props) {
                                 </p>
                             </div>
 
-                            <CreateUserDialog branches={branches} />
+                            <CreateUserDialog
+                                branches={branches}
+                                canSelectBranch={ui.is_superuser}
+                                userBranchId={ui.user_branch_id}
+                            />
                         </div>
                     </div>
                 </motion.section>

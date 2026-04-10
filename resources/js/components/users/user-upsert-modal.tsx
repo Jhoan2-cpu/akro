@@ -45,6 +45,7 @@ type Props = {
     currentPhotoUrl?: string | null;
     passwordRequired?: boolean;
     mode?: 'dialog' | 'page';
+    canSelectBranch?: boolean;
 };
 
 const roleOptions = [
@@ -73,6 +74,7 @@ export default function UserUpsertModal({
     currentPhotoUrl,
     passwordRequired = false,
     mode = 'dialog',
+    canSelectBranch = true,
 }: Props) {
     const getInitials = useInitials();
     const [photoPreview, setPhotoPreview] = useState<string | null>(null);
@@ -223,7 +225,11 @@ export default function UserUpsertModal({
                             <Label className="text-xs font-semibold uppercase tracking-[0.18em] text-neutral-500">
                                 Sucursal Asignada
                             </Label>
-                            <Select value={data.branch_id} onValueChange={(value) => setData('branch_id', value)}>
+                            <Select
+                                value={data.branch_id}
+                                onValueChange={(value) => setData('branch_id', value)}
+                                disabled={!canSelectBranch}
+                            >
                                 <SelectTrigger className={`h-12 w-full rounded-2xl border-neutral-200 px-4 text-sm shadow-none ${fieldSurfaceClass}`}>
                                     <SelectValue placeholder="Seleccionar sucursal" />
                                 </SelectTrigger>
@@ -235,6 +241,9 @@ export default function UserUpsertModal({
                                     ))}
                                 </SelectContent>
                             </Select>
+                            {!canSelectBranch && (
+                                <p className="text-xs text-neutral-500">Como administrador, solo puedes crear usuarios en tu sucursal asignada.</p>
+                            )}
                             <InputError message={errors.branch_id} />
                         </div>
                     </div>
