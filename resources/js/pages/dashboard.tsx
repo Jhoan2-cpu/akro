@@ -123,7 +123,7 @@ function CompactBarChart({
     const maxValue = points.reduce((max, point) => Math.max(max, point.value), 0);
 
     return (
-        <section className="rounded-2xl border border-sidebar-border/70 bg-white/95 p-4 shadow-sm">
+        <section className="min-w-0 rounded-2xl border border-sidebar-border/70 bg-white/95 p-4 shadow-sm">
             <div className="mb-3 flex items-center gap-2 text-foreground">
                 {icon}
                 <h3 className="text-sm font-bold">{title}</h3>
@@ -253,8 +253,8 @@ export default function Dashboard({ scope, kpis, operations, analytics, inventor
                     </div>
                 </section>
 
-                <section className="grid gap-4 xl:grid-cols-[1.4fr_1fr]">
-                    <div className="space-y-4">
+                <section className="grid gap-4 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
+                    <div className="min-w-0 space-y-4">
                         <div className="grid gap-3 md:grid-cols-2">
                             <div className="rounded-xl border border-sidebar-border/70 bg-white p-3 text-xs font-semibold text-foreground">
                                 <p>Ventas por hora</p>
@@ -306,7 +306,7 @@ export default function Dashboard({ scope, kpis, operations, analytics, inventor
                         />
                     </div>
 
-                    <div className="space-y-4">
+                    <div className="min-w-0 space-y-4">
                         <section className="rounded-2xl border border-sidebar-border/70 bg-white/95 p-4 shadow-sm">
                             <div className="mb-3 flex items-center gap-2">
                                 <AlertTriangle className="size-4 text-amber-700" />
