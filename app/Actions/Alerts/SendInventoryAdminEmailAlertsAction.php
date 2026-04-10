@@ -136,65 +136,43 @@ class SendInventoryAdminEmailAlertsAction
             ];
         }
 
-        $branchIdsWithAlerts = $alertsByBranch->keys()->map(fn ($id): int => (int) $id)->values()->all();
         $sentRecipients = 0;
         $skippedDuplicates = 0;
 
         $recipients = User::query()
-            ->whereIn('role', ['superuser', 'admin'])
+            ->where('role', 'admin')
             ->where(function ($query): void {
                 $query
                     ->whereNull('status')
                     ->orWhere('status', 'active');
             })
             ->where(function ($query): void {
-                $query
-                    ->where(function ($verificationEmailQuery): void {
-                        $verificationEmailQuery
-                            ->whereNotNull('verification_email')
-                            ->whereNotNull('verification_email_verified_at');
-                    })
-                    ->orWhere(function ($loginEmailQuery): void {
-                        $loginEmailQuery
-                            ->whereNotNull('email')
-                            ->whereNotNull('email_verified_at');
-                    });
+                $query->where(function ($verificationEmailQuery): void {
+                    $verificationEmailQuery
+                        ->whereNotNull('verification_email')
+                        ->whereNotNull('verification_email_verified_at');
+                });
             })
             ->get(['id', 'name', 'email', 'email_verified_at', 'verification_email', 'verification_email_verified_at', 'role', 'branch_id']);
 
         if ($recipients->isEmpty()) {
             Log::warning('inventory_alert_recipients_empty', [
-                'reason' => 'No active admin/superuser with verified profile email or verified login email.',
+                'reason' => 'No active admin with verified profile email.',
             ]);
         }
 
-        foreach ($recipients as $recipient) {
-            $recipientBranchAlerts = collect();
+        $recipientsByBranch = $recipients->groupBy(function (User $recipient): string {
+            return (string) $recipient->branch_id;
+        });
 
-            if ($recipient->role === 'superuser') {
-                $recipientBranchAlerts = $alertsByBranch;
-            } elseif ($recipient->branch_id !== null && in_array((int) $recipient->branch_id, $branchIdsWithAlerts, true)) {
-                $branchSummary = $alertsByBranch->get((string) $recipient->branch_id) ?? $alertsByBranch->get((int) $recipient->branch_id);
+        foreach ($alertsByBranch as $branchId => $branchSummary) {
+            $branchRecipients = $recipientsByBranch->get((string) $branchId, collect());
 
-                if ($branchSummary !== null) {
-                    $recipientBranchAlerts = collect([$branchSummary]);
-                }
-            }
-
-            if ($recipientBranchAlerts->isEmpty()) {
+            if ($branchRecipients->isEmpty()) {
                 continue;
             }
 
-            $branchSummaries = $recipientBranchAlerts->values()->all();
-
-            $totals = [
-                'out_of_stock' => (int) $recipientBranchAlerts->sum(fn (array $summary): int => count($summary['out_of_stock_items'])),
-                'low_stock' => (int) $recipientBranchAlerts->sum(fn (array $summary): int => count($summary['low_stock_items'])),
-                'expired' => (int) $recipientBranchAlerts->sum(fn (array $summary): int => count($summary['expired_items'])),
-                'near_expiry' => (int) $recipientBranchAlerts->sum(fn (array $summary): int => count($summary['near_expiry_items'])),
-            ];
-
-            $cacheKey = sprintf('alerts:inventory-email:%d:%s', (int) $recipient->id, $today->toDateString());
+            $cacheKey = sprintf('alerts:inventory-email:branch:%d:%s', (int) $branchId, $today->toDateString());
 
             if (! Cache::add($cacheKey, true, $today->copy()->endOfDay())) {
                 $skippedDuplicates++;
@@ -202,44 +180,55 @@ class SendInventoryAdminEmailAlertsAction
                 continue;
             }
 
-            $verificationEmail = $this->resolveRecipientEmail($recipient);
+            $branchSummaries = [$branchSummary];
 
-            if ($verificationEmail === null) {
-                Log::warning('inventory_alert_recipient_without_verified_email', [
-                    'recipient_id' => (int) $recipient->id,
-                    'recipient_name' => (string) $recipient->name,
-                    'recipient_role' => (string) $recipient->role,
-                ]);
+            $totals = [
+                'out_of_stock' => count($branchSummary['out_of_stock_items']),
+                'low_stock' => count($branchSummary['low_stock_items']),
+                'expired' => count($branchSummary['expired_items']),
+                'near_expiry' => count($branchSummary['near_expiry_items']),
+            ];
 
-                continue;
-            }
+            foreach ($branchRecipients as $recipient) {
+                $verificationEmail = $this->resolveRecipientEmail($recipient);
 
-            try {
-                if ($this->sendViaBrevoApi(
-                    email: $verificationEmail,
-                    recipientName: (string) $recipient->name,
-                    branchSummaries: $branchSummaries,
-                    totals: $totals,
-                )) {
-                    $sentRecipients++;
+                if ($verificationEmail === null) {
+                    Log::warning('inventory_alert_recipient_without_verified_email', [
+                        'recipient_id' => (int) $recipient->id,
+                        'recipient_name' => (string) $recipient->name,
+                        'recipient_role' => (string) $recipient->role,
+                    ]);
 
                     continue;
                 }
 
-                Notification::route('mail', $verificationEmail)->notify(new InventoryRiskAlertNotification(
-                    recipientName: $recipient->name,
-                    branchSummaries: $branchSummaries,
-                    totals: $totals,
-                ));
-                $sentRecipients++;
-            } catch (Throwable $exception) {
-                Log::error('inventory_alert_email_send_failed', [
-                    'recipient_id' => (int) $recipient->id,
-                    'recipient_email' => $verificationEmail,
-                    'recipient_role' => (string) $recipient->role,
-                    'exception_class' => $exception::class,
-                    'exception_message' => $exception->getMessage(),
-                ]);
+                try {
+                    if ($this->sendViaBrevoApi(
+                        email: $verificationEmail,
+                        recipientName: (string) $recipient->name,
+                        branchSummaries: $branchSummaries,
+                        totals: $totals,
+                    )) {
+                        $sentRecipients++;
+
+                        continue;
+                    }
+
+                    Notification::route('mail', $verificationEmail)->notify(new InventoryRiskAlertNotification(
+                        recipientName: $recipient->name,
+                        branchSummaries: $branchSummaries,
+                        totals: $totals,
+                    ));
+                    $sentRecipients++;
+                } catch (Throwable $exception) {
+                    Log::error('inventory_alert_email_send_failed', [
+                        'recipient_id' => (int) $recipient->id,
+                        'recipient_email' => $verificationEmail,
+                        'recipient_role' => (string) $recipient->role,
+                        'exception_class' => $exception::class,
+                        'exception_message' => $exception->getMessage(),
+                    ]);
+                }
             }
         }
 
@@ -362,14 +351,9 @@ class SendInventoryAdminEmailAlertsAction
     protected function resolveRecipientEmail(User $recipient): ?string
     {
         $verificationEmail = trim((string) ($recipient->verification_email ?? ''));
-        $loginEmail = trim((string) ($recipient->email ?? ''));
 
         if ($verificationEmail !== '' && $recipient->verification_email_verified_at !== null) {
             return $verificationEmail;
-        }
-
-        if ($loginEmail !== '' && $recipient->email_verified_at !== null) {
-            return $loginEmail;
         }
 
         return null;
